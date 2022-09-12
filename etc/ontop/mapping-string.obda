@@ -1,0 +1,1360 @@
+[PrefixDeclaration]
+: http://nextprot.org/rdf#
+evidence: http://nextprot.org/rdf/evidence/
+chebi: http://purl.obolibrary.org/obo/
+owl: http://www.w3.org/2002/07/owl#
+xsd: http://www.w3.org/2001/XMLSchema#
+skos: http://www.w3.org/2004/02/skos/core#
+rdfs: http://www.w3.org/2000/01/rdf-schema#
+source: http://nextprot.org/rdf/source/
+unipage: http://www.uniprot.org/uniprot/
+publication: http://nextprot.org/rdf/publication/
+context: http://nextprot.org/rdf/context/
+up: http://purl.uniprot.org/core/
+annotation: http://nextprot.org/rdf/annotation/
+proteoform: http://nextprot.org/rdf/proteoform/
+identifier: http://nextprot.org/rdf/identifier/
+xref: http://nextprot.org/rdf/xref/
+gene: http://nextprot.org/rdf/gene/
+drugbankdrugs: http://wifo5-04.informatik.uni-mannheim.de/drugbank/resource/drugs/
+entry: http://nextprot.org/rdf/entry/
+cv: http://nextprot.org/rdf/terminology/
+rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+interaction: http://nextprot.org/rdf/interaction/
+uniprot: http://purl.uniprot.org/uniprot/
+isoform: http://nextprot.org/rdf/isoform/
+db: http://nextprot.org/rdf/db/
+dc: http://purl.org/dc/elements/1.1/
+
+
+[MappingDeclaration] @collection [[
+
+mappingId  map001
+target     isoform:{id} rdf:type :Isoform.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map002
+target     isoform:{id} :canonicalIsoform {canonical_isoform}^^xsd:boolean.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map003
+target     isoform:{id} :swissprotDisplayed {swissprot_displayed}^^xsd:boolean.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map004
+target     isoform:{id} :absorptionMax annotation:{absorption_max}.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map005
+target     isoform:{id} :absorptionNote annotation:{absorption_note}.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map006
+target     isoform:{id} :allergen annotation:{allergen}.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map007
+target     isoform:{id} :initiatorMethionine annotation:{initiator_methionine}.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map008
+target     isoform:{id} :kineticKM annotation:{kinetic_k_m}.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map009
+target     isoform:{id} :kineticNote annotation:{kinetic_note}.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map010
+target     isoform:{id} :kineticVmax annotation:{kinetic_vmax}.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map011
+target     isoform:{id} :nonConsecutiveResidue annotation:{non_consecutive_residue}.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map012
+target     isoform:{id} :peroxisomeTransitPeptide annotation:{peroxisome_transit_peptide}.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map013
+target     isoform:{id} :pharmaceutical annotation:{pharmaceutical}.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map014
+target     isoform:{id} :phDependence annotation:{ph_dependence}.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map015
+target     isoform:{id} :redoxPotential annotation:{redox_potential}.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map016
+target     isoform:{id} :signalPeptide annotation:{signal_peptide}.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map017
+target     isoform:{id} :temperatureDependence annotation:{temperature_dependence}.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map018
+target     isoform:{isoform} :proteoform proteoform:{proteoform}.
+source     select * from "nextprot"."isoform_proteoforms"
+
+mappingId  map019
+target     isoform:{isoform} :activeSite annotation:{annotation}.
+source     select * from "nextprot"."isoform_active_sites"
+
+mappingId  map020
+target     isoform:{isoform} :activityRegulation annotation:{annotation}.
+source     select * from "nextprot"."isoform_activity_regulations"
+
+mappingId  map021
+target     isoform:{isoform} :antibodyMapping annotation:{annotation}.
+source     select * from "nextprot"."isoform_antibody_mappings"
+
+mappingId  map022
+target     isoform:{isoform} :betaStrand annotation:{annotation}.
+source     select * from "nextprot"."isoform_beta_strands"
+
+mappingId  map023
+target     isoform:{isoform} :binaryInteraction annotation:{annotation}.
+source     select * from "nextprot"."isoform_binary_interactions"
+
+mappingId  map024
+target     isoform:{isoform} :bindingSite annotation:{annotation}.
+source     select * from "nextprot"."isoform_binding_sites"
+
+mappingId  map025
+target     isoform:{isoform} :biophysicochemicalProperty annotation:{annotation}.
+source     select * from "nextprot"."isoform_biophysicochemical_properties"
+
+mappingId  map026
+target     isoform:{isoform} :calciumBindingRegion annotation:{annotation}.
+source     select * from "nextprot"."isoform_calcium_binding_regions"
+
+mappingId  map027
+target     isoform:{isoform} :catalyticActivity annotation:{annotation}.
+source     select * from "nextprot"."isoform_catalytic_activities"
+
+mappingId  map028
+target     isoform:{isoform} :caution annotation:{annotation}.
+source     select * from "nextprot"."isoform_cautions"
+
+mappingId  map029
+target     isoform:{isoform} :cellularComponent annotation:{annotation}.
+source     select * from "nextprot"."isoform_cellular_components"
+
+mappingId  map030
+target     isoform:{isoform} :cleavageSite annotation:{annotation}.
+source     select * from "nextprot"."isoform_cleavage_sites"
+
+mappingId  map031
+target     isoform:{isoform} :cofactor annotation:{annotation}.
+source     select * from "nextprot"."isoform_cofactors"
+
+mappingId  map032
+target     isoform:{isoform} :cofactorInfo annotation:{annotation}.
+source     select * from "nextprot"."isoform_cofactor_infos"
+
+mappingId  map033
+target     isoform:{isoform} :coiledCoilRegion annotation:{annotation}.
+source     select * from "nextprot"."isoform_coiled_coil_regions"
+
+mappingId  map034
+target     isoform:{isoform} :compositionallyBiasedRegion annotation:{annotation}.
+source     select * from "nextprot"."isoform_compositionally_biased_regions"
+
+mappingId  map035
+target     isoform:{isoform} :crossLink annotation:{annotation}.
+source     select * from "nextprot"."isoform_cross_links"
+
+mappingId  map036
+target     isoform:{isoform} :detectedExpression annotation:{annotation}.
+source     select * from "nextprot"."isoform_detected_expressions"
+
+mappingId  map037
+target     isoform:{isoform} :developmentalStageInfo annotation:{annotation}.
+source     select * from "nextprot"."isoform_developmental_stage_infos"
+
+mappingId  map038
+target     isoform:{isoform} :disease annotation:{annotation}.
+source     select * from "nextprot"."isoform_diseases"
+
+mappingId  map039
+target     isoform:{isoform} :disulfideBond annotation:{annotation}.
+source     select * from "nextprot"."isoform_disulfide_bonds"
+
+mappingId  map040
+target     isoform:{isoform} :dnaBindingRegion annotation:{annotation}.
+source     select * from "nextprot"."isoform_dna_binding_regions"
+
+mappingId  map041
+target     isoform:{isoform} :domain annotation:{annotation}.
+source     select * from "nextprot"."isoform_domains"
+
+mappingId  map042
+target     isoform:{isoform} :domainInfo annotation:{annotation}.
+source     select * from "nextprot"."isoform_domain_infos"
+
+mappingId  map043
+target     isoform:{isoform} :electrophysiologicalParameter annotation:{annotation}.
+source     select * from "nextprot"."isoform_electrophysiological_parameters"
+
+mappingId  map044
+target     isoform:{isoform} :enzymeClassification annotation:{annotation}.
+source     select * from "nextprot"."isoform_enzyme_classifications"
+
+mappingId  map045
+target     isoform:{isoform} :expression annotation:{annotation}.
+source     select * from "nextprot"."isoform_expressions"
+
+mappingId  map046
+target     isoform:{isoform} :expressionInfo annotation:{annotation}.
+source     select * from "nextprot"."isoform_expression_infos"
+
+mappingId  map047
+target     isoform:{isoform} :expressionProfile annotation:{annotation}.
+source     select * from "nextprot"."isoform_expression_profiles"
+
+mappingId  map048
+target     isoform:{isoform} :function annotation:{annotation}.
+source     select * from "nextprot"."isoform_functions"
+
+mappingId  map049
+target     isoform:{isoform} :functionInfo annotation:{annotation}.
+source     select * from "nextprot"."isoform_function_infos"
+
+mappingId  map050
+target     isoform:{isoform} :generalAnnotation annotation:{annotation}.
+source     select * from "nextprot"."isoform_general_annotations"
+
+mappingId  map051
+target     isoform:{isoform} :glycosylationSite annotation:{annotation}.
+source     select * from "nextprot"."isoform_glycosylation_sites"
+
+mappingId  map052
+target     isoform:{isoform} :goBiologicalProcess annotation:{annotation}.
+source     select * from "nextprot"."isoform_go_biological_processs"
+
+mappingId  map053
+target     isoform:{isoform} :goCellularComponent annotation:{annotation}.
+source     select * from "nextprot"."isoform_go_cellular_components"
+
+mappingId  map054
+target     isoform:{isoform} :goMolecularFunction annotation:{annotation}.
+source     select * from "nextprot"."isoform_go_molecular_functions"
+
+mappingId  map055
+target     isoform:{isoform} :helix annotation:{annotation}.
+source     select * from "nextprot"."isoform_helixs"
+
+mappingId  map056
+target     isoform:{isoform} :induction annotation:{annotation}.
+source     select * from "nextprot"."isoform_inductions"
+
+mappingId  map057
+target     isoform:{isoform} :interactingRegion annotation:{annotation}.
+source     select * from "nextprot"."isoform_interacting_regions"
+
+mappingId  map058
+target     isoform:{isoform} :interaction annotation:{annotation}.
+source     select * from "nextprot"."isoform_interactions"
+
+mappingId  map059
+target     isoform:{isoform} :interactionInfo annotation:{annotation}.
+source     select * from "nextprot"."isoform_interaction_infos"
+
+mappingId  map060
+target     isoform:{isoform} :intramembraneRegion annotation:{annotation}.
+source     select * from "nextprot"."isoform_intramembrane_regions"
+
+mappingId  map061
+target     isoform:{isoform} :keyword annotation:{annotation}.
+source     select * from "nextprot"."isoform_keywords"
+
+mappingId  map062
+target     isoform:{isoform} :lipidationSite annotation:{annotation}.
+source     select * from "nextprot"."isoform_lipidation_sites"
+
+mappingId  map063
+target     isoform:{isoform} :mapping annotation:{annotation}.
+source     select * from "nextprot"."isoform_mappings"
+
+mappingId  map064
+target     isoform:{isoform} :matureProtein annotation:{annotation}.
+source     select * from "nextprot"."isoform_mature_proteins"
+
+mappingId  map065
+target     isoform:{isoform} :medical annotation:{annotation}.
+source     select * from "nextprot"."isoform_medicals"
+
+mappingId  map066
+target     isoform:{isoform} :metalBindingSite annotation:{annotation}.
+source     select * from "nextprot"."isoform_metal_binding_sites"
+
+mappingId  map067
+target     isoform:{isoform} :miscellaneous annotation:{annotation}.
+source     select * from "nextprot"."isoform_miscellaneouss"
+
+mappingId  map068
+target     isoform:{isoform} :miscellaneousRegion annotation:{annotation}.
+source     select * from "nextprot"."isoform_miscellaneous_regions"
+
+mappingId  map069
+target     isoform:{isoform} :miscellaneousSite annotation:{annotation}.
+source     select * from "nextprot"."isoform_miscellaneous_sites"
+
+mappingId  map070
+target     isoform:{isoform} :mitochondrialTransitPeptide annotation:{annotation}.
+source     select * from "nextprot"."isoform_mitochondrial_transit_peptides"
+
+mappingId  map071
+target     isoform:{isoform} :modifiedResidue annotation:{annotation}.
+source     select * from "nextprot"."isoform_modified_residues"
+
+mappingId  map072
+target     isoform:{isoform} :mutagenesis annotation:{annotation}.
+source     select * from "nextprot"."isoform_mutagenesiss"
+
+mappingId  map073
+target     isoform:{isoform} :nonTerminalResidue annotation:{annotation}.
+source     select * from "nextprot"."isoform_non_terminal_residues"
+
+mappingId  map074
+target     isoform:{isoform} :nucleotidePhosphateBindingRegion annotation:{annotation}.
+source     select * from "nextprot"."isoform_nucleotide_phosphate_binding_regions"
+
+mappingId  map075
+target     isoform:{isoform} :pathway annotation:{annotation}.
+source     select * from "nextprot"."isoform_pathways"
+
+mappingId  map076
+target     isoform:{isoform} :pdbMapping annotation:{annotation}.
+source     select * from "nextprot"."isoform_pdb_mappings"
+
+mappingId  map077
+target     isoform:{isoform} :peptideMapping annotation:{annotation}.
+source     select * from "nextprot"."isoform_peptide_mappings"
+
+mappingId  map078
+target     isoform:{isoform} :positionalAnnotation annotation:{annotation}.
+source     select * from "nextprot"."isoform_positional_annotations"
+
+mappingId  map079
+target     isoform:{isoform} :processingProduct annotation:{annotation}.
+source     select * from "nextprot"."isoform_processing_products"
+
+mappingId  map080
+target     isoform:{isoform} :propeptide annotation:{annotation}.
+source     select * from "nextprot"."isoform_propeptides"
+
+mappingId  map081
+target     isoform:{isoform} :ptm annotation:{annotation}.
+source     select * from "nextprot"."isoform_ptms"
+
+mappingId  map082
+target     isoform:{isoform} :ptmInfo annotation:{annotation}.
+source     select * from "nextprot"."isoform_ptm_infos"
+
+mappingId  map083
+target     isoform:{isoform} :region annotation:{annotation}.
+source     select * from "nextprot"."isoform_regions"
+
+mappingId  map084
+target     isoform:{isoform} :repeat annotation:{annotation}.
+source     select * from "nextprot"."isoform_repeats"
+
+mappingId  map085
+target     isoform:{isoform} :secondaryStructure annotation:{annotation}.
+source     select * from "nextprot"."isoform_secondary_structures"
+
+mappingId  map086
+target     isoform:{isoform} :selenocysteine annotation:{annotation}.
+source     select * from "nextprot"."isoform_selenocysteines"
+
+mappingId  map087
+target     isoform:{isoform} :sequenceCaution annotation:{annotation}.
+source     select * from "nextprot"."isoform_sequence_cautions"
+
+mappingId  map088
+target     isoform:{isoform} :sequenceConflict annotation:{annotation}.
+source     select * from "nextprot"."isoform_sequence_conflicts"
+
+mappingId  map089
+target     isoform:{isoform} :shortSequenceMotif annotation:{annotation}.
+source     select * from "nextprot"."isoform_short_sequence_motifs"
+
+mappingId  map090
+target     isoform:{isoform} :site annotation:{annotation}.
+source     select * from "nextprot"."isoform_sites"
+
+mappingId  map091
+target     isoform:{isoform} :smallMoleculeInteraction annotation:{annotation}.
+source     select * from "nextprot"."isoform_small_molecule_interactions"
+
+mappingId  map092
+target     isoform:{isoform} :srmPeptideMapping annotation:{annotation}.
+source     select * from "nextprot"."isoform_srm_peptide_mappings"
+
+mappingId  map093
+target     isoform:{isoform} :subcellularLocation annotation:{annotation}.
+source     select * from "nextprot"."isoform_subcellular_locations"
+
+mappingId  map094
+target     isoform:{isoform} :subcellularLocationNote annotation:{annotation}.
+source     select * from "nextprot"."isoform_subcellular_location_notes"
+
+mappingId  map095
+target     isoform:{isoform} :topologicalDomain annotation:{annotation}.
+source     select * from "nextprot"."isoform_topological_domains"
+
+mappingId  map096
+target     isoform:{isoform} :topology annotation:{annotation}.
+source     select * from "nextprot"."isoform_topologies"
+
+mappingId  map097
+target     isoform:{isoform} :transmembraneRegion annotation:{annotation}.
+source     select * from "nextprot"."isoform_transmembrane_regions"
+
+mappingId  map098
+target     isoform:{isoform} :transportActivity annotation:{annotation}.
+source     select * from "nextprot"."isoform_transport_activities"
+
+mappingId  map099
+target     isoform:{isoform} :turn annotation:{annotation}.
+source     select * from "nextprot"."isoform_turns"
+
+mappingId  map100
+target     isoform:{isoform} :undetectedExpression annotation:{annotation}.
+source     select * from "nextprot"."isoform_undetected_expressions"
+
+mappingId  map101
+target     isoform:{isoform} :uniprotKeyword annotation:{annotation}.
+source     select * from "nextprot"."isoform_uniprot_keywords"
+
+mappingId  map102
+target     isoform:{isoform} :variant annotation:{annotation}.
+source     select * from "nextprot"."isoform_variants"
+
+mappingId  map103
+target     isoform:{isoform} :variantInfo annotation:{annotation}.
+source     select * from "nextprot"."isoform_variant_infos"
+
+mappingId  map104
+target     isoform:{isoform} :zincFingerRegion annotation:{annotation}.
+source     select * from "nextprot"."isoform_zinc_finger_regions"
+
+mappingId  map105
+target     isoform:{isoform} :interactionMapping annotation:{annotation}.
+source     select * from "nextprot"."isoform_interaction_mappings"
+
+mappingId  map106
+target     annotation:{id} rdf:type :{type}.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map107
+target     annotation:{id} :quality :{quality}.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map108
+target     annotation:{id} :term cv:{term}.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map109
+target     annotation:{id} :impactedObject annotation:{impacted_object}.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map110
+target     annotation:{id} :entryAnnotationId {entry_annotation}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map111
+target     annotation:{id} :variation {variation}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map112
+target     annotation:{id} :original {original}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map113
+target     annotation:{id} :hgvs {hgvs}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map114
+target     annotation:{id} :method {method}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map115
+target     annotation:{id} :peptideUnicity {peptide_unicity}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map116
+target     annotation:{id} :peptideName {peptide_name}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map117
+target     annotation:{id} :antibodyUnicity {antibody_unicity}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map118
+target     annotation:{id} :antibodyName {antibody_name}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map119
+target     annotation:{id} :start {position_start}^^xsd:integer.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map120
+target     annotation:{id} :end {position_end}^^xsd:integer.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map121
+target     annotation:{id} :resolution {resolution}^^xsd:double.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map122
+target     annotation:{id} :proteotypic {proteotypic}^^xsd:boolean.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map123
+target     annotation:{id} :selfInteraction {self_interaction}^^xsd:boolean.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map124
+target     annotation:{annotation} :evidence evidence:{evidence}.
+source     select * from "nextprot"."annotation_evidences"
+
+mappingId  map125
+target     annotation:{annotation} :negativeEvidence evidence:{evidence}.
+source     select * from "nextprot"."annotation_negative_evidences"
+
+mappingId  map126
+target     annotation:{annotation} :disease cv:{disease}.
+source     select * from "nextprot"."annotation_diseases"
+
+mappingId  map127
+target     annotation:{annotation} rdfs:comment {comment}^^xsd:string.
+source     select * from "nextprot"."annotation_comments"
+
+mappingId  map128
+target     annotation:{annotation} :isoformSpecificity :{specificity}.
+source     select * from "nextprot"."annotation_isoform_specificities"
+
+mappingId  map129
+target     annotation:{annotation} :interactant entry:{interactant}.
+source     select * from "nextprot"."annotation_entry_interactants"
+
+mappingId  map130
+target     annotation:{annotation} :interactant isoform:{interactant}.
+source     select * from "nextprot"."annotation_isoform_interactants"
+
+mappingId  map131
+target     annotation:{annotation} :peptideSet {peptide_set}^^xsd:string.
+source     select * from "nextprot"."annotation_peptide_sets"
+
+mappingId  map132
+target     evidence:{id} rdf:type :Evidence.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map133
+target     evidence:{id} :negative {negative}^^xsd:boolean.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map134
+target     evidence:{id} :numberOfExperiments {number_of_experiments}^^xsd:integer.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map135
+target     evidence:{id} :evidenceCode cv:{evidence_code}.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map136
+target     evidence:{id} :experimentalContext context:{experimental_context}.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map137
+target     evidence:{id} :assignedBy source:{assigned_by}.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map138
+target     evidence:{id} :expressionLevel :{expression_level}.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map139
+target     evidence:{id} :fromXref db:{from_xref}.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map140
+target     evidence:{id} :integrationLevel :{integration_level}.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map141
+target     evidence:{id} :quality :{quality}.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map142
+target     evidence:{id} :isoformSpecificity {isoform_specificity}^^xsd:string.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map143
+target     evidence:{id} :antibodiesAcc {antibodies_acc}^^xsd:string.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map144
+target     evidence:{id} :assocType {assoc_type}^^xsd:string.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map145
+target     evidence:{id} :cellLine {cell_line}^^xsd:string.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map146
+target     evidence:{id} :goQualifier {go_qualifier}^^xsd:string.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map147
+target     evidence:{id} :intensity {intensity}^^xsd:string.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map148
+target     evidence:{id} :negativeIsoformSpecificity {negative_isoform_specificity}^^xsd:string.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map149
+target     evidence:{id} :interactionDetectionMethod cv:{interaction_detection_method}.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map150
+target     evidence:{id} :expressionScore {expression_score}^^xsd:double.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map151
+target     evidence:{id} :homozygote-count {homozygote_count}^^xsd:integer.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map152
+target     evidence:{id} :allele-number {allele_number}^^xsd:integer.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map153
+target     evidence:{id} :allele-count {allele_count}^^xsd:integer.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map154
+target     evidence:{id} :allele-frequency {allele_frequency}^^xsd:double.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map155
+target     evidence:{evidence} :reference publication:{publication}.
+source     select * from "nextprot"."evidence_publication_references"
+
+mappingId  map156
+target     entry:{id} rdf:type :Entry.
+source     select * from "nextprot"."entry_bases"
+
+mappingId  map157
+target     entry:{id} :isoformCount {isoform_count}^^xsd:integer.
+source     select * from "nextprot"."entry_bases"
+
+mappingId  map158
+target     entry:{id} :existence :{existence}.
+source     select * from "nextprot"."entry_bases"
+
+mappingId  map159
+target     entry:{id} skos:exactMatch uniprot:{uniprot}.
+source     select * from "nextprot"."entry_bases"
+
+mappingId  map160
+target     entry:{id} :swissprotPage unipage:{uniprot}.
+source     select * from "nextprot"."entry_bases"
+
+mappingId  map161
+target     entry:{entry} :classifiedWith cv:{classifier}.
+source     select * from "nextprot"."entry_classifiers"
+
+mappingId  map162
+target     entry:{entry} :gene gene:{gene}.
+source     select * from "nextprot"."entry_genes"
+
+mappingId  map163
+target     entry:{entry} :isoform isoform:{id}.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map164
+target     entry:{entry} :reference publication:{publication}.
+source     select * from "nextprot"."entry_publication_references"
+
+mappingId  map165
+target     entry:{entry} :recommendedName _:bn1_{name}.
+source     select * from "nextprot"."entry_recommended_names"
+
+mappingId  map166
+target     entry:{entry} :alternativeName _:bn1_{name}.
+source     select * from "nextprot"."entry_alternative_names"
+
+mappingId  map167
+target     entry:{entry} :additionalNames _:bn2_{name_list}.
+source     select * from "nextprot"."entry_additional_names"
+
+mappingId  map168
+target     entry:{entry} :cleavedRegionNames _:bn2_{name_list}.
+source     select * from "nextprot"."entry_cleaved_region_names"
+
+mappingId  map169
+target     entry:{entry} :fonctionalRegionNames _:bn2_{name_list}.
+source     select * from "nextprot"."entry_functional_region_names"
+
+mappingId  map170
+target     proteoform:{id} rdf:type :Proteoform.
+source     select * from "nextprot"."proteoform_bases"
+
+mappingId  map171
+target     proteoform:{id} rdfs:label {label}^^xsd:string.
+source     select * from "nextprot"."proteoform_bases"
+
+mappingId  map172
+target     proteoform:{proteoform} :generalAnnotation annotation:{annotation}.
+source     select * from "nextprot"."proteoform_general_annotations"
+
+mappingId  map173
+target     proteoform:{proteoform} :genericPhenotype annotation:{annotation}.
+source     select * from "nextprot"."proteoform_generic_phenotypes"
+
+mappingId  map174
+target     proteoform:{proteoform} :modification annotation:{annotation}.
+source     select * from "nextprot"."proteoform_modifications"
+
+mappingId  map175
+target     proteoform:{proteoform} :phenotypicVariation annotation:{annotation}.
+source     select * from "nextprot"."proteoform_phenotypic_variations"
+
+mappingId  map176
+target     proteoform:{proteoform} :positionalAnnotation annotation:{annotation}.
+source     select * from "nextprot"."proteoform_positional_annotations"
+
+mappingId  map177
+target     proteoform:{proteoform} :diseaseRelatedVariant annotation:{annotation}.
+source     select * from "nextprot"."proteoform_disease_related_variants"
+
+mappingId  map178
+target     gene:{id} rdf:type :Gene.
+source     select * from "nextprot"."gene_bases"
+
+mappingId  map179
+target     gene:{id} :begin {gene_begin}^^xsd:integer.
+source     select * from "nextprot"."gene_bases"
+
+mappingId  map180
+target     gene:{id} :end {gene_end}^^xsd:integer.
+source     select * from "nextprot"."gene_bases"
+
+mappingId  map181
+target     gene:{id} :length {length}^^xsd:integer.
+source     select * from "nextprot"."gene_bases"
+
+mappingId  map182
+target     gene:{id} :band {band}^^xsd:string.
+source     select * from "nextprot"."gene_bases"
+
+mappingId  map183
+target     gene:{id} :chromosome {chromosome}^^xsd:string.
+source     select * from "nextprot"."gene_bases"
+
+mappingId  map184
+target     gene:{id} :strand {strand}^^xsd:string.
+source     select * from "nextprot"."gene_bases"
+
+mappingId  map185
+target     gene:{gene} :bestGeneMapping entry:{mapping}.
+source     select * from "nextprot"."gene_best_mappings"
+
+mappingId  map186
+target     gene:{gene} :name {name}^^xsd:string.
+source     select * from "nextprot"."gene_names"
+
+mappingId  map187
+target     _:bn3_{id} rdf:type :ProteinSequence.
+source     select * from "nextprot"."protein_sequence_bases"
+
+mappingId  map188
+target     _:bn3_{id} :length {length}^^xsd:integer.
+source     select * from "nextprot"."protein_sequence_bases"
+
+mappingId  map189
+target     _:bn3_{id} :molecularWeight {molecular_weight}^^xsd:double.
+source     select * from "nextprot"."protein_sequence_bases"
+
+mappingId  map190
+target     _:bn3_{id} :isoelectricPoint {isoelectric_point}^^xsd:double.
+source     select * from "nextprot"."protein_sequence_bases"
+
+mappingId  map191
+target     _:bn3_{id} :chain {chain}^^xsd:string.
+source     select * from "nextprot"."protein_sequence_bases"
+
+mappingId  map192
+target     isoform:{isoform} :sequence _:bn3_{id}.
+source     select * from "nextprot"."protein_sequence_bases"
+
+mappingId  map193
+target     _:bn4_{id} rdf:type :FamilyInfo.
+source     select * from "nextprot"."family_info_bases"
+
+mappingId  map194
+target     _:bn4_{id} :term cv:{term}.
+source     select * from "nextprot"."family_info_bases"
+
+mappingId  map195
+target     _:bn4_{id} :region {region}^^xsd:string.
+source     select * from "nextprot"."family_info_bases"
+
+mappingId  map196
+target     _:bn4_{id} :description {description}^^xsd:string.
+source     select * from "nextprot"."family_info_bases"
+
+mappingId  map197
+target     entry:{entry} :family _:bn4_{id}.
+source     select * from "nextprot"."family_info_bases"
+
+mappingId  map198
+target     _:bn5_{id} rdf:type :History.
+source     select * from "nextprot"."history_bases"
+
+mappingId  map199
+target     _:bn5_{id} :integrated {integrated}^^xsd:string.
+source     select * from "nextprot"."history_bases"
+
+mappingId  map200
+target     _:bn5_{id} :updated {updated}^^xsd:string.
+source     select * from "nextprot"."history_bases"
+
+mappingId  map201
+target     _:bn5_{id} :lastSequenceUpdate {last_sequence_update}^^xsd:string.
+source     select * from "nextprot"."history_bases"
+
+mappingId  map202
+target     _:bn5_{id} :version {version}^^xsd:string.
+source     select * from "nextprot"."history_bases"
+
+mappingId  map203
+target     _:bn5_{id} :sequenceVersion {sequence_version}^^xsd:string.
+source     select * from "nextprot"."history_bases"
+
+mappingId  map204
+target     _:bn5_{id} :name {name}^^xsd:string.
+source     select * from "nextprot"."history_bases"
+
+mappingId  map205
+target     entry:{entry} :history _:bn5_{id}.
+source     select * from "nextprot"."history_bases"
+
+mappingId  map206
+target     _:bn6_{id} rdf:type :Identifier.
+source     select * from "nextprot"."identifier_bases"
+
+mappingId  map207
+target     _:bn6_{id} :provenance db:{provenance}.
+source     select * from "nextprot"."identifier_bases"
+
+mappingId  map208
+target     _:bn6_{id} :accession {accession}^^xsd:string.
+source     select * from "nextprot"."identifier_bases"
+
+mappingId  map209
+target     entry:{entry} :reference _:bn6_{id}.
+source     select * from "nextprot"."identifier_bases"
+
+mappingId  map210
+target     _:bn7_{id} rdf:type :Xref.
+source     select * from "nextprot"."entry_xref_bases"
+
+mappingId  map211
+target     _:bn7_{id} :provenance db:{provenance}.
+source     select * from "nextprot"."entry_xref_bases"
+
+mappingId  map212
+target     _:bn7_{id} :accession {accession}^^xsd:string.
+source     select * from "nextprot"."entry_xref_bases"
+
+mappingId  map213
+target     entry:{entry} :reference _:bn7_{id}.
+source     select * from "nextprot"."entry_xref_bases"
+
+mappingId  map214
+target     _:bn8_{id} rdf:type :Xref.
+source     select * from "nextprot"."evidence_xref_bases"
+
+mappingId  map215
+target     _:bn8_{id} :provenance db:{provenance}.
+source     select * from "nextprot"."evidence_xref_bases"
+
+mappingId  map216
+target     _:bn8_{id} :accession {accession}^^xsd:string.
+source     select * from "nextprot"."evidence_xref_bases"
+
+mappingId  map217
+target     evidence:{evidence} :reference _:bn8_{id}.
+source     select * from "nextprot"."evidence_xref_bases"
+
+mappingId  map218
+target     _:bn9_{id} rdf:type :Xref.
+source     select * from "nextprot"."chebi_xref_bases"
+
+mappingId  map219
+target     _:bn9_{id} :provenance db:ChEBI.
+source     select * from "nextprot"."chebi_xref_bases"
+
+mappingId  map220
+target     _:bn9_{id} skos:exactMatch chebi:CHEBI_{chebi}.
+source     select * from "nextprot"."chebi_xref_bases"
+
+mappingId  map221
+target     _:bn9_{id} :accession {accession}^^xsd:string.
+source     select * from "nextprot"."chebi_xref_bases"
+
+mappingId  map222
+target     _:bn9_{id} rdfs:label {label}^^xsd:string.
+source     select * from "nextprot"."chebi_xref_bases"
+
+mappingId  map223
+target     annotation:{annotation} :interactant _:bn9_{id}.
+source     select * from "nextprot"."chebi_xref_bases"
+
+mappingId  map224
+target     _:bn10_{id} rdf:type :Xref.
+source     select * from "nextprot"."drugbank_xref_bases"
+
+mappingId  map225
+target     _:bn10_{id} :provenance db:DrugBank.
+source     select * from "nextprot"."drugbank_xref_bases"
+
+mappingId  map226
+target     _:bn10_{id} skos:exactMatch drugbankdrugs:DB{drugbank}.
+source     select * from "nextprot"."drugbank_xref_bases"
+
+mappingId  map227
+target     _:bn10_{id} :accession {accession}^^xsd:string.
+source     select * from "nextprot"."drugbank_xref_bases"
+
+mappingId  map228
+target     _:bn10_{id} rdfs:label {label}^^xsd:string.
+source     select * from "nextprot"."drugbank_xref_bases"
+
+mappingId  map229
+target     annotation:{annotation} :interactant _:bn10_{id}.
+source     select * from "nextprot"."drugbank_xref_bases"
+
+mappingId  map230
+target     _:bn11_{id} rdf:type :Xref.
+source     select * from "nextprot"."uniprot_xref_bases"
+
+mappingId  map231
+target     _:bn11_{id} :provenance db:UniProtKB.
+source     select * from "nextprot"."uniprot_xref_bases"
+
+mappingId  map232
+target     _:bn11_{id} skos:exactMatch uniprot:{uniprot}.
+source     select * from "nextprot"."uniprot_xref_bases"
+
+mappingId  map233
+target     _:bn11_{id} :accession {accession}^^xsd:string.
+source     select * from "nextprot"."uniprot_xref_bases"
+
+mappingId  map234
+target     _:bn11_{id} rdfs:label {label}^^xsd:string.
+source     select * from "nextprot"."uniprot_xref_bases"
+
+mappingId  map235
+target     annotation:{annotation} :interactant _:bn11_{id}.
+source     select * from "nextprot"."uniprot_xref_bases"
+
+mappingId  map236
+target     _:bn1_{id} rdf:type :Name.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map237
+target     _:bn1_{id} :fullName {full_name}^^xsd:string.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map238
+target     _:bn1_{id} :shortName {short_name}^^xsd:string.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map239
+target     _:bn1_{id} :fullRegionName {full_region_name}^^xsd:string.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map240
+target     _:bn1_{id} :shortRegionName {short_region_name}^^xsd:string.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map241
+target     _:bn1_{id} :ecEnzymeName {ec_enzyme_name}^^xsd:string.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map242
+target     _:bn1_{id} :cdAntigenCdAntigen {cd_antigen}^^xsd:string.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map243
+target     _:bn1_{id} :innInternationalNonproprietaryNames {inn_name}^^xsd:string.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map244
+target     _:bn1_{id} :allergenAllergen {allergen}^^xsd:string.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map245
+target     _:bn2_{id} rdf:type :NameList.
+source     select * from "nextprot"."name_list_bases"
+
+mappingId  map246
+target     _:bn2_{list} :recommendedName _:bn1_{name}.
+source     select * from "nextprot"."name_list_recommended_names"
+
+mappingId  map247
+target     _:bn2_{list} :alternativeName _:bn1_{name}.
+source     select * from "nextprot"."name_list_alternative_names"
+
+mappingId  map248
+target     context:{id} rdf:type :ExperimentalContext.
+source     select * from "nextprot"."context_bases"
+
+mappingId  map249
+target     context:{id} :metadata publication:{metadata}.
+source     select * from "nextprot"."context_bases"
+
+mappingId  map250
+target     context:{id} :detectionMethod cv:{method}.
+source     select * from "nextprot"."context_bases"
+
+mappingId  map251
+target     context:{id} :disease cv:{disease}.
+source     select * from "nextprot"."context_bases"
+
+mappingId  map252
+target     context:{id} :tissue cv:{tissue}.
+source     select * from "nextprot"."context_bases"
+
+mappingId  map253
+target     context:{id} :cellLine cv:{line}.
+source     select * from "nextprot"."context_bases"
+
+mappingId  map254
+target     context:{id} :developmentalStage cv:{stage}.
+source     select * from "nextprot"."context_bases"
+
+mappingId  map255
+target     isoform:{isoform} :lowExpression annotation:{annotation}.
+source     select * from "nextprot"."isoform_low_expressions"
+
+mappingId  map256
+target     isoform:{isoform} :mediumExpression annotation:{annotation}.
+source     select * from "nextprot"."isoform_medium_expressions"
+
+mappingId  map257
+target     isoform:{isoform} :highExpression annotation:{annotation}.
+source     select * from "nextprot"."isoform_high_expressions"
+
+mappingId  map258
+target     publication:{id} rdf:type :Publication.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map259
+target     publication:{id} rdf:type :LargeScalePublication.
+source     select * from "nextprot"."publication_bases" where large = 'true'::boolean
+
+mappingId  map260
+target     publication:{id} :title {title}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map261
+target     publication:{id} :journal {journal}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map262
+target     publication:{id} :year {year}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map263
+target     publication:{id} :volume {volume}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map264
+target     publication:{id} :issue {issue}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map265
+target     publication:{id} :pubType {pub_type}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map266
+target     publication:{id} :firstPage {first_page}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map267
+target     publication:{id} :lastPage {last_page}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map268
+target     publication:{id} :publisher {publisher}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map269
+target     publication:{id} :city {city}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map270
+target     publication:{publication} :from {link}^^xsd:string.
+source     select * from "nextprot"."publication_links"
+
+mappingId  map271
+target     _:bn12_{id} rdf:type :Person.
+source     select * from "nextprot"."publication_authors" where person = 'true'::boolean
+
+mappingId  map272
+target     _:bn12_{id} rdf:type :Consortium.
+source     select * from "nextprot"."publication_authors" where person = 'false'::boolean
+
+mappingId  map273
+target     _:bn12_{id} :name {name}^^xsd:string.
+source     select * from "nextprot"."publication_authors"
+
+mappingId  map274
+target     _:bn12_{id} :suffix {suffix}^^xsd:string.
+source     select * from "nextprot"."publication_authors"
+
+mappingId  map275
+target     publication:{publication} :author _:bn12_{id}.
+source     select * from "nextprot"."publication_authors"
+
+mappingId  map276
+target     _:bn13_{id} rdf:type :Person.
+source     select * from "nextprot"."publication_editors"
+
+mappingId  map277
+target     _:bn13_{id} :name {name}^^xsd:string.
+source     select * from "nextprot"."publication_editors"
+
+mappingId  map278
+target     publication:{publication} :editor _:bn13_{id}.
+source     select * from "nextprot"."publication_editors"
+
+mappingId  map279
+target     source:{id} rdf:type :Source.
+source     select * from "nextprot"."source_bases"
+
+mappingId  map280
+target     source:{id} rdfs:comment {comment}^^xsd:string.
+source     select * from "nextprot"."source_bases"
+
+mappingId  map281
+target     source:{id} rdfs:seeAlso {reference}^^xsd:string.
+source     select * from "nextprot"."source_bases"
+
+mappingId  map282
+target     db:{id} rdf:type :Database.
+source     select * from "nextprot"."database_bases"
+
+mappingId  map283
+target     db:{id} rdfs:seeAlso {reference}^^xsd:string.
+source     select * from "nextprot"."database_bases"
+
+mappingId  map284
+target     db:{db} rdfs:comment {comment}^^xsd:string.
+source     select * from "nextprot"."database_comments"
+
+mappingId  map285
+target     db:{db} :category {category}^^xsd:string.
+source     select * from "nextprot"."database_categories"
+
+mappingId  map286
+target     :{id} rdf:type :{type}.
+source     select * from "nextprot"."schema_bases"
+
+mappingId  map287
+target     :{id} rdfs:label {label}^^xsd:string.
+source     select * from "nextprot"."schema_bases"
+
+mappingId  map288
+target     :{id} rdfs:comment {comment}^^xsd:string.
+source     select * from "nextprot"."schema_bases"
+
+mappingId  map289
+target     :{id} rdfs:seeAlso {reference}^^xsd:string.
+source     select * from "nextprot"."schema_bases"
+
+mappingId  map290
+target     :{entity} rdf:type owl:Class.
+source     select * from "nextprot"."schema_classes"
+
+mappingId  map291
+target     :{entity} rdfs:subClassOf owl:Thing.
+source     select * from "nextprot"."schema_thing_subclasses"
+
+mappingId  map292
+target     :{entity} :notIn :{notin}.
+source     select * from "nextprot"."schema_restrictions"
+
+mappingId  map293
+target     :{entity} :related cv:{related}.
+source     select * from "nextprot"."schema_related_terms"
+
+mappingId  map294
+target     :{entity} rdfs:subClassOf :{parent}.
+source     select * from "nextprot"."schema_parent_classes"
+
+mappingId  map295
+target     <http://np.org/rdf> rdf:type owl:Ontology.
+source     select 1
+
+mappingId  map296
+target     <http://np.org/rdf> owl:imports <http://www.w3.org/2002/07/owl#>.
+source     select 1
+
+mappingId  map297
+target     <http://np.org/rdf> owl:imports <http://www.w3.org/2004/02/skos/core>.
+source     select 1
+
+mappingId  map298
+target     <http://np.org/rdf> owl:versionInfo "Initial release"^^xsd:string.
+source     select 1
+
+mappingId  map299
+target     :Version :ttlGenerationDate "2021-12-12"^^xsd:date.
+source     select 1
+
+mappingId  map300
+target     :Version :databaseRelease "2021-11-19"^^xsd:string.
+source     select 1
+
+mappingId  map301
+target     :Version :apiRelease "2.31.0 (build 6462#4abd80b [branch develop])"^^xsd:string.
+source     select 1
+
+mappingId  map302
+target     :Version :genomeAssembly: "GRCh38"^^xsd:string.
+source     select 1
+
+mappingId  map303
+target     :assignedBy rdf:type rdf:Property.
+source     select 1
+
+mappingId  map304
+target     :assignedBy rdf:type owl:FunctionalProperty.
+source     select 1
+
+mappingId  map305
+target     :assignedBy rdfs:domain :Evidence.
+source     select 1
+
+mappingId  map306
+target     :assignedBy rdfs:range :Source.
+source     select 1
+
+mappingId  map307
+target     :childOf rdf:type rdf:Property.
+source     select 1
+
+mappingId  map308
+target     :childOf rdf:type owl:TransitiveProperty.
+source     select 1
+
+mappingId  map309
+target     :childOf rdfs:domain :Term.
+source     select 1
+
+mappingId  map310
+target     :childOf rdfs:range :Term.
+source     select 1
+
+mappingId  map311
+target     :related rdf:type rdf:Property.
+source     select 1
+
+mappingId  map312
+target     :related rdfs:domain :Term.
+source     select 1
+
+mappingId  map313
+target     :related rdfs:range :Term.
+source     select 1
+
+mappingId  map314
+target     :Entry owl:equivalentClass up:Protein.
+source     select 1
+
+mappingId  map315
+target     :Term owl:equivalentClass up:Concept.
+source     select 1
+
+mappingId  map316
+target     :NotDetected owl:sameAs :Negative.
+source     select 1
+
+mappingId  map317
+target     cv:ECO_0000045 rdfs:subClassOf :IHC.
+source     select 1
+
+mappingId  map318
+target     cv:ECO_0000104 rdfs:subClassOf :EST.
+source     select 1
+
+mappingId  map319
+target     cv:ECO_0000220 rdfs:subClassOf :Microarray.
+source     select 1
+
+mappingId  map320
+target     cv:ECO_0000045 rdfs:subClassOf cv:ECO_0000045.
+source     select 1
+
+mappingId  map321
+target     cv:ECO_0000220 rdfs:subClassOf cv:ECO_0000220.
+source     select 1
+
+mappingId  map322
+target     cv:ECO_0000104 rdfs:subClassOf cv:ECO_0000104.
+source     select 1
+
+mappingId  map323
+target     owl:Thing rdfs:subClassOf owl:Thing.
+source     select 1
+
+mappingId  map324
+target     :Evidence_at_protein_level :level "1"^^xsd:integer.
+source     select 1
+
+mappingId  map325
+target     :Evidence_at_transcript_level :level "2"^^xsd:integer.
+source     select 1
+
+mappingId  map326
+target     :Inferred_from_homology :level "3"^^xsd:integer.
+source     select 1
+
+mappingId  map327
+target     :Predicted :level "4"^^xsd:integer.
+source     select 1
+
+mappingId  map328
+target     :Uncertain :level "5"^^xsd:integer.
+source     select 1
+
+mappingId  map329
+target     cv:{id} rdf:type :{type}.
+source     select * from "nextprot"."terminology_bases"
+
+mappingId  map330
+target     cv:{term} :childOf cv:{parent}.
+source     select * from "nextprot"."terminology_parents"
+
+mappingId  map331
+target     cv:{term} :related cv:{related}.
+source     select * from "nextprot"."terminology_related_terms"
+
+mappingId  map332
+target     cv:{term} rdfs:label {label}^^xsd:string.
+source     select * from "nextprot"."terminology_labels"
+
+]]

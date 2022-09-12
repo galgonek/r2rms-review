@@ -1,0 +1,29 @@
+diff --git a/libsrc/Wi/sparql2sql.c b/libsrc/Wi/sparql2sql.c
+index ae2c099b2..5887af196 100644
+--- a/libsrc/Wi/sparql2sql.c
++++ b/libsrc/Wi/sparql2sql.c
+@@ -7962,9 +7962,11 @@ spar_propagate_limit_as_option (sparp_t *sparp, SPART *tree, SPART *outer_limit)
+       }
+     case SPAR_TRIPLE:
+       {
++        /*
+         if (NULL == outer_limit)
+           return;
+         sparp_set_option (sparp, &(tree->_.triple.options), LIMIT_L, outer_limit, SPARP_SET_OPTION_REPLACING);
++        */
+         return;
+       }
+     }
+diff --git a/libsrc/Wi/sqlintrp.c b/libsrc/Wi/sqlintrp.c
+index 03944e525..f276f5c68 100644
+--- a/libsrc/Wi/sqlintrp.c
++++ b/libsrc/Wi/sqlintrp.c
+@@ -2739,6 +2739,8 @@ code_vec_run_no_catch (code_vec_t code_vec, it_cursor_t *itc, int flag)
+ 	  if (flag == CV_THIS_SET_ONLY && qi->qi_query->qr_proc_vectored)
+ 	    {
+ 	      data_col_t *dc = QST_BOX (data_col_t *, qst, ins->_.artm.result->ssl_index);
++              if (dc->dc_any_null)
++                dc_ensure_null_bits (dc);
+ 	      DC_CLR_NULL (dc, qi->qi_set);
+ 	      break;
+ 	    }

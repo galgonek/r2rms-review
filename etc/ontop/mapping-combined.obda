@@ -1,0 +1,1360 @@
+[PrefixDeclaration]
+: http://nextprot.org/rdf#
+evidence: http://nextprot.org/rdf/evidence/
+chebi: http://purl.obolibrary.org/obo/
+owl: http://www.w3.org/2002/07/owl#
+xsd: http://www.w3.org/2001/XMLSchema#
+skos: http://www.w3.org/2004/02/skos/core#
+rdfs: http://www.w3.org/2000/01/rdf-schema#
+source: http://nextprot.org/rdf/source/
+unipage: http://www.uniprot.org/uniprot/
+publication: http://nextprot.org/rdf/publication/
+context: http://nextprot.org/rdf/context/
+up: http://purl.uniprot.org/core/
+annotation: http://nextprot.org/rdf/annotation/
+proteoform: http://nextprot.org/rdf/proteoform/
+identifier: http://nextprot.org/rdf/identifier/
+xref: http://nextprot.org/rdf/xref/
+gene: http://nextprot.org/rdf/gene/
+drugbankdrugs: http://wifo5-04.informatik.uni-mannheim.de/drugbank/resource/drugs/
+entry: http://nextprot.org/rdf/entry/
+cv: http://nextprot.org/rdf/terminology/
+rdf: http://www.w3.org/1999/02/22-rdf-syntax-ns#
+interaction: http://nextprot.org/rdf/interaction/
+uniprot: http://purl.uniprot.org/uniprot/
+isoform: http://nextprot.org/rdf/isoform/
+db: http://nextprot.org/rdf/db/
+dc: http://purl.org/dc/elements/1.1/
+
+
+[MappingDeclaration] @collection [[
+
+mappingId  map001
+target     isoform:{iri} rdf:type :Isoform.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map002
+target     isoform:{iri} :canonicalIsoform {canonical_isoform}^^xsd:boolean.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map003
+target     isoform:{iri} :swissprotDisplayed {swissprot_displayed}^^xsd:boolean.
+source     select * from "nextprot"."isoform_bases"
+
+mappingId  map004
+target     isoform:{subject} :absorptionMax annotation:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."annotation_bases" as tab1 where tab0."absorption_max" = tab1."id"
+
+mappingId  map005
+target     isoform:{subject} :absorptionNote annotation:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."annotation_bases" as tab1 where tab0."absorption_note" = tab1."id"
+
+mappingId  map006
+target     isoform:{subject} :allergen annotation:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."annotation_bases" as tab1 where tab0."allergen" = tab1."id"
+
+mappingId  map007
+target     isoform:{subject} :initiatorMethionine annotation:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."annotation_bases" as tab1 where tab0."initiator_methionine" = tab1."id"
+
+mappingId  map008
+target     isoform:{subject} :kineticKM annotation:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."annotation_bases" as tab1 where tab0."kinetic_k_m" = tab1."id"
+
+mappingId  map009
+target     isoform:{subject} :kineticNote annotation:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."annotation_bases" as tab1 where tab0."kinetic_note" = tab1."id"
+
+mappingId  map010
+target     isoform:{subject} :kineticVmax annotation:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."annotation_bases" as tab1 where tab0."kinetic_vmax" = tab1."id"
+
+mappingId  map011
+target     isoform:{subject} :nonConsecutiveResidue annotation:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."annotation_bases" as tab1 where tab0."non_consecutive_residue" = tab1."id"
+
+mappingId  map012
+target     isoform:{subject} :peroxisomeTransitPeptide annotation:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."annotation_bases" as tab1 where tab0."peroxisome_transit_peptide" = tab1."id"
+
+mappingId  map013
+target     isoform:{subject} :pharmaceutical annotation:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."annotation_bases" as tab1 where tab0."pharmaceutical" = tab1."id"
+
+mappingId  map014
+target     isoform:{subject} :phDependence annotation:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."annotation_bases" as tab1 where tab0."ph_dependence" = tab1."id"
+
+mappingId  map015
+target     isoform:{subject} :redoxPotential annotation:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."annotation_bases" as tab1 where tab0."redox_potential" = tab1."id"
+
+mappingId  map016
+target     isoform:{subject} :signalPeptide annotation:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."annotation_bases" as tab1 where tab0."signal_peptide" = tab1."id"
+
+mappingId  map017
+target     isoform:{subject} :temperatureDependence annotation:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."annotation_bases" as tab1 where tab0."temperature_dependence" = tab1."id"
+
+mappingId  map018
+target     isoform:{subject} :proteoform proteoform:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_proteoforms" as tab1, "nextprot"."proteoform_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."proteoform" = tab2."id"
+
+mappingId  map019
+target     isoform:{subject} :activeSite annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_active_sites" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map020
+target     isoform:{subject} :activityRegulation annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_activity_regulations" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map021
+target     isoform:{subject} :antibodyMapping annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_antibody_mappings" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map022
+target     isoform:{subject} :betaStrand annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_beta_strands" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map023
+target     isoform:{subject} :binaryInteraction annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_binary_interactions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map024
+target     isoform:{subject} :bindingSite annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_binding_sites" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map025
+target     isoform:{subject} :biophysicochemicalProperty annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_biophysicochemical_properties" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map026
+target     isoform:{subject} :calciumBindingRegion annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_calcium_binding_regions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map027
+target     isoform:{subject} :catalyticActivity annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_catalytic_activities" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map028
+target     isoform:{subject} :caution annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_cautions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map029
+target     isoform:{subject} :cellularComponent annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_cellular_components" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map030
+target     isoform:{subject} :cleavageSite annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_cleavage_sites" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map031
+target     isoform:{subject} :cofactor annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_cofactors" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map032
+target     isoform:{subject} :cofactorInfo annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_cofactor_infos" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map033
+target     isoform:{subject} :coiledCoilRegion annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_coiled_coil_regions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map034
+target     isoform:{subject} :compositionallyBiasedRegion annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_compositionally_biased_regions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map035
+target     isoform:{subject} :crossLink annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_cross_links" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map036
+target     isoform:{subject} :detectedExpression annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_detected_expressions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map037
+target     isoform:{subject} :developmentalStageInfo annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_developmental_stage_infos" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map038
+target     isoform:{subject} :disease annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_diseases" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map039
+target     isoform:{subject} :disulfideBond annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_disulfide_bonds" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map040
+target     isoform:{subject} :dnaBindingRegion annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_dna_binding_regions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map041
+target     isoform:{subject} :domain annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_domains" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map042
+target     isoform:{subject} :domainInfo annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_domain_infos" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map043
+target     isoform:{subject} :electrophysiologicalParameter annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_electrophysiological_parameters" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map044
+target     isoform:{subject} :enzymeClassification annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_enzyme_classifications" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map045
+target     isoform:{subject} :expression annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_expressions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map046
+target     isoform:{subject} :expressionInfo annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_expression_infos" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map047
+target     isoform:{subject} :expressionProfile annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_expression_profiles" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map048
+target     isoform:{subject} :function annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_functions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map049
+target     isoform:{subject} :functionInfo annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_function_infos" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map050
+target     isoform:{subject} :generalAnnotation annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_general_annotations" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map051
+target     isoform:{subject} :glycosylationSite annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_glycosylation_sites" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map052
+target     isoform:{subject} :goBiologicalProcess annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_go_biological_processs" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map053
+target     isoform:{subject} :goCellularComponent annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_go_cellular_components" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map054
+target     isoform:{subject} :goMolecularFunction annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_go_molecular_functions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map055
+target     isoform:{subject} :helix annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_helixs" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map056
+target     isoform:{subject} :induction annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_inductions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map057
+target     isoform:{subject} :interactingRegion annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_interacting_regions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map058
+target     isoform:{subject} :interaction annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_interactions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map059
+target     isoform:{subject} :interactionInfo annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_interaction_infos" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map060
+target     isoform:{subject} :intramembraneRegion annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_intramembrane_regions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map061
+target     isoform:{subject} :keyword annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_keywords" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map062
+target     isoform:{subject} :lipidationSite annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_lipidation_sites" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map063
+target     isoform:{subject} :mapping annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_mappings" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map064
+target     isoform:{subject} :matureProtein annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_mature_proteins" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map065
+target     isoform:{subject} :medical annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_medicals" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map066
+target     isoform:{subject} :metalBindingSite annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_metal_binding_sites" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map067
+target     isoform:{subject} :miscellaneous annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_miscellaneouss" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map068
+target     isoform:{subject} :miscellaneousRegion annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_miscellaneous_regions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map069
+target     isoform:{subject} :miscellaneousSite annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_miscellaneous_sites" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map070
+target     isoform:{subject} :mitochondrialTransitPeptide annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_mitochondrial_transit_peptides" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map071
+target     isoform:{subject} :modifiedResidue annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_modified_residues" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map072
+target     isoform:{subject} :mutagenesis annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_mutagenesiss" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map073
+target     isoform:{subject} :nonTerminalResidue annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_non_terminal_residues" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map074
+target     isoform:{subject} :nucleotidePhosphateBindingRegion annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_nucleotide_phosphate_binding_regions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map075
+target     isoform:{subject} :pathway annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_pathways" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map076
+target     isoform:{subject} :pdbMapping annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_pdb_mappings" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map077
+target     isoform:{subject} :peptideMapping annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_peptide_mappings" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map078
+target     isoform:{subject} :positionalAnnotation annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_positional_annotations" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map079
+target     isoform:{subject} :processingProduct annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_processing_products" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map080
+target     isoform:{subject} :propeptide annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_propeptides" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map081
+target     isoform:{subject} :ptm annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_ptms" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map082
+target     isoform:{subject} :ptmInfo annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_ptm_infos" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map083
+target     isoform:{subject} :region annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_regions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map084
+target     isoform:{subject} :repeat annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_repeats" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map085
+target     isoform:{subject} :secondaryStructure annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_secondary_structures" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map086
+target     isoform:{subject} :selenocysteine annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_selenocysteines" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map087
+target     isoform:{subject} :sequenceCaution annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_sequence_cautions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map088
+target     isoform:{subject} :sequenceConflict annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_sequence_conflicts" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map089
+target     isoform:{subject} :shortSequenceMotif annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_short_sequence_motifs" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map090
+target     isoform:{subject} :site annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_sites" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map091
+target     isoform:{subject} :smallMoleculeInteraction annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_small_molecule_interactions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map092
+target     isoform:{subject} :srmPeptideMapping annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_srm_peptide_mappings" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map093
+target     isoform:{subject} :subcellularLocation annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_subcellular_locations" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map094
+target     isoform:{subject} :subcellularLocationNote annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_subcellular_location_notes" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map095
+target     isoform:{subject} :topologicalDomain annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_topological_domains" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map096
+target     isoform:{subject} :topology annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_topologies" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map097
+target     isoform:{subject} :transmembraneRegion annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_transmembrane_regions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map098
+target     isoform:{subject} :transportActivity annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_transport_activities" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map099
+target     isoform:{subject} :turn annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_turns" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map100
+target     isoform:{subject} :undetectedExpression annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_undetected_expressions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map101
+target     isoform:{subject} :uniprotKeyword annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_uniprot_keywords" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map102
+target     isoform:{subject} :variant annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_variants" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map103
+target     isoform:{subject} :variantInfo annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_variant_infos" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map104
+target     isoform:{subject} :zincFingerRegion annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_zinc_finger_regions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map105
+target     isoform:{subject} :interactionMapping annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_interaction_mappings" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map106
+target     annotation:{subject} rdf:type :{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."annotation_bases" as tab0, "nextprot"."schema_bases" as tab1 where tab0."type" = tab1."id"
+
+mappingId  map107
+target     annotation:{subject} :quality :{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."annotation_bases" as tab0, "nextprot"."schema_bases" as tab1 where tab0."quality" = tab1."id"
+
+mappingId  map108
+target     annotation:{subject} :term cv:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."annotation_bases" as tab0, "nextprot"."terminology_bases" as tab1 where tab0."term" = tab1."id"
+
+mappingId  map109
+target     annotation:{subject} :impactedObject annotation:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."annotation_bases" as tab0, "nextprot"."annotation_bases" as tab1 where tab0."impacted_object" = tab1."id"
+
+mappingId  map110
+target     annotation:{iri} :entryAnnotationId {entry_annotation}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map111
+target     annotation:{iri} :variation {variation}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map112
+target     annotation:{iri} :original {original}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map113
+target     annotation:{iri} :hgvs {hgvs}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map114
+target     annotation:{iri} :method {method}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map115
+target     annotation:{iri} :peptideUnicity {peptide_unicity}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map116
+target     annotation:{iri} :peptideName {peptide_name}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map117
+target     annotation:{iri} :antibodyUnicity {antibody_unicity}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map118
+target     annotation:{iri} :antibodyName {antibody_name}^^xsd:string.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map119
+target     annotation:{iri} :start {position_start}^^xsd:integer.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map120
+target     annotation:{iri} :end {position_end}^^xsd:integer.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map121
+target     annotation:{iri} :resolution {resolution}^^xsd:double.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map122
+target     annotation:{iri} :proteotypic {proteotypic}^^xsd:boolean.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map123
+target     annotation:{iri} :selfInteraction {self_interaction}^^xsd:boolean.
+source     select * from "nextprot"."annotation_bases"
+
+mappingId  map124
+target     annotation:{subject} :evidence evidence:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."annotation_bases" as tab0, "nextprot"."annotation_evidences" as tab1, "nextprot"."evidence_bases" as tab2 where tab0."id" = tab1."annotation" and tab1."evidence" = tab2."id"
+
+mappingId  map125
+target     annotation:{subject} :negativeEvidence evidence:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."annotation_bases" as tab0, "nextprot"."annotation_negative_evidences" as tab1, "nextprot"."evidence_bases" as tab2 where tab0."id" = tab1."annotation" and tab1."evidence" = tab2."id"
+
+mappingId  map126
+target     annotation:{subject} :disease cv:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."annotation_bases" as tab0, "nextprot"."annotation_diseases" as tab1, "nextprot"."terminology_bases" as tab2 where tab0."id" = tab1."annotation" and tab1."disease" = tab2."id"
+
+mappingId  map127
+target     annotation:{subject} rdfs:comment {object}^^xsd:string.
+source     select tab0."iri" as subject, tab1."comment" as object from "nextprot"."annotation_bases" as tab0, "nextprot"."annotation_comments" as tab1 where tab0."id" = tab1."annotation"
+
+mappingId  map128
+target     annotation:{subject} :isoformSpecificity :{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."annotation_bases" as tab0, "nextprot"."annotation_isoform_specificities" as tab1, "nextprot"."schema_bases" as tab2 where tab0."id" = tab1."annotation" and tab1."specificity" = tab2."id"
+
+mappingId  map129
+target     annotation:{subject} :interactant entry:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."annotation_bases" as tab0, "nextprot"."annotation_entry_interactants" as tab1, "nextprot"."entry_bases" as tab2 where tab0."id" = tab1."annotation" and tab1."interactant" = tab2."id"
+
+mappingId  map130
+target     annotation:{subject} :interactant isoform:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."annotation_bases" as tab0, "nextprot"."annotation_isoform_interactants" as tab1, "nextprot"."isoform_bases" as tab2 where tab0."id" = tab1."annotation" and tab1."interactant" = tab2."id"
+
+mappingId  map131
+target     annotation:{subject} :peptideSet {object}^^xsd:string.
+source     select tab0."iri" as subject, tab1."peptide_set" as object from "nextprot"."annotation_bases" as tab0, "nextprot"."annotation_peptide_sets" as tab1 where tab0."id" = tab1."annotation"
+
+mappingId  map132
+target     evidence:{iri} rdf:type :Evidence.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map133
+target     evidence:{iri} :negative {negative}^^xsd:boolean.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map134
+target     evidence:{iri} :numberOfExperiments {number_of_experiments}^^xsd:integer.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map135
+target     evidence:{subject} :evidenceCode cv:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."evidence_bases" as tab0, "nextprot"."terminology_bases" as tab1 where tab0."evidence_code" = tab1."id"
+
+mappingId  map136
+target     evidence:{iri} :experimentalContext context:{experimental_context}.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map137
+target     evidence:{subject} :assignedBy source:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."evidence_bases" as tab0, "nextprot"."source_bases" as tab1 where tab0."assigned_by" = tab1."id"
+
+mappingId  map138
+target     evidence:{subject} :expressionLevel :{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."evidence_bases" as tab0, "nextprot"."schema_bases" as tab1 where tab0."expression_level" = tab1."id"
+
+mappingId  map139
+target     evidence:{subject} :fromXref db:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."evidence_bases" as tab0, "nextprot"."database_bases" as tab1 where tab0."from_xref" = tab1."id"
+
+mappingId  map140
+target     evidence:{subject} :integrationLevel :{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."evidence_bases" as tab0, "nextprot"."schema_bases" as tab1 where tab0."integration_level" = tab1."id"
+
+mappingId  map141
+target     evidence:{subject} :quality :{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."evidence_bases" as tab0, "nextprot"."schema_bases" as tab1 where tab0."quality" = tab1."id"
+
+mappingId  map142
+target     evidence:{iri} :isoformSpecificity {isoform_specificity}^^xsd:string.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map143
+target     evidence:{iri} :antibodiesAcc {antibodies_acc}^^xsd:string.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map144
+target     evidence:{iri} :assocType {assoc_type}^^xsd:string.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map145
+target     evidence:{iri} :cellLine {cell_line}^^xsd:string.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map146
+target     evidence:{iri} :goQualifier {go_qualifier}^^xsd:string.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map147
+target     evidence:{iri} :intensity {intensity}^^xsd:string.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map148
+target     evidence:{iri} :negativeIsoformSpecificity {negative_isoform_specificity}^^xsd:string.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map149
+target     evidence:{subject} :interactionDetectionMethod cv:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."evidence_bases" as tab0, "nextprot"."terminology_bases" as tab1 where tab0."interaction_detection_method" = tab1."id"
+
+mappingId  map150
+target     evidence:{iri} :expressionScore {expression_score}^^xsd:double.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map151
+target     evidence:{iri} :homozygote-count {homozygote_count}^^xsd:integer.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map152
+target     evidence:{iri} :allele-number {allele_number}^^xsd:integer.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map153
+target     evidence:{iri} :allele-count {allele_count}^^xsd:integer.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map154
+target     evidence:{iri} :allele-frequency {allele_frequency}^^xsd:double.
+source     select * from "nextprot"."evidence_bases"
+
+mappingId  map155
+target     evidence:{subject} :reference publication:{object}.
+source     select tab0."iri" as subject, tab1."publication" as object from "nextprot"."evidence_bases" as tab0, "nextprot"."evidence_publication_references" as tab1 where tab0."id" = tab1."evidence"
+
+mappingId  map156
+target     entry:{iri} rdf:type :Entry.
+source     select * from "nextprot"."entry_bases"
+
+mappingId  map157
+target     entry:{iri} :isoformCount {isoform_count}^^xsd:integer.
+source     select * from "nextprot"."entry_bases"
+
+mappingId  map158
+target     entry:{subject} :existence :{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."entry_bases" as tab0, "nextprot"."schema_bases" as tab1 where tab0."existence" = tab1."id"
+
+mappingId  map159
+target     entry:{iri} skos:exactMatch uniprot:{uniprot}.
+source     select * from "nextprot"."entry_bases"
+
+mappingId  map160
+target     entry:{iri} :swissprotPage unipage:{uniprot}.
+source     select * from "nextprot"."entry_bases"
+
+mappingId  map161
+target     entry:{subject} :classifiedWith cv:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."entry_bases" as tab0, "nextprot"."entry_classifiers" as tab1, "nextprot"."terminology_bases" as tab2 where tab0."id" = tab1."entry" and tab1."classifier" = tab2."id"
+
+mappingId  map162
+target     entry:{subject} :gene gene:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."entry_bases" as tab0, "nextprot"."entry_genes" as tab1, "nextprot"."gene_bases" as tab2 where tab0."id" = tab1."entry" and tab1."gene" = tab2."id"
+
+mappingId  map163
+target     entry:{subject} :isoform isoform:{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."entry_bases" as tab0, "nextprot"."isoform_bases" as tab1 where tab0."id" = tab1."entry"
+
+mappingId  map164
+target     entry:{subject} :reference publication:{object}.
+source     select tab0."iri" as subject, tab1."publication" as object from "nextprot"."entry_bases" as tab0, "nextprot"."entry_publication_references" as tab1 where tab0."id" = tab1."entry"
+
+mappingId  map165
+target     entry:{subject} :recommendedName _:bn1_{object}.
+source     select tab0."iri" as subject, tab1."name" as object from "nextprot"."entry_bases" as tab0, "nextprot"."entry_recommended_names" as tab1 where tab0."id" = tab1."entry"
+
+mappingId  map166
+target     entry:{subject} :alternativeName _:bn1_{object}.
+source     select tab0."iri" as subject, tab1."name" as object from "nextprot"."entry_bases" as tab0, "nextprot"."entry_alternative_names" as tab1 where tab0."id" = tab1."entry"
+
+mappingId  map167
+target     entry:{subject} :additionalNames _:bn2_{object}.
+source     select tab0."iri" as subject, tab1."name_list" as object from "nextprot"."entry_bases" as tab0, "nextprot"."entry_additional_names" as tab1 where tab0."id" = tab1."entry"
+
+mappingId  map168
+target     entry:{subject} :cleavedRegionNames _:bn2_{object}.
+source     select tab0."iri" as subject, tab1."name_list" as object from "nextprot"."entry_bases" as tab0, "nextprot"."entry_cleaved_region_names" as tab1 where tab0."id" = tab1."entry"
+
+mappingId  map169
+target     entry:{subject} :fonctionalRegionNames _:bn2_{object}.
+source     select tab0."iri" as subject, tab1."name_list" as object from "nextprot"."entry_bases" as tab0, "nextprot"."entry_functional_region_names" as tab1 where tab0."id" = tab1."entry"
+
+mappingId  map170
+target     proteoform:{iri} rdf:type :Proteoform.
+source     select * from "nextprot"."proteoform_bases"
+
+mappingId  map171
+target     proteoform:{iri} rdfs:label {label}^^xsd:string.
+source     select * from "nextprot"."proteoform_bases"
+
+mappingId  map172
+target     proteoform:{subject} :generalAnnotation annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."proteoform_bases" as tab0, "nextprot"."proteoform_general_annotations" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."proteoform" and tab1."annotation" = tab2."id"
+
+mappingId  map173
+target     proteoform:{subject} :genericPhenotype annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."proteoform_bases" as tab0, "nextprot"."proteoform_generic_phenotypes" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."proteoform" and tab1."annotation" = tab2."id"
+
+mappingId  map174
+target     proteoform:{subject} :modification annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."proteoform_bases" as tab0, "nextprot"."proteoform_modifications" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."proteoform" and tab1."annotation" = tab2."id"
+
+mappingId  map175
+target     proteoform:{subject} :phenotypicVariation annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."proteoform_bases" as tab0, "nextprot"."proteoform_phenotypic_variations" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."proteoform" and tab1."annotation" = tab2."id"
+
+mappingId  map176
+target     proteoform:{subject} :positionalAnnotation annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."proteoform_bases" as tab0, "nextprot"."proteoform_positional_annotations" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."proteoform" and tab1."annotation" = tab2."id"
+
+mappingId  map177
+target     proteoform:{subject} :diseaseRelatedVariant annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."proteoform_bases" as tab0, "nextprot"."proteoform_disease_related_variants" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."proteoform" and tab1."annotation" = tab2."id"
+
+mappingId  map178
+target     gene:{iri} rdf:type :Gene.
+source     select * from "nextprot"."gene_bases"
+
+mappingId  map179
+target     gene:{iri} :begin {gene_begin}^^xsd:integer.
+source     select * from "nextprot"."gene_bases"
+
+mappingId  map180
+target     gene:{iri} :end {gene_end}^^xsd:integer.
+source     select * from "nextprot"."gene_bases"
+
+mappingId  map181
+target     gene:{iri} :length {length}^^xsd:integer.
+source     select * from "nextprot"."gene_bases"
+
+mappingId  map182
+target     gene:{iri} :band {band}^^xsd:string.
+source     select * from "nextprot"."gene_bases"
+
+mappingId  map183
+target     gene:{iri} :chromosome {chromosome}^^xsd:string.
+source     select * from "nextprot"."gene_bases"
+
+mappingId  map184
+target     gene:{iri} :strand {strand}^^xsd:string.
+source     select * from "nextprot"."gene_bases"
+
+mappingId  map185
+target     gene:{subject} :bestGeneMapping entry:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."gene_bases" as tab0, "nextprot"."gene_best_mappings" as tab1, "nextprot"."entry_bases" as tab2 where tab0."id" = tab1."gene" and tab1."mapping" = tab2."id"
+
+mappingId  map186
+target     gene:{subject} :name {object}^^xsd:string.
+source     select tab0."iri" as subject, tab1."name" as object from "nextprot"."gene_bases" as tab0, "nextprot"."gene_names" as tab1 where tab0."id" = tab1."gene"
+
+mappingId  map187
+target     _:bn3_{id} rdf:type :ProteinSequence.
+source     select * from "nextprot"."protein_sequence_bases"
+
+mappingId  map188
+target     _:bn3_{id} :length {length}^^xsd:integer.
+source     select * from "nextprot"."protein_sequence_bases"
+
+mappingId  map189
+target     _:bn3_{id} :molecularWeight {molecular_weight}^^xsd:double.
+source     select * from "nextprot"."protein_sequence_bases"
+
+mappingId  map190
+target     _:bn3_{id} :isoelectricPoint {isoelectric_point}^^xsd:double.
+source     select * from "nextprot"."protein_sequence_bases"
+
+mappingId  map191
+target     _:bn3_{id} :chain {chain}^^xsd:string.
+source     select * from "nextprot"."protein_sequence_bases"
+
+mappingId  map192
+target     isoform:{subject} :sequence _:bn3_{object}.
+source     select tab0."iri" as subject, tab1."id" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."protein_sequence_bases" as tab1 where tab0."id" = tab1."isoform"
+
+mappingId  map193
+target     _:bn4_{id} rdf:type :FamilyInfo.
+source     select * from "nextprot"."family_info_bases"
+
+mappingId  map194
+target     _:bn4_{subject} :term cv:{object}.
+source     select tab0."id" as subject, tab1."iri" as object from "nextprot"."family_info_bases" as tab0, "nextprot"."terminology_bases" as tab1 where tab0."term" = tab1."id"
+
+mappingId  map195
+target     _:bn4_{id} :region {region}^^xsd:string.
+source     select * from "nextprot"."family_info_bases"
+
+mappingId  map196
+target     _:bn4_{id} :description {description}^^xsd:string.
+source     select * from "nextprot"."family_info_bases"
+
+mappingId  map197
+target     entry:{subject} :family _:bn4_{object}.
+source     select tab0."iri" as subject, tab1."id" as object from "nextprot"."entry_bases" as tab0, "nextprot"."family_info_bases" as tab1 where tab0."id" = tab1."entry"
+
+mappingId  map198
+target     _:bn5_{id} rdf:type :History.
+source     select * from "nextprot"."history_bases"
+
+mappingId  map199
+target     _:bn5_{id} :integrated {integrated}^^xsd:string.
+source     select * from "nextprot"."history_bases"
+
+mappingId  map200
+target     _:bn5_{id} :updated {updated}^^xsd:string.
+source     select * from "nextprot"."history_bases"
+
+mappingId  map201
+target     _:bn5_{id} :lastSequenceUpdate {last_sequence_update}^^xsd:string.
+source     select * from "nextprot"."history_bases"
+
+mappingId  map202
+target     _:bn5_{id} :version {version}^^xsd:string.
+source     select * from "nextprot"."history_bases"
+
+mappingId  map203
+target     _:bn5_{id} :sequenceVersion {sequence_version}^^xsd:string.
+source     select * from "nextprot"."history_bases"
+
+mappingId  map204
+target     _:bn5_{id} :name {name}^^xsd:string.
+source     select * from "nextprot"."history_bases"
+
+mappingId  map205
+target     entry:{subject} :history _:bn5_{object}.
+source     select tab0."iri" as subject, tab1."id" as object from "nextprot"."entry_bases" as tab0, "nextprot"."history_bases" as tab1 where tab0."id" = tab1."entry"
+
+mappingId  map206
+target     _:bn6_{id} rdf:type :Identifier.
+source     select * from "nextprot"."identifier_bases"
+
+mappingId  map207
+target     _:bn6_{subject} :provenance db:{object}.
+source     select tab0."id" as subject, tab1."iri" as object from "nextprot"."identifier_bases" as tab0, "nextprot"."database_bases" as tab1 where tab0."provenance" = tab1."id"
+
+mappingId  map208
+target     _:bn6_{id} :accession {accession}^^xsd:string.
+source     select * from "nextprot"."identifier_bases"
+
+mappingId  map209
+target     entry:{subject} :reference _:bn6_{object}.
+source     select tab0."iri" as subject, tab1."id" as object from "nextprot"."entry_bases" as tab0, "nextprot"."identifier_bases" as tab1 where tab0."id" = tab1."entry"
+
+mappingId  map210
+target     _:bn7_{id} rdf:type :Xref.
+source     select * from "nextprot"."entry_xref_bases"
+
+mappingId  map211
+target     _:bn7_{subject} :provenance db:{object}.
+source     select tab0."id" as subject, tab1."iri" as object from "nextprot"."entry_xref_bases" as tab0, "nextprot"."database_bases" as tab1 where tab0."provenance" = tab1."id"
+
+mappingId  map212
+target     _:bn7_{id} :accession {accession}^^xsd:string.
+source     select * from "nextprot"."entry_xref_bases"
+
+mappingId  map213
+target     entry:{subject} :reference _:bn7_{object}.
+source     select tab0."iri" as subject, tab1."id" as object from "nextprot"."entry_bases" as tab0, "nextprot"."entry_xref_bases" as tab1 where tab0."id" = tab1."entry"
+
+mappingId  map214
+target     _:bn8_{id} rdf:type :Xref.
+source     select * from "nextprot"."evidence_xref_bases"
+
+mappingId  map215
+target     _:bn8_{subject} :provenance db:{object}.
+source     select tab0."id" as subject, tab1."iri" as object from "nextprot"."evidence_xref_bases" as tab0, "nextprot"."database_bases" as tab1 where tab0."provenance" = tab1."id"
+
+mappingId  map216
+target     _:bn8_{id} :accession {accession}^^xsd:string.
+source     select * from "nextprot"."evidence_xref_bases"
+
+mappingId  map217
+target     evidence:{subject} :reference _:bn8_{object}.
+source     select tab0."iri" as subject, tab1."id" as object from "nextprot"."evidence_bases" as tab0, "nextprot"."evidence_xref_bases" as tab1 where tab0."id" = tab1."evidence"
+
+mappingId  map218
+target     _:bn9_{id} rdf:type :Xref.
+source     select * from "nextprot"."chebi_xref_bases"
+
+mappingId  map219
+target     _:bn9_{id} :provenance db:ChEBI.
+source     select * from "nextprot"."chebi_xref_bases"
+
+mappingId  map220
+target     _:bn9_{id} skos:exactMatch chebi:CHEBI_{chebi}.
+source     select * from "nextprot"."chebi_xref_bases"
+
+mappingId  map221
+target     _:bn9_{id} :accession {accession}^^xsd:string.
+source     select * from "nextprot"."chebi_xref_bases"
+
+mappingId  map222
+target     _:bn9_{id} rdfs:label {label}^^xsd:string.
+source     select * from "nextprot"."chebi_xref_bases"
+
+mappingId  map223
+target     annotation:{subject} :interactant _:bn9_{object}.
+source     select tab0."iri" as subject, tab1."id" as object from "nextprot"."annotation_bases" as tab0, "nextprot"."chebi_xref_bases" as tab1 where tab0."id" = tab1."annotation"
+
+mappingId  map224
+target     _:bn10_{id} rdf:type :Xref.
+source     select * from "nextprot"."drugbank_xref_bases"
+
+mappingId  map225
+target     _:bn10_{id} :provenance db:DrugBank.
+source     select * from "nextprot"."drugbank_xref_bases"
+
+mappingId  map226
+target     _:bn10_{id} skos:exactMatch drugbankdrugs:DB{drugbank}.
+source     select * from "nextprot"."drugbank_xref_bases"
+
+mappingId  map227
+target     _:bn10_{id} :accession {accession}^^xsd:string.
+source     select * from "nextprot"."drugbank_xref_bases"
+
+mappingId  map228
+target     _:bn10_{id} rdfs:label {label}^^xsd:string.
+source     select * from "nextprot"."drugbank_xref_bases"
+
+mappingId  map229
+target     annotation:{subject} :interactant _:bn10_{object}.
+source     select tab0."iri" as subject, tab1."id" as object from "nextprot"."annotation_bases" as tab0, "nextprot"."drugbank_xref_bases" as tab1 where tab0."id" = tab1."annotation"
+
+mappingId  map230
+target     _:bn11_{id} rdf:type :Xref.
+source     select * from "nextprot"."uniprot_xref_bases"
+
+mappingId  map231
+target     _:bn11_{id} :provenance db:UniProtKB.
+source     select * from "nextprot"."uniprot_xref_bases"
+
+mappingId  map232
+target     _:bn11_{id} skos:exactMatch uniprot:{uniprot}.
+source     select * from "nextprot"."uniprot_xref_bases"
+
+mappingId  map233
+target     _:bn11_{id} :accession {accession}^^xsd:string.
+source     select * from "nextprot"."uniprot_xref_bases"
+
+mappingId  map234
+target     _:bn11_{id} rdfs:label {label}^^xsd:string.
+source     select * from "nextprot"."uniprot_xref_bases"
+
+mappingId  map235
+target     annotation:{subject} :interactant _:bn11_{object}.
+source     select tab0."iri" as subject, tab1."id" as object from "nextprot"."annotation_bases" as tab0, "nextprot"."uniprot_xref_bases" as tab1 where tab0."id" = tab1."annotation"
+
+mappingId  map236
+target     _:bn1_{id} rdf:type :Name.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map237
+target     _:bn1_{id} :fullName {full_name}^^xsd:string.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map238
+target     _:bn1_{id} :shortName {short_name}^^xsd:string.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map239
+target     _:bn1_{id} :fullRegionName {full_region_name}^^xsd:string.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map240
+target     _:bn1_{id} :shortRegionName {short_region_name}^^xsd:string.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map241
+target     _:bn1_{id} :ecEnzymeName {ec_enzyme_name}^^xsd:string.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map242
+target     _:bn1_{id} :cdAntigenCdAntigen {cd_antigen}^^xsd:string.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map243
+target     _:bn1_{id} :innInternationalNonproprietaryNames {inn_name}^^xsd:string.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map244
+target     _:bn1_{id} :allergenAllergen {allergen}^^xsd:string.
+source     select * from "nextprot"."name_bases"
+
+mappingId  map245
+target     _:bn2_{id} rdf:type :NameList.
+source     select * from "nextprot"."name_list_bases"
+
+mappingId  map246
+target     _:bn2_{list} :recommendedName _:bn1_{name}.
+source     select * from "nextprot"."name_list_recommended_names"
+
+mappingId  map247
+target     _:bn2_{list} :alternativeName _:bn1_{name}.
+source     select * from "nextprot"."name_list_alternative_names"
+
+mappingId  map248
+target     context:{id} rdf:type :ExperimentalContext.
+source     select * from "nextprot"."context_bases"
+
+mappingId  map249
+target     context:{id} :metadata publication:{metadata}.
+source     select * from "nextprot"."context_bases"
+
+mappingId  map250
+target     context:{subject} :detectionMethod cv:{object}.
+source     select tab0."id" as subject, tab1."iri" as object from "nextprot"."context_bases" as tab0, "nextprot"."terminology_bases" as tab1 where tab0."method" = tab1."id"
+
+mappingId  map251
+target     context:{subject} :disease cv:{object}.
+source     select tab0."id" as subject, tab1."iri" as object from "nextprot"."context_bases" as tab0, "nextprot"."terminology_bases" as tab1 where tab0."disease" = tab1."id"
+
+mappingId  map252
+target     context:{subject} :tissue cv:{object}.
+source     select tab0."id" as subject, tab1."iri" as object from "nextprot"."context_bases" as tab0, "nextprot"."terminology_bases" as tab1 where tab0."tissue" = tab1."id"
+
+mappingId  map253
+target     context:{subject} :cellLine cv:{object}.
+source     select tab0."id" as subject, tab1."iri" as object from "nextprot"."context_bases" as tab0, "nextprot"."terminology_bases" as tab1 where tab0."line" = tab1."id"
+
+mappingId  map254
+target     context:{subject} :developmentalStage cv:{object}.
+source     select tab0."id" as subject, tab1."iri" as object from "nextprot"."context_bases" as tab0, "nextprot"."terminology_bases" as tab1 where tab0."stage" = tab1."id"
+
+mappingId  map255
+target     isoform:{subject} :lowExpression annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_low_expressions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map256
+target     isoform:{subject} :mediumExpression annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_medium_expressions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map257
+target     isoform:{subject} :highExpression annotation:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."isoform_bases" as tab0, "nextprot"."isoform_high_expressions" as tab1, "nextprot"."annotation_bases" as tab2 where tab0."id" = tab1."isoform" and tab1."annotation" = tab2."id"
+
+mappingId  map258
+target     publication:{id} rdf:type :Publication.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map259
+target     publication:{id} rdf:type :LargeScalePublication.
+source     select * from "nextprot"."publication_bases" where large = 'true'::boolean
+
+mappingId  map260
+target     publication:{id} :title {title}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map261
+target     publication:{id} :journal {journal}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map262
+target     publication:{id} :year {year}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map263
+target     publication:{id} :volume {volume}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map264
+target     publication:{id} :issue {issue}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map265
+target     publication:{id} :pubType {pub_type}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map266
+target     publication:{id} :firstPage {first_page}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map267
+target     publication:{id} :lastPage {last_page}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map268
+target     publication:{id} :publisher {publisher}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map269
+target     publication:{id} :city {city}^^xsd:string.
+source     select * from "nextprot"."publication_bases"
+
+mappingId  map270
+target     publication:{publication} :from {link}^^xsd:string.
+source     select * from "nextprot"."publication_links"
+
+mappingId  map271
+target     _:bn12_{id} rdf:type :Person.
+source     select * from "nextprot"."publication_authors" where person = 'true'::boolean
+
+mappingId  map272
+target     _:bn12_{id} rdf:type :Consortium.
+source     select * from "nextprot"."publication_authors" where person = 'false'::boolean
+
+mappingId  map273
+target     _:bn12_{id} :name {name}^^xsd:string.
+source     select * from "nextprot"."publication_authors"
+
+mappingId  map274
+target     _:bn12_{id} :suffix {suffix}^^xsd:string.
+source     select * from "nextprot"."publication_authors"
+
+mappingId  map275
+target     publication:{publication} :author _:bn12_{id}.
+source     select * from "nextprot"."publication_authors"
+
+mappingId  map276
+target     _:bn13_{id} rdf:type :Person.
+source     select * from "nextprot"."publication_editors"
+
+mappingId  map277
+target     _:bn13_{id} :name {name}^^xsd:string.
+source     select * from "nextprot"."publication_editors"
+
+mappingId  map278
+target     publication:{publication} :editor _:bn13_{id}.
+source     select * from "nextprot"."publication_editors"
+
+mappingId  map279
+target     source:{iri} rdf:type :Source.
+source     select * from "nextprot"."source_bases"
+
+mappingId  map280
+target     source:{iri} rdfs:comment {comment}^^xsd:string.
+source     select * from "nextprot"."source_bases"
+
+mappingId  map281
+target     source:{iri} rdfs:seeAlso {reference}^^xsd:string.
+source     select * from "nextprot"."source_bases"
+
+mappingId  map282
+target     db:{iri} rdf:type :Database.
+source     select * from "nextprot"."database_bases"
+
+mappingId  map283
+target     db:{iri} rdfs:seeAlso {reference}^^xsd:string.
+source     select * from "nextprot"."database_bases"
+
+mappingId  map284
+target     db:{subject} rdfs:comment {object}^^xsd:string.
+source     select tab0."iri" as subject, tab1."comment" as object from "nextprot"."database_bases" as tab0, "nextprot"."database_comments" as tab1 where tab0."id" = tab1."db"
+
+mappingId  map285
+target     db:{subject} :category {object}^^xsd:string.
+source     select tab0."iri" as subject, tab1."category" as object from "nextprot"."database_bases" as tab0, "nextprot"."database_categories" as tab1 where tab0."id" = tab1."db"
+
+mappingId  map286
+target     :{subject} rdf:type :{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."schema_bases" as tab0, "nextprot"."schema_bases" as tab1 where tab0."type" = tab1."id"
+
+mappingId  map287
+target     :{iri} rdfs:label {label}^^xsd:string.
+source     select * from "nextprot"."schema_bases"
+
+mappingId  map288
+target     :{iri} rdfs:comment {comment}^^xsd:string.
+source     select * from "nextprot"."schema_bases"
+
+mappingId  map289
+target     :{iri} rdfs:seeAlso {reference}^^xsd:string.
+source     select * from "nextprot"."schema_bases"
+
+mappingId  map290
+target     :{subject} rdf:type owl:Class.
+source     select tab0."iri" as subject from "nextprot"."schema_bases" as tab0, "nextprot"."schema_classes" as tab1 where tab0."id" = tab1."entity"
+
+mappingId  map291
+target     :{subject} rdfs:subClassOf owl:Thing.
+source     select tab0."iri" as subject from "nextprot"."schema_bases" as tab0, "nextprot"."schema_thing_subclasses" as tab1 where tab0."id" = tab1."entity"
+
+mappingId  map292
+target     :{subject} :notIn :{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."schema_bases" as tab0, "nextprot"."schema_restrictions" as tab1, "nextprot"."schema_bases" as tab2 where tab0."id" = tab1."entity" and tab1."notin" = tab2."id"
+
+mappingId  map293
+target     :{subject} :related cv:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."schema_bases" as tab0, "nextprot"."schema_related_terms" as tab1, "nextprot"."schema_bases" as tab2 where tab0."id" = tab1."entity" and tab1."related" = tab2."id"
+
+mappingId  map294
+target     :{subject} rdfs:subClassOf :{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."schema_bases" as tab0, "nextprot"."schema_parent_classes" as tab1, "nextprot"."schema_bases" as tab2 where tab0."id" = tab1."entity" and tab1."parent" = tab2."id"
+
+mappingId  map295
+target     <http://np.org/rdf> rdf:type owl:Ontology.
+source     select 1
+
+mappingId  map296
+target     <http://np.org/rdf> owl:imports <http://www.w3.org/2002/07/owl#>.
+source     select 1
+
+mappingId  map297
+target     <http://np.org/rdf> owl:imports <http://www.w3.org/2004/02/skos/core>.
+source     select 1
+
+mappingId  map298
+target     <http://np.org/rdf> owl:versionInfo "Initial release"^^xsd:string.
+source     select 1
+
+mappingId  map299
+target     :Version :ttlGenerationDate "2021-12-12"^^xsd:date.
+source     select 1
+
+mappingId  map300
+target     :Version :databaseRelease "2021-11-19"^^xsd:string.
+source     select 1
+
+mappingId  map301
+target     :Version :apiRelease "2.31.0 (build 6462#4abd80b [branch develop])"^^xsd:string.
+source     select 1
+
+mappingId  map302
+target     :Version :genomeAssembly: "GRCh38"^^xsd:string.
+source     select 1
+
+mappingId  map303
+target     :assignedBy rdf:type rdf:Property.
+source     select 1
+
+mappingId  map304
+target     :assignedBy rdf:type owl:FunctionalProperty.
+source     select 1
+
+mappingId  map305
+target     :assignedBy rdfs:domain :Evidence.
+source     select 1
+
+mappingId  map306
+target     :assignedBy rdfs:range :Source.
+source     select 1
+
+mappingId  map307
+target     :childOf rdf:type rdf:Property.
+source     select 1
+
+mappingId  map308
+target     :childOf rdf:type owl:TransitiveProperty.
+source     select 1
+
+mappingId  map309
+target     :childOf rdfs:domain :Term.
+source     select 1
+
+mappingId  map310
+target     :childOf rdfs:range :Term.
+source     select 1
+
+mappingId  map311
+target     :related rdf:type rdf:Property.
+source     select 1
+
+mappingId  map312
+target     :related rdfs:domain :Term.
+source     select 1
+
+mappingId  map313
+target     :related rdfs:range :Term.
+source     select 1
+
+mappingId  map314
+target     :Entry owl:equivalentClass up:Protein.
+source     select 1
+
+mappingId  map315
+target     :Term owl:equivalentClass up:Concept.
+source     select 1
+
+mappingId  map316
+target     :NotDetected owl:sameAs :Negative.
+source     select 1
+
+mappingId  map317
+target     cv:ECO_0000045 rdfs:subClassOf :IHC.
+source     select 1
+
+mappingId  map318
+target     cv:ECO_0000104 rdfs:subClassOf :EST.
+source     select 1
+
+mappingId  map319
+target     cv:ECO_0000220 rdfs:subClassOf :Microarray.
+source     select 1
+
+mappingId  map320
+target     cv:ECO_0000045 rdfs:subClassOf cv:ECO_0000045.
+source     select 1
+
+mappingId  map321
+target     cv:ECO_0000220 rdfs:subClassOf cv:ECO_0000220.
+source     select 1
+
+mappingId  map322
+target     cv:ECO_0000104 rdfs:subClassOf cv:ECO_0000104.
+source     select 1
+
+mappingId  map323
+target     owl:Thing rdfs:subClassOf owl:Thing.
+source     select 1
+
+mappingId  map324
+target     :Evidence_at_protein_level :level "1"^^xsd:integer.
+source     select 1
+
+mappingId  map325
+target     :Evidence_at_transcript_level :level "2"^^xsd:integer.
+source     select 1
+
+mappingId  map326
+target     :Inferred_from_homology :level "3"^^xsd:integer.
+source     select 1
+
+mappingId  map327
+target     :Predicted :level "4"^^xsd:integer.
+source     select 1
+
+mappingId  map328
+target     :Uncertain :level "5"^^xsd:integer.
+source     select 1
+
+mappingId  map329
+target     cv:{subject} rdf:type :{object}.
+source     select tab0."iri" as subject, tab1."iri" as object from "nextprot"."terminology_bases" as tab0, "nextprot"."schema_bases" as tab1 where tab0."type" = tab1."id"
+
+mappingId  map330
+target     cv:{subject} :childOf cv:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."terminology_bases" as tab0, "nextprot"."terminology_parents" as tab1, "nextprot"."terminology_bases" as tab2 where tab0."id" = tab1."term" and tab1."parent" = tab2."id"
+
+mappingId  map331
+target     cv:{subject} :related cv:{object}.
+source     select tab0."iri" as subject, tab2."iri" as object from "nextprot"."terminology_bases" as tab0, "nextprot"."terminology_related_terms" as tab1, "nextprot"."terminology_bases" as tab2 where tab0."id" = tab1."term" and tab1."related" = tab2."id"
+
+mappingId  map332
+target     cv:{subject} rdfs:label {object}^^xsd:string.
+source     select tab0."iri" as subject, tab1."label" as object from "nextprot"."terminology_bases" as tab0, "nextprot"."terminology_labels" as tab1 where tab0."id" = tab1."term"
+
+]]
