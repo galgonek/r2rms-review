@@ -1,18 +1,18 @@
 package cz.iocb.sparql.nextprot.integer;
 
-import static cz.iocb.chemweb.server.sparql.mapping.classes.BuiltinClasses.xsdDate;
-import static cz.iocb.chemweb.server.sparql.mapping.classes.BuiltinClasses.xsdInteger;
-import static cz.iocb.chemweb.server.sparql.mapping.classes.BuiltinClasses.xsdString;
-import static cz.iocb.chemweb.server.sparql.mapping.classes.BuiltinDataTypes.xsdDateType;
-import static cz.iocb.chemweb.server.sparql.mapping.classes.BuiltinDataTypes.xsdIntegerType;
+import static cz.iocb.sparql.engine.mapping.classes.BuiltinClasses.xsdDate;
+import static cz.iocb.sparql.engine.mapping.classes.BuiltinClasses.xsdInteger;
+import static cz.iocb.sparql.engine.mapping.classes.BuiltinClasses.xsdString;
+import static cz.iocb.sparql.engine.mapping.classes.BuiltinDataTypes.xsdDateType;
+import static cz.iocb.sparql.engine.mapping.classes.BuiltinDataTypes.xsdIntegerType;
 import static cz.iocb.sparql.nextprot.integer.NeXtProtConfiguration.schema;
-import cz.iocb.chemweb.server.sparql.config.SparqlDatabaseConfiguration;
-import cz.iocb.chemweb.server.sparql.database.Table;
-import cz.iocb.chemweb.server.sparql.database.TableColumn;
-import cz.iocb.chemweb.server.sparql.mapping.ConstantIriMapping;
-import cz.iocb.chemweb.server.sparql.mapping.NodeMapping;
-import cz.iocb.chemweb.server.sparql.mapping.classes.MapUserIriClass;
-import cz.iocb.chemweb.server.sparql.parser.model.expression.Literal;
+import cz.iocb.sparql.engine.config.SparqlDatabaseConfiguration;
+import cz.iocb.sparql.engine.database.Table;
+import cz.iocb.sparql.engine.database.TableColumn;
+import cz.iocb.sparql.engine.mapping.ConstantIriMapping;
+import cz.iocb.sparql.engine.mapping.NodeMapping;
+import cz.iocb.sparql.engine.mapping.classes.MapUserIriClass;
+import cz.iocb.sparql.engine.parser.model.expression.Literal;
 
 
 

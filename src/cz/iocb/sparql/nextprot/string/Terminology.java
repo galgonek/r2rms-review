@@ -1,12 +1,12 @@
 package cz.iocb.sparql.nextprot.string;
 
-import static cz.iocb.chemweb.server.sparql.mapping.classes.BuiltinClasses.xsdString;
+import static cz.iocb.sparql.engine.mapping.classes.BuiltinClasses.xsdString;
 import static cz.iocb.sparql.nextprot.string.NeXtProtConfiguration.schema;
-import cz.iocb.chemweb.server.sparql.config.SparqlDatabaseConfiguration;
-import cz.iocb.chemweb.server.sparql.database.Table;
-import cz.iocb.chemweb.server.sparql.mapping.ConstantIriMapping;
-import cz.iocb.chemweb.server.sparql.mapping.NodeMapping;
-import cz.iocb.chemweb.server.sparql.mapping.classes.StringUserIriClass;
+import cz.iocb.sparql.engine.config.SparqlDatabaseConfiguration;
+import cz.iocb.sparql.engine.database.Table;
+import cz.iocb.sparql.engine.mapping.ConstantIriMapping;
+import cz.iocb.sparql.engine.mapping.NodeMapping;
+import cz.iocb.sparql.engine.mapping.classes.StringUserIriClass;
 
 
 

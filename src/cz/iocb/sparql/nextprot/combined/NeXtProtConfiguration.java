@@ -2,10 +2,10 @@ package cz.iocb.sparql.nextprot.combined;
 
 import java.sql.SQLException;
 import javax.sql.DataSource;
-import cz.iocb.chemweb.server.sparql.config.SparqlDatabaseConfiguration;
-import cz.iocb.chemweb.server.sparql.database.DatabaseSchema;
-import cz.iocb.chemweb.server.sparql.mapping.classes.IntegerUserIriClass;
-import cz.iocb.chemweb.server.sparql.mapping.classes.StringUserIriClass;
+import cz.iocb.sparql.engine.config.SparqlDatabaseConfiguration;
+import cz.iocb.sparql.engine.database.DatabaseSchema;
+import cz.iocb.sparql.engine.mapping.classes.IntegerUserIriClass;
+import cz.iocb.sparql.engine.mapping.classes.StringUserIriClass;
 
 
 

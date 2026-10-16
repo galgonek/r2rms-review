@@ -49,7 +49,7 @@ public class Server
         config.setAuth("Container");
         config.setType("cz.iocb.sparql.nextprot." + args[0] + ".NeXtProtConfiguration");
         config.setSingleton(true);
-        config.setProperty("factory", "cz.iocb.chemweb.server.sparql.config.SparqlDatabaseConfigurationFactory");
+        config.setProperty("factory", "cz.iocb.sparql.endpoint.SparqlDatabaseConfigurationFactory");
         config.setProperty("datasource", "jdbc");
         context.getNamingResources().addResource(config);
 
@@ -57,7 +57,7 @@ public class Server
         servlet.setName("default");
         servlet.addInitParameter("resource", "config");
         servlet.addInitParameter("fetch-size", "0");
-        servlet.setServletClass("cz.iocb.chemweb.server.servlets.endpoint.EndpointServlet");
+        servlet.setServletClass("cz.iocb.sparql.endpoint.EndpointServlet");
         servlet.setLoadOnStartup(1);
         servlet.setOverridable(true);
 

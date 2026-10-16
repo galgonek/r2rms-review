@@ -2,12 +2,12 @@ package cz.iocb.sparql.nextprot.combined;
 
 import static cz.iocb.sparql.nextprot.combined.NeXtProtConfiguration.schema;
 import static java.util.Arrays.asList;
-import cz.iocb.chemweb.server.sparql.config.SparqlDatabaseConfiguration;
-import cz.iocb.chemweb.server.sparql.database.Table;
-import cz.iocb.chemweb.server.sparql.database.TableColumn;
-import cz.iocb.chemweb.server.sparql.mapping.ConstantIriMapping;
-import cz.iocb.chemweb.server.sparql.mapping.JoinTableQuadMapping.JoinColumns;
-import cz.iocb.chemweb.server.sparql.mapping.NodeMapping;
+import cz.iocb.sparql.engine.config.SparqlDatabaseConfiguration;
+import cz.iocb.sparql.engine.database.Table;
+import cz.iocb.sparql.engine.database.TableColumn;
+import cz.iocb.sparql.engine.mapping.ConstantIriMapping;
+import cz.iocb.sparql.engine.mapping.JoinTableQuadMapping.JoinColumns;
+import cz.iocb.sparql.engine.mapping.NodeMapping;
 
 
 
