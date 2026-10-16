@@ -11,6 +11,9 @@ COUNT="${2-2}"
 CPUS="${3-12}"
 
 
+./bin/test.sh qlever native rdf "${QUERYSET}" "${COUNT}"
+./bin/test.sh qlever native rdf "${QUERYSET}" "${COUNT}" "${CPUS}"
+
 ./bin/test.sh virtuoso ldv integer "${QUERYSET}" "${COUNT}"
 ./bin/test.sh virtuoso ldv string "${QUERYSET}" "${COUNT}"
 ./bin/test.sh virtuoso ldv combined "${QUERYSET}" "${COUNT}"

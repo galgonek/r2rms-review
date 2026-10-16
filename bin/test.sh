@@ -120,6 +120,17 @@ case "${SERVER}" in
 
     ENDPOINT="http://localhost:9999/blazegraph/namespace/nextprot/sparql"
     ;;
+
+  "qlever") 
+    . "${QLEVER}/bin/activate"
+    cd "${DATADIR}";
+    cat "${BASE}/etc/qlever/Qleverfile" | sed -r "s|NUM_THREADS = .*|num_threads = ${CPU}|" > Qleverfile
+    qlever start
+    deactivate
+    cd -
+
+    ENDPOINT="http://localhost:8888"
+    ;;
 esac
 
 case "${MAPPING}" in
@@ -169,6 +180,14 @@ case "${SERVER}" in
 
   "mariadb")
     "${MARIADB_BINDIR}/mariadb-admin" --defaults-file="${BASE}/etc/mariadb/mariadb.cnf" --socket="${TMPDIR}/mariadb.sock" shutdown
+    ;;
+
+  "qlever") 
+    . "${QLEVER}/bin/activate"
+    cd "${DATADIR}";
+    qlever stop
+    deactivate
+    cd -
     ;;
 esac
 
