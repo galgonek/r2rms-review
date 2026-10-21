@@ -136,7 +136,7 @@ esac
 case "${MAPPING}" in
   "idsm")
     cd "${TMPDIR}"
-    java -cp "${BASE}/classes:${BASE}/lib/*" -Dserver.tomcat.basedir="${TMPDIR}" cz.iocb.sparql.nextprot.Server "${METHOD}" &
+    java -cp "${BASE}/target/classes:${BASE}/lib/*" -Dserver.tomcat.basedir="${TMPDIR}" cz.iocb.sparql.nextprot.Server "${METHOD}" &
     PID=$!
     cd -
     ;;
@@ -156,7 +156,7 @@ sleep "${SLEEP}"
 # test
 #
 
-java -cp "${BASE}/classes" cz.iocb.nextprot.test.Test "${ENDPOINT}" "${SETTINGS-}" "${QUERIES}" "${OUTDIR}" "${COUNT}"
+java -cp "${BASE}/target/classes" cz.iocb.nextprot.test.Test "${ENDPOINT}" "${SETTINGS-}" "${QUERIES}" "${OUTDIR}" "${COUNT}"
 
 
 
