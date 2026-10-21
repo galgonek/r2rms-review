@@ -136,7 +136,7 @@ esac
 case "${MAPPING}" in
   "idsm")
     cd "${TMPDIR}"
-    java -cp "${BASE}/target/classes:${BASE}/lib/*" -Dserver.tomcat.basedir="${TMPDIR}" cz.iocb.sparql.nextprot.Server "${METHOD}" &
+    java -cp "${BASE}/target/classes:${BASE}/target/dependency/*" -Dserver.tomcat.basedir="${TMPDIR}" cz.iocb.sparql.nextprot.Server "${METHOD}" &
     PID=$!
     cd -
     ;;

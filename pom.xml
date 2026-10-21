@@ -21,6 +21,13 @@
       <version>0.9.0-SNAPSHOT</version>
     </dependency>
     <dependency>
+      <!-- the servlet and the configuration factory that Server names -->
+      <groupId>cz.iocb.sparql</groupId>
+      <artifactId>sparql-endpoint</artifactId>
+      <version>0.9.0-SNAPSHOT</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
       <groupId>org.eclipse.collections</groupId>
       <artifactId>eclipse-collections</artifactId>
       <version>13.0.0</version>
@@ -40,5 +47,60 @@
       <artifactId>tomcat-embed-core</artifactId>
       <version>11.0.27</version>
     </dependency>
+    <dependency>
+      <!-- the connection pool factory that Server names -->
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tomcat-jdbc</artifactId>
+      <version>11.0.27</version>
+      <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <!-- already contained in tomcat-embed-core -->
+          <groupId>org.apache.tomcat</groupId>
+          <artifactId>tomcat-juli</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.7.14</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mariadb.jdbc</groupId>
+      <artifactId>mariadb-java-client</artifactId>
+      <version>3.5.10</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.openlinksw</groupId>
+      <artifactId>virtjdbc4_3</artifactId>
+      <version>3.123</version>
+      <scope>runtime</scope>
+    </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <!-- the libraries the scripts in bin put on the class path -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.11.0</version>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeScope>runtime</includeScope>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

@@ -40,7 +40,7 @@ cat sql/init/mariadb.sql | "${MARIADB_BINDIR}/mariadb" -v --socket="${SOCKET}" 2
 
 cat sql/defs.m4 sql/schema/* | m4 -DSERVER="${SERVER}" -DMAPPING="${MAPPING}" -DMODE="${MODE}" | "${MARIADB_BINDIR}/mariadb" -v --socket="${SOCKET}" --user=nextprot --password="password" 2>&1 | tee "${LOGDIR}/schema.log"
 
-java -Xmx44G -cp "${BASE}/target/classes:${BASE}/lib/*" cz.iocb.nextprot.load.NeXtProt "jdbc:mariadb://localhost:3306/nextprot?rewriteBatchedStatements=true&user=nextprot&password=password" "${SERVER}" "${MODE}" "${SOURCEDIR}" 2>&1 | tee "${LOGDIR}/load.log"
+java -Xmx44G -cp "${BASE}/target/classes:${BASE}/target/dependency/*" cz.iocb.nextprot.load.NeXtProt "jdbc:mariadb://localhost:3306/nextprot?rewriteBatchedStatements=true&user=nextprot&password=password" "${SERVER}" "${MODE}" "${SOURCEDIR}" 2>&1 | tee "${LOGDIR}/load.log"
 
 "${MARIADB_BINDIR}/mariadb-check" --defaults-file="${CONFIG}" --optimize --socket="${SOCKET}" --all-databases 2>&1 | tee "${LOGDIR}/optimize.log"
 

@@ -38,7 +38,7 @@ cat "sql/init/postgresql-${MAPPING}.sql" | "${POSTGRESQL_BINDIR}/psql" -v ON_ERR
 
 cat sql/defs.m4 sql/schema/* | m4 -DSERVER="${SERVER}" -DMAPPING="${MAPPING}" -DMODE="${MODE}" | "${POSTGRESQL_BINDIR}/psql" -v ON_ERROR_STOP=1 --host="${TMPDIR}" --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/schema.log"
 
-java -Xmx44G -cp "${BASE}/target/classes:${BASE}/lib/*" cz.iocb.nextprot.load.NeXtProt "jdbc:postgresql://localhost:5432/nextprot?user=nextprot&password=password" "${SERVER}" "${MODE}" "${SOURCEDIR}" 2>&1 | tee "${LOGDIR}/load.log"
+java -Xmx44G -cp "${BASE}/target/classes:${BASE}/target/dependency/*" cz.iocb.nextprot.load.NeXtProt "jdbc:postgresql://localhost:5432/nextprot?user=nextprot&password=password" "${SERVER}" "${MODE}" "${SOURCEDIR}" 2>&1 | tee "${LOGDIR}/load.log"
 
 echo "reindex schema nextprot" | "${POSTGRESQL_BINDIR}/psql" -v ON_ERROR_STOP=1 --host="${TMPDIR}" --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/optimize.log"
 
