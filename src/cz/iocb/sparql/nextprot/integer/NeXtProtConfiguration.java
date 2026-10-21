@@ -1,5 +1,6 @@
 package cz.iocb.sparql.nextprot.integer;
 
+import static cz.iocb.sparql.engine.database.SqlType.INT4;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import cz.iocb.sparql.engine.config.SparqlDatabaseConfiguration;
@@ -9,12 +10,25 @@ import cz.iocb.sparql.engine.mapping.classes.StringUserIriClass;
 
 
 
+/**
+ * NeXtProt configuration over the {@code nextprot_indirect} schema, where entities are identified by integers and their
+ * IRIs are kept in the {@code *_bases} tables. Each entity class is a
+ * {@link cz.iocb.sparql.engine.mapping.classes.MapUserIriClass} translating between the IRI and the integer id through
+ * that table.
+ */
 public class NeXtProtConfiguration extends SparqlDatabaseConfiguration
 {
-    static final String schema = "nextprot";
+    /**
+     * Database schema holding the NeXtProt tables.
+     */
+    static final String schema = "nextprot_indirect";
 
 
-    public NeXtProtConfiguration(String service, DataSource connectionPool, DatabaseSchema schema) throws SQLException
+    /**
+     * Creates the configuration (JNDI-compatible constructor).
+     */
+    public NeXtProtConfiguration(String service, DataSource connectionPool, DatabaseSchema schema)
+            throws SQLException
     {
         super(service, connectionPool, schema);
 
@@ -24,6 +38,9 @@ public class NeXtProtConfiguration extends SparqlDatabaseConfiguration
     }
 
 
+    /**
+     * Registers the prefixes used by the NeXtProt queries.
+     */
     private void addPrefixes()
     {
         addPrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
@@ -56,11 +73,14 @@ public class NeXtProtConfiguration extends SparqlDatabaseConfiguration
     }
 
 
+    /**
+     * Registers the IRI classes of the external resources and of every mapped NeXtProt entity.
+     */
     private void addResourceClasses() throws SQLException
     {
         addIriClass(new StringUserIriClass("uniprot", "http://purl.uniprot.org/uniprot/"));
         addIriClass(new StringUserIriClass("uniprotpage", "http://www.uniprot.org/uniprot/"));
-        addIriClass(new IntegerUserIriClass("chebi", "integer", "http://purl.obolibrary.org/obo/CHEBI_"));
+        addIriClass(new IntegerUserIriClass("chebi", INT4, "http://purl.obolibrary.org/obo/CHEBI_"));
         addIriClass(new StringUserIriClass("drugbank",
                 "http://wifo5-04.informatik.uni-mannheim.de/drugbank/resource/drugs/DB"));
 
@@ -73,6 +93,9 @@ public class NeXtProtConfiguration extends SparqlDatabaseConfiguration
     }
 
 
+    /**
+     * Registers the quad mappings of every part of the dataset.
+     */
     private void addQuadMappings()
     {
         Chromosome.addQuadMappings(this);

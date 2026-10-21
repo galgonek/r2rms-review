@@ -10,6 +10,7 @@ import org.apache.tomcat.util.descriptor.web.ContextResource;
 
 
 
+
 public class Server
 {
     public static void main(String[] args) throws LifecycleException
@@ -62,7 +63,7 @@ public class Server
         servlet.setOverridable(true);
 
         context.addChild(servlet);
-        context.addServletMappingDecoded("/sparql/", "default");
+        context.addServletMapping("/sparql/", "default");
 
         tomcat.start();
         tomcat.getServer().await();

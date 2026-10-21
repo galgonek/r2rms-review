@@ -1,25 +1,32 @@
 package cz.iocb.sparql.nextprot.combined;
 
+import static cz.iocb.sparql.engine.database.SqlType.INT4;
 import static cz.iocb.sparql.engine.mapping.classes.BuiltinClasses.xsdDate;
 import static cz.iocb.sparql.engine.mapping.classes.BuiltinClasses.xsdInteger;
 import static cz.iocb.sparql.engine.mapping.classes.BuiltinClasses.xsdString;
-import static cz.iocb.sparql.engine.mapping.classes.BuiltinDataTypes.xsdDateType;
-import static cz.iocb.sparql.engine.mapping.classes.BuiltinDataTypes.xsdIntegerType;
+import static cz.iocb.sparql.engine.mapping.datatypes.BuiltinDatatypes.xsdDateIri;
+import static cz.iocb.sparql.engine.mapping.datatypes.BuiltinDatatypes.xsdIntegerIri;
 import static cz.iocb.sparql.nextprot.combined.NeXtProtConfiguration.schema;
 import static java.util.Arrays.asList;
 import cz.iocb.sparql.engine.config.SparqlDatabaseConfiguration;
-import cz.iocb.sparql.engine.database.Table;
+import cz.iocb.sparql.engine.database.DatabaseTable;
 import cz.iocb.sparql.engine.database.TableColumn;
 import cz.iocb.sparql.engine.mapping.ConstantIriMapping;
 import cz.iocb.sparql.engine.mapping.JoinTableQuadMapping.JoinColumns;
-import cz.iocb.sparql.engine.mapping.NodeMapping;
+import cz.iocb.sparql.engine.mapping.TermMapping;
 import cz.iocb.sparql.engine.mapping.classes.StringUserIriClass;
-import cz.iocb.sparql.engine.parser.model.expression.Literal;
+import cz.iocb.sparql.engine.rdf.TypedLiteral;
 
 
 
+/**
+ * Mappings of the schema-level resources: data sources, databases and the ontology terms of the NeXtProt vocabulary.
+ */
 public class Schema
 {
+    /**
+     * Registers the IRI classes of the sources, databases and schema terms.
+     */
     public static void addResourceClasses(SparqlDatabaseConfiguration config)
     {
         config.addIriClass(new StringUserIriClass("source", "http://nextprot.org/rdf/source/"));
@@ -28,6 +35,9 @@ public class Schema
     }
 
 
+    /**
+     * Registers the quad mappings of the sources, databases and ontology.
+     */
     public static void addQuadMappings(SparqlDatabaseConfiguration config)
     {
         addSourceQuadMapping(config);
@@ -41,8 +51,8 @@ public class Schema
         ConstantIriMapping graph = config.createIriMapping("<http://nextprot.org/rdf>");
 
         {
-            Table table = new Table(schema, "source_bases");
-            NodeMapping subject = config.createIriMapping("source", "iri");
+            DatabaseTable table = new DatabaseTable(schema, "source_bases");
+            TermMapping subject = config.createIriMapping("source", "iri");
 
             config.addQuadMapping(table, graph, subject, config.createIriMapping("rdf:type"),
                     config.createIriMapping(":Source"));
@@ -57,11 +67,11 @@ public class Schema
     private static void addDatabaseQuadMapping(SparqlDatabaseConfiguration config)
     {
         ConstantIriMapping graph = config.createIriMapping("<http://nextprot.org/rdf>");
-        Table baseTable = new Table(schema, "database_bases");
+        DatabaseTable baseTable = new DatabaseTable(schema, "database_bases");
 
         {
-            Table table = new Table(schema, "database_bases");
-            NodeMapping subject = config.createIriMapping("database", "iri");
+            DatabaseTable table = new DatabaseTable(schema, "database_bases");
+            TermMapping subject = config.createIriMapping("database", "iri");
 
             config.addQuadMapping(table, graph, subject, config.createIriMapping("rdf:type"),
                     config.createIriMapping(":Database"));
@@ -70,20 +80,20 @@ public class Schema
         }
 
         {
-            Table table = new Table(schema, "database_comments");
-            NodeMapping subject = config.createIriMapping("database", "iri");
+            DatabaseTable table = new DatabaseTable(schema, "database_comments");
+            TermMapping subject = config.createIriMapping("database", "iri");
 
             config.addQuadMapping(asList(baseTable, table),
-                    asList(new JoinColumns(new TableColumn("id"), new TableColumn("db"))), graph, subject,
+                    asList(new JoinColumns(new TableColumn("id", INT4), new TableColumn("db", INT4))), graph, subject,
                     config.createIriMapping("rdfs:comment"), config.createLiteralMapping(xsdString, "comment"));
         }
 
         {
-            Table table = new Table(schema, "database_categories");
-            NodeMapping subject = config.createIriMapping("database", "iri");
+            DatabaseTable table = new DatabaseTable(schema, "database_categories");
+            TermMapping subject = config.createIriMapping("database", "iri");
 
             config.addQuadMapping(asList(baseTable, table),
-                    asList(new JoinColumns(new TableColumn("id"), new TableColumn("db"))), graph, subject,
+                    asList(new JoinColumns(new TableColumn("id", INT4), new TableColumn("db", INT4))), graph, subject,
                     config.createIriMapping(":category"), config.createLiteralMapping(xsdString, "category"));
         }
     }
@@ -92,14 +102,14 @@ public class Schema
     private static void addOntologyQuadMapping(SparqlDatabaseConfiguration config)
     {
         ConstantIriMapping graph = config.createIriMapping("<http://nextprot.org/rdf>");
-        Table baseTable = new Table(schema, "schema_bases");
+        DatabaseTable baseTable = new DatabaseTable(schema, "schema_bases");
 
         {
-            Table table = new Table(schema, "schema_bases");
-            NodeMapping subject = config.createIriMapping("schema", "iri");
+            DatabaseTable table = new DatabaseTable(schema, "schema_bases");
+            TermMapping subject = config.createIriMapping("schema", "iri");
 
             config.addQuadMapping(asList(table, baseTable),
-                    asList(new JoinColumns(new TableColumn("type"), new TableColumn("id"))), graph, subject,
+                    asList(new JoinColumns(new TableColumn("type", INT4), new TableColumn("id", INT4))), graph, subject,
                     config.createIriMapping("rdf:type"), config.createIriMapping("schema", "iri"));
             config.addQuadMapping(table, graph, subject, config.createIriMapping("rdfs:label"),
                     config.createLiteralMapping(xsdString, "label"));
@@ -110,50 +120,50 @@ public class Schema
         }
 
         {
-            Table table = new Table(schema, "schema_classes");
-            NodeMapping subject = config.createIriMapping("schema", "iri");
+            DatabaseTable table = new DatabaseTable(schema, "schema_classes");
+            TermMapping subject = config.createIriMapping("schema", "iri");
 
             config.addQuadMapping(asList(baseTable, table),
-                    asList(new JoinColumns(new TableColumn("id"), new TableColumn("entity"))), graph, subject,
-                    config.createIriMapping("rdf:type"), config.createIriMapping("owl:Class"));
+                    asList(new JoinColumns(new TableColumn("id", INT4), new TableColumn("entity", INT4))), graph,
+                    subject, config.createIriMapping("rdf:type"), config.createIriMapping("owl:Class"));
         }
 
         {
-            Table table = new Table(schema, "schema_thing_subclasses");
-            NodeMapping subject = config.createIriMapping("schema", "iri");
+            DatabaseTable table = new DatabaseTable(schema, "schema_thing_subclasses");
+            TermMapping subject = config.createIriMapping("schema", "iri");
 
             config.addQuadMapping(asList(baseTable, table),
-                    asList(new JoinColumns(new TableColumn("id"), new TableColumn("entity"))), graph, subject,
-                    config.createIriMapping("rdfs:subClassOf"), config.createIriMapping("owl:Thing"));
+                    asList(new JoinColumns(new TableColumn("id", INT4), new TableColumn("entity", INT4))), graph,
+                    subject, config.createIriMapping("rdfs:subClassOf"), config.createIriMapping("owl:Thing"));
         }
 
         {
-            Table table = new Table(schema, "schema_restrictions");
-            NodeMapping subject = config.createIriMapping("schema", "iri");
+            DatabaseTable table = new DatabaseTable(schema, "schema_restrictions");
+            TermMapping subject = config.createIriMapping("schema", "iri");
 
             config.addQuadMapping(asList(baseTable, table, baseTable),
-                    asList(new JoinColumns(new TableColumn("id"), new TableColumn("entity")),
-                            new JoinColumns(new TableColumn("notin"), new TableColumn("id"))),
+                    asList(new JoinColumns(new TableColumn("id", INT4), new TableColumn("entity", INT4)),
+                            new JoinColumns(new TableColumn("notin", INT4), new TableColumn("id", INT4))),
                     graph, subject, config.createIriMapping(":notIn"), config.createIriMapping("schema", "iri"));
         }
 
         {
-            Table table = new Table(schema, "schema_related_terms");
-            NodeMapping subject = config.createIriMapping("schema", "iri");
+            DatabaseTable table = new DatabaseTable(schema, "schema_related_terms");
+            TermMapping subject = config.createIriMapping("schema", "iri");
 
             config.addQuadMapping(asList(baseTable, table, baseTable),
-                    asList(new JoinColumns(new TableColumn("id"), new TableColumn("entity")),
-                            new JoinColumns(new TableColumn("related"), new TableColumn("id"))),
+                    asList(new JoinColumns(new TableColumn("id", INT4), new TableColumn("entity", INT4)),
+                            new JoinColumns(new TableColumn("related", INT4), new TableColumn("id", INT4))),
                     graph, subject, config.createIriMapping(":related"), config.createIriMapping("terminology", "iri"));
         }
 
         {
-            Table table = new Table(schema, "schema_parent_classes");
-            NodeMapping subject = config.createIriMapping("schema", "iri");
+            DatabaseTable table = new DatabaseTable(schema, "schema_parent_classes");
+            TermMapping subject = config.createIriMapping("schema", "iri");
 
             config.addQuadMapping(asList(baseTable, table, baseTable),
-                    asList(new JoinColumns(new TableColumn("id"), new TableColumn("entity")),
-                            new JoinColumns(new TableColumn("parent"), new TableColumn("id"))),
+                    asList(new JoinColumns(new TableColumn("id", INT4), new TableColumn("entity", INT4)),
+                            new JoinColumns(new TableColumn("parent", INT4), new TableColumn("id", INT4))),
                     graph, subject, config.createIriMapping("rdfs:subClassOf"),
                     config.createIriMapping("schema", "iri"));
         }
@@ -173,7 +183,7 @@ public class Schema
             // :Version
             config.addQuadMapping(null, graph, config.createIriMapping(":Version"),
                     config.createIriMapping(":ttlGenerationDate"),
-                    config.createLiteralMapping(xsdDate, new Literal("2021-12-12", xsdDateType)));
+                    config.createLiteralMapping(xsdDate, new TypedLiteral("2021-12-12", xsdDateIri)));
             config.addQuadMapping(null, graph, config.createIriMapping(":Version"),
                     config.createIriMapping(":databaseRelease"), config.createLiteralMapping("2021-11-19"));
             config.addQuadMapping(null, graph, config.createIriMapping(":Version"),
@@ -237,17 +247,17 @@ public class Schema
             // :level
             config.addQuadMapping(null, graph, config.createIriMapping(":Evidence_at_protein_level"),
                     config.createIriMapping(":level"),
-                    config.createLiteralMapping(xsdInteger, new Literal("1", xsdIntegerType)));
+                    config.createLiteralMapping(xsdInteger, new TypedLiteral("1", xsdIntegerIri)));
             config.addQuadMapping(null, graph, config.createIriMapping(":Evidence_at_transcript_level"),
                     config.createIriMapping(":level"),
-                    config.createLiteralMapping(xsdInteger, new Literal("2", xsdIntegerType)));
+                    config.createLiteralMapping(xsdInteger, new TypedLiteral("2", xsdIntegerIri)));
             config.addQuadMapping(null, graph, config.createIriMapping(":Inferred_from_homology"),
                     config.createIriMapping(":level"),
-                    config.createLiteralMapping(xsdInteger, new Literal("3", xsdIntegerType)));
+                    config.createLiteralMapping(xsdInteger, new TypedLiteral("3", xsdIntegerIri)));
             config.addQuadMapping(null, graph, config.createIriMapping(":Predicted"), config.createIriMapping(":level"),
-                    config.createLiteralMapping(xsdInteger, new Literal("4", xsdIntegerType)));
+                    config.createLiteralMapping(xsdInteger, new TypedLiteral("4", xsdIntegerIri)));
             config.addQuadMapping(null, graph, config.createIriMapping(":Uncertain"), config.createIriMapping(":level"),
-                    config.createLiteralMapping(xsdInteger, new Literal("5", xsdIntegerType)));
+                    config.createLiteralMapping(xsdInteger, new TypedLiteral("5", xsdIntegerIri)));
         }
     }
 }

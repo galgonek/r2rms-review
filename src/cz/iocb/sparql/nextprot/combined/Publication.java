@@ -1,31 +1,41 @@
 package cz.iocb.sparql.nextprot.combined;
 
+import static cz.iocb.sparql.engine.database.SqlType.INT4;
 import static cz.iocb.sparql.engine.mapping.classes.BuiltinClasses.xsdString;
 import static cz.iocb.sparql.nextprot.combined.NeXtProtConfiguration.schema;
 import cz.iocb.sparql.engine.config.SparqlDatabaseConfiguration;
-import cz.iocb.sparql.engine.database.Table;
+import cz.iocb.sparql.engine.database.DatabaseTable;
 import cz.iocb.sparql.engine.mapping.ConstantIriMapping;
-import cz.iocb.sparql.engine.mapping.NodeMapping;
+import cz.iocb.sparql.engine.mapping.TermMapping;
+import cz.iocb.sparql.engine.mapping.classes.IntBlankNodeInSegmentClass;
 import cz.iocb.sparql.engine.mapping.classes.IntegerUserIriClass;
-import cz.iocb.sparql.engine.mapping.classes.UserIntBlankNodeClass;
 
 
 
+/**
+ * Mappings of the publications and their bibliographic data.
+ */
 public class Publication
 {
+    /**
+     * Registers the IRI class of the publications.
+     */
     public static void addResourceClasses(SparqlDatabaseConfiguration config)
     {
-        config.addIriClass(new IntegerUserIriClass("publication", "integer", "http://nextprot.org/rdf/publication/"));
+        config.addIriClass(new IntegerUserIriClass("publication", INT4, "http://nextprot.org/rdf/publication/"));
     }
 
 
+    /**
+     * Registers the quad mappings of the publications.
+     */
     public static void addQuadMappings(SparqlDatabaseConfiguration config)
     {
         ConstantIriMapping graph = config.createIriMapping("<http://nextprot.org/rdf>");
 
         {
-            Table table = new Table(schema, "publication_bases");
-            NodeMapping subject = config.createIriMapping("publication", "id");
+            DatabaseTable table = new DatabaseTable(schema, "publication_bases");
+            TermMapping subject = config.createIriMapping("publication", "id");
 
             config.addQuadMapping(table, graph, subject, config.createIriMapping("rdf:type"),
                     config.createIriMapping(":Publication"));
@@ -55,16 +65,16 @@ public class Publication
         }
 
         {
-            Table table = new Table(schema, "publication_links");
-            NodeMapping subject = config.createIriMapping("publication", "publication");
+            DatabaseTable table = new DatabaseTable(schema, "publication_links");
+            TermMapping subject = config.createIriMapping("publication", "publication");
 
             config.addQuadMapping(table, graph, subject, config.createIriMapping(":from"),
                     config.createLiteralMapping(xsdString, "link"));
         }
 
         {
-            Table table = new Table(schema, "publication_authors");
-            NodeMapping subject = config.createBlankNodeMapping(new UserIntBlankNodeClass(), "id");
+            DatabaseTable table = new DatabaseTable(schema, "publication_authors");
+            TermMapping subject = config.createBlankNodeMapping(new IntBlankNodeInSegmentClass(12), "id");
 
             config.addQuadMapping(table, graph, subject, config.createIriMapping("rdf:type"),
                     config.createIriMapping(":Person"), config.createAreEqualCondition("person", "'true'::boolean"));
@@ -81,8 +91,8 @@ public class Publication
         }
 
         {
-            Table table = new Table(schema, "publication_editors");
-            NodeMapping subject = config.createBlankNodeMapping(new UserIntBlankNodeClass(), "id");
+            DatabaseTable table = new DatabaseTable(schema, "publication_editors");
+            TermMapping subject = config.createBlankNodeMapping(new IntBlankNodeInSegmentClass(13), "id");
 
             config.addQuadMapping(table, graph, subject, config.createIriMapping("rdf:type"),
                     config.createIriMapping(":Person"));

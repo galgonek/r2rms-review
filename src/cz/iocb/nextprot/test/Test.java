@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 
@@ -97,7 +98,7 @@ public class Test
 
             long time = System.nanoTime();
 
-            URL request = new URL(url);
+            URL request = (new URI(url)).toURL();
             HttpURLConnection con = (HttpURLConnection) request.openConnection();
             con.setRequestProperty("accept", "application/sparql-results+xml");
             con.setRequestMethod("GET");
