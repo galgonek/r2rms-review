@@ -6,7 +6,6 @@ import org.apache.jena.datatypes.DatatypeFormatException;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.eclipse.collections.impl.map.mutable.primitive.ObjectIntHashMap;
-import cz.iocb.nextprot.load.NeXtProt.Mode;
 
 
 
@@ -18,32 +17,6 @@ public final class Nodes
 {
     private Nodes()
     {
-    }
-
-
-    /*
-     * Returns the local part of the IRI after the prefix in the direct mode, or the integer id of the local part,
-     * which is assigned on its first use, in the indirect mode.
-     */
-    public static Object getID(Node node, String prefix, ObjectIntHashMap<String> map, Mode mode) throws IOException
-    {
-        if(node == null)
-            return null;
-
-        String value = getStringID(node, prefix);
-
-        if(mode == Mode.DIRECT)
-            return value;
-
-        int id = map.getIfAbsent(value, Integer.MIN_VALUE);
-
-        if(id == Integer.MIN_VALUE)
-        {
-            id = map.size();
-            map.put(value, id);
-        }
-
-        return id;
     }
 
 

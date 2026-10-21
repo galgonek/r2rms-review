@@ -4,16 +4,13 @@ import static cz.iocb.nextprot.load.NeXtProt.nextprot;
 import static cz.iocb.nextprot.load.NeXtProt.owl;
 import static cz.iocb.nextprot.load.NeXtProt.rdf;
 import static cz.iocb.nextprot.load.NeXtProt.rdfs;
-import static cz.iocb.nextprot.load.Nodes.getID;
 import static cz.iocb.nextprot.load.Nodes.getLiteralValue;
-import static cz.iocb.nextprot.load.Nodes.getStringID;
 import static cz.iocb.nextprot.load.Terminology.terms;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.LinkedHashSet;
 import org.apache.jena.graph.Node;
-import org.eclipse.collections.impl.map.mutable.primitive.ObjectIntHashMap;
 import cz.iocb.nextprot.load.NeXtProt.Mode;
 import cz.iocb.nextprot.load.NeXtProt.Server;
 
@@ -21,9 +18,9 @@ import cz.iocb.nextprot.load.NeXtProt.Server;
 
 public class Schema
 {
-    static ObjectIntHashMap<String> sources = new ObjectIntHashMap<>();
-    static ObjectIntHashMap<String> databases = new ObjectIntHashMap<>();
-    static ObjectIntHashMap<String> entities = new ObjectIntHashMap<>();
+    static Ids sources = new Ids("http://nextprot.org/rdf/source/");
+    static Ids databases = new Ids("http://nextprot.org/rdf/db/");
+    static Ids entities = new Ids(nextprot);
 
 
     static void load(String path, Connection connection, Server type, Mode mode) throws IOException, SQLException
@@ -55,9 +52,9 @@ public class Schema
         Table parentClasses = dispatcher.table(connection, type, "schema_parent_classes(entity, parent)");
 
         dispatcher.onType(owl + "Class", (entity, _) -> {
-            if(entity.isURI() && entity.getURI().startsWith(nextprot))
+            if(entity.isURI() && entity.getURI().startsWith(nextprot) && classes.isNew(entities.getId(entity)))
             {
-                classes.setValue(1, getID(entity, nextprot, entities, mode));
+                classes.setValue(1, entities.getValue(entity, mode));
                 classes.add();
             }
         });
@@ -66,29 +63,36 @@ public class Schema
             if(!entity.isURI() || !entity.getURI().startsWith(nextprot))
                 return;
 
-            if(parent.isURI() && parent.getURI().equals(owl + "Thing"))
+            if(parent.isURI() && parent.getURI().equals(owl + "Thing") && thingSubclasses.isNew(entities.getId(entity)))
             {
-                thingSubclasses.setValue(1, getID(entity, nextprot, entities, mode));
+                thingSubclasses.setValue(1, entities.getValue(entity, mode));
                 thingSubclasses.add();
             }
 
-            if(parent.isURI() && parent.getURI().startsWith(nextprot))
+            if(parent.isURI() && parent.getURI().startsWith(nextprot)
+                    && parentClasses.isNew(entities.getId(entity), entities.getId(parent)))
             {
-                parentClasses.setValue(1, getID(entity, nextprot, entities, mode));
-                parentClasses.setValue(2, getID(parent, nextprot, entities, mode));
+                parentClasses.setValue(1, entities.getValue(entity, mode));
+                parentClasses.setValue(2, entities.getValue(parent, mode));
                 parentClasses.add();
             }
         });
 
         dispatcher.on(nextprot + "notIn", (entity, notin) -> {
-            restrictions.setValue(1, getID(entity, nextprot, entities, mode));
-            restrictions.setValue(2, getID(notin, nextprot, entities, mode));
+            if(!restrictions.isNew(entities.getId(entity), entities.getId(notin)))
+                return;
+
+            restrictions.setValue(1, entities.getValue(entity, mode));
+            restrictions.setValue(2, entities.getValue(notin, mode));
             restrictions.add();
         });
 
         dispatcher.on(nextprot + "related", (entity, related) -> {
-            relatedTerms.setValue(1, getID(entity, nextprot, entities, mode));
-            relatedTerms.setValue(2, getID(related, "http://nextprot.org/rdf/terminology/", terms, mode));
+            if(!relatedTerms.isNew(entities.getId(entity), terms.getId(related)))
+                return;
+
+            relatedTerms.setValue(1, entities.getValue(entity, mode));
+            relatedTerms.setValue(2, terms.getValue(related, mode));
             relatedTerms.add();
         });
 
@@ -98,12 +102,15 @@ public class Schema
             {
                 for(Node source : sourceNodes)
                 {
-                    table.setValue(1, getID(source, "http://nextprot.org/rdf/source/", sources, mode));
+                    if(!table.isNew(sources.getId(source)))
+                        continue;
+
+                    table.setValue(1, sources.getValue(source, mode));
                     table.setValue(2, getLiteralValue(comments.first(source)));
                     table.setValue(3, getLiteralValue(references.first(source)));
 
                     if(mode == Mode.INDIRECT)
-                        table.setValue(4, getStringID(source, "http://nextprot.org/rdf/source/"));
+                        table.setValue(4, sources.getLocalPart(source));
 
                     table.add();
                 }
@@ -114,11 +121,14 @@ public class Schema
             {
                 for(Node database : databaseNodes)
                 {
-                    table.setValue(1, getID(database, "http://nextprot.org/rdf/db/", databases, mode));
+                    if(!table.isNew(databases.getId(database)))
+                        continue;
+
+                    table.setValue(1, databases.getValue(database, mode));
                     table.setValue(2, getLiteralValue(references.first(database)));
 
                     if(mode == Mode.INDIRECT)
-                        table.setValue(3, getStringID(database, "http://nextprot.org/rdf/db/"));
+                        table.setValue(3, databases.getLocalPart(database));
 
                     table.add();
                 }
@@ -130,7 +140,10 @@ public class Schema
                 {
                     for(Node comment : comments.get(database))
                     {
-                        table.setValue(1, getID(database, "http://nextprot.org/rdf/db/", databases, mode));
+                        if(!table.isNew(databases.getId(database), getLiteralValue(comment)))
+                            continue;
+
+                        table.setValue(1, databases.getValue(database, mode));
                         table.setValue(2, getLiteralValue(comment));
                         table.add();
                     }
@@ -143,7 +156,10 @@ public class Schema
                 {
                     for(Node category : categories.get(database))
                     {
-                        table.setValue(1, getID(database, "http://nextprot.org/rdf/db/", databases, mode));
+                        if(!table.isNew(databases.getId(database), getLiteralValue(category)))
+                            continue;
+
+                        table.setValue(1, databases.getValue(database, mode));
                         table.setValue(2, getLiteralValue(category));
                         table.add();
                     }
@@ -155,16 +171,19 @@ public class Schema
             {
                 for(Node entity : entityNodes)
                 {
+                    if(!table.isNew(entities.getId(entity)))
+                        continue;
+
                     Node entityType = types.first(entity, t -> t.isURI() && t.getURI().startsWith(nextprot));
 
-                    table.setValue(1, getID(entity, nextprot, entities, mode));
-                    table.setValue(2, getID(entityType, nextprot, entities, mode));
+                    table.setValue(1, entities.getValue(entity, mode));
+                    table.setValue(2, entities.getValue(entityType, mode));
                     table.setValue(3, getLiteralValue(labels.first(entity)));
                     table.setValue(4, getLiteralValue(comments.first(entity)));
                     table.setValue(5, getLiteralValue(references.first(entity)));
 
                     if(mode == Mode.INDIRECT)
-                        table.setValue(6, getStringID(entity, nextprot));
+                        table.setValue(6, entities.getLocalPart(entity));
 
                     table.add();
                 }

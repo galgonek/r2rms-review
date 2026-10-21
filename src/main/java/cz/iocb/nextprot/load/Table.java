@@ -4,18 +4,23 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.HashMap;
 import cz.iocb.nextprot.load.NeXtProt.Server;
 
 
 
 /*
- * Inserts rows into a table in batches; a row that is already present, by its primary key, is skipped.
+ * Inserts rows into a table in batches. The loaders store no row twice: before a row with a natural primary key is
+ * set, isNew() tells whether its key is new, also across the loads that fill the same table, such as the loads of the
+ * chromosome files. A row whose key contains an id assigned by the loader, such as the id of a name, needs no check.
  */
 public class Table implements AutoCloseable
 {
     private static final int batchSize = 10000;
+    private static final HashMap<String, Keys> tableKeys = new HashMap<>();
 
     private final PreparedStatement statement;
+    private final Keys keys;
     private int count = 0;
 
 
@@ -24,7 +29,9 @@ public class Table implements AutoCloseable
      */
     public Table(Connection connection, Server type, String table) throws SQLException
     {
-        System.out.println("   store " + table.replaceFirst("\\(.*", ""));
+        String name = table.replaceFirst("[ (].*", "");
+
+        System.out.println("   store " + name);
 
         StringBuilder values = new StringBuilder(" values(?");
 
@@ -36,12 +43,39 @@ public class Table implements AutoCloseable
 
         String sql = switch(type)
         {
-            case POSTGRESQL -> "insert into nextprot." + table + values + " on conflict do nothing";
-            case VIRTUOSO -> "insert soft nextprot.nextprot." + table + values;
-            case MARIADB -> "insert ignore into nextprot." + table + values;
+            case POSTGRESQL, MARIADB -> "insert into nextprot." + table + values;
+            case VIRTUOSO -> "insert into nextprot.nextprot." + table + values;
         };
 
         statement = connection.prepareStatement(sql);
+        keys = tableKeys.computeIfAbsent(name, _ -> new Keys());
+    }
+
+
+    /*
+     * Records the key of a row and tells whether it is new, i.e. whether the row is to be stored.
+     */
+    public boolean isNew(int key)
+    {
+        return keys.add(Integer.toUnsignedLong(key));
+    }
+
+
+    /*
+     * Records the key of a row consisting of two integers and tells whether it is new.
+     */
+    public boolean isNew(int key1, int key2)
+    {
+        return keys.add((long) key1 << 32 | Integer.toUnsignedLong(key2));
+    }
+
+
+    /*
+     * Records the key of a row consisting of an integer and a literal and tells whether it is new.
+     */
+    public boolean isNew(int key, String literal)
+    {
+        return isNew(key, keys.getLiteralId(literal));
     }
 
 
@@ -68,6 +102,7 @@ public class Table implements AutoCloseable
         finally
         {
             statement.close();
+            keys.finish();
         }
     }
 

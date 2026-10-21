@@ -45,7 +45,12 @@ public class Publication
         Table links = dispatcher.table(connection, type, "publication_links(publication, link)");
 
         dispatcher.on(nextprot + "from", (publication, link) -> {
-            links.setValue(1, getIntID(publication, "http://nextprot.org/rdf/publication/"));
+            Integer id = getIntID(publication, "http://nextprot.org/rdf/publication/");
+
+            if(!links.isNew(id, getLiteralValue(link)))
+                return;
+
+            links.setValue(1, id);
             links.setValue(2, getLiteralValue(link));
             links.add();
         });
@@ -56,7 +61,12 @@ public class Publication
             {
                 for(Node publication : publications)
                 {
-                    table.setValue(1, getIntID(publication, "http://nextprot.org/rdf/publication/"));
+                    Integer id = getIntID(publication, "http://nextprot.org/rdf/publication/");
+
+                    if(!table.isNew(id))
+                        continue;
+
+                    table.setValue(1, id);
                     table.setValue(2, types.contains(publication, largeScalePublication));
                     table.setValue(3, getLiteralValue(titles.first(publication)));
                     table.setValue(4, getLiteralValue(journals.first(publication)));

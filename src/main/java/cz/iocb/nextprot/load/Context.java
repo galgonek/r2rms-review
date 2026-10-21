@@ -1,7 +1,6 @@
 package cz.iocb.nextprot.load;
 
 import static cz.iocb.nextprot.load.NeXtProt.nextprot;
-import static cz.iocb.nextprot.load.Nodes.getID;
 import static cz.iocb.nextprot.load.Nodes.getIntID;
 import static cz.iocb.nextprot.load.Terminology.terms;
 import java.io.IOException;
@@ -35,17 +34,18 @@ public class Context
             {
                 for(Node context : contexts)
                 {
-                    table.setValue(1, getIntID(context, "http://nextprot.org/rdf/context/"));
+                    Integer id = getIntID(context, "http://nextprot.org/rdf/context/");
+
+                    if(!table.isNew(id))
+                        continue;
+
+                    table.setValue(1, id);
                     table.setValue(2, getIntID(metadata.first(context), "http://nextprot.org/rdf/publication/"));
-                    table.setValue(3,
-                            getID(methods.first(context), "http://nextprot.org/rdf/terminology/", terms, mode));
-                    table.setValue(4,
-                            getID(diseases.first(context), "http://nextprot.org/rdf/terminology/", terms, mode));
-                    table.setValue(5,
-                            getID(tissues.first(context), "http://nextprot.org/rdf/terminology/", terms, mode));
-                    table.setValue(6, getID(lines.first(context), "http://nextprot.org/rdf/terminology/", terms, mode));
-                    table.setValue(7,
-                            getID(stages.first(context), "http://nextprot.org/rdf/terminology/", terms, mode));
+                    table.setValue(3, terms.getValue(methods.first(context), mode));
+                    table.setValue(4, terms.getValue(diseases.first(context), mode));
+                    table.setValue(5, terms.getValue(tissues.first(context), mode));
+                    table.setValue(6, terms.getValue(lines.first(context), mode));
+                    table.setValue(7, terms.getValue(stages.first(context), mode));
                     table.add();
                 }
             }

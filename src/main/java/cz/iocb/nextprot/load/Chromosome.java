@@ -7,7 +7,6 @@ import static cz.iocb.nextprot.load.NeXtProt.rdfs;
 import static cz.iocb.nextprot.load.NeXtProt.skos;
 import static cz.iocb.nextprot.load.Nodes.getBooleanValue;
 import static cz.iocb.nextprot.load.Nodes.getDoubleValue;
-import static cz.iocb.nextprot.load.Nodes.getID;
 import static cz.iocb.nextprot.load.Nodes.getIntID;
 import static cz.iocb.nextprot.load.Nodes.getIntValue;
 import static cz.iocb.nextprot.load.Nodes.getLiteralValue;
@@ -60,12 +59,12 @@ public class Chromosome
     private static ObjectIntHashMap<Node> names = new ObjectIntHashMap<>();
     private static ObjectIntHashMap<Node> nameLists = new ObjectIntHashMap<>();
 
-    static ObjectIntHashMap<String> annotations = new ObjectIntHashMap<>();
-    static ObjectIntHashMap<String> evidences = new ObjectIntHashMap<>();
-    static ObjectIntHashMap<String> entries = new ObjectIntHashMap<>();
-    static ObjectIntHashMap<String> isoforms = new ObjectIntHashMap<>();
-    static ObjectIntHashMap<String> proteoforms = new ObjectIntHashMap<>();
-    static ObjectIntHashMap<String> genes = new ObjectIntHashMap<>();
+    static Ids annotations = new Ids("http://nextprot.org/rdf/annotation/");
+    static Ids evidences = new Ids("http://nextprot.org/rdf/evidence/");
+    static Ids entries = new Ids("http://nextprot.org/rdf/entry/");
+    static Ids isoforms = new Ids("http://nextprot.org/rdf/isoform/");
+    static Ids proteoforms = new Ids("http://nextprot.org/rdf/proteoform/");
+    static Ids genes = new Ids("http://nextprot.org/rdf/gene/");
 
     private static final Node evidenceType = NodeFactory.createURI(nextprot + "Evidence");
     private static final Node proteinSequenceType = NodeFactory.createURI(nextprot + "ProteinSequence");
@@ -213,21 +212,21 @@ public class Chromosome
             {
                 for(Node evidence : evidenceNodes)
                 {
-                    table.setValue(1, getID(evidence, "http://nextprot.org/rdf/evidence/", evidences, mode));
+                    if(!table.isNew(evidences.getId(evidence)))
+                        continue;
+
+                    table.setValue(1, evidences.getValue(evidence, mode));
                     table.setValue(2, getDoubleValue(expressionScores.first(evidence)));
                     table.setValue(3, getDoubleValue(alleleFrequencies.first(evidence)));
                     table.setValue(4,
                             getIntID(experimentalContexts.first(evidence), "http://nextprot.org/rdf/context/"));
-                    table.setValue(5,
-                            getID(evidenceCodes.first(evidence), "http://nextprot.org/rdf/terminology/", terms, mode));
-                    table.setValue(6,
-                            getID(assignedBy.first(evidence), "http://nextprot.org/rdf/source/", sources, mode));
-                    table.setValue(7, getID(expressionLevels.first(evidence), nextprot, entities, mode));
-                    table.setValue(8, getID(fromXrefs.first(evidence), "http://nextprot.org/rdf/db/", databases, mode));
-                    table.setValue(9, getID(integrationLevels.first(evidence), nextprot, entities, mode));
-                    table.setValue(10, getID(qualities.first(evidence), nextprot, entities, mode));
-                    table.setValue(11, getID(detectionMethods.first(evidence), "http://nextprot.org/rdf/terminology/",
-                            terms, mode));
+                    table.setValue(5, terms.getValue(evidenceCodes.first(evidence), mode));
+                    table.setValue(6, sources.getValue(assignedBy.first(evidence), mode));
+                    table.setValue(7, entities.getValue(expressionLevels.first(evidence), mode));
+                    table.setValue(8, databases.getValue(fromXrefs.first(evidence), mode));
+                    table.setValue(9, entities.getValue(integrationLevels.first(evidence), mode));
+                    table.setValue(10, entities.getValue(qualities.first(evidence), mode));
+                    table.setValue(11, terms.getValue(detectionMethods.first(evidence), mode));
                     table.setValue(12, getBooleanValue(negatives.first(evidence)));
                     table.setValue(13, getIntValue(numbersOfExperiments.first(evidence)));
                     table.setValue(14, getIntValue(homozygoteCounts.first(evidence)));
@@ -242,7 +241,7 @@ public class Chromosome
                     table.setValue(23, getLiteralValue(negativeIsoformSpecificities.first(evidence)));
 
                     if(mode == Mode.INDIRECT)
-                        table.setValue(24, getStringID(evidence, "http://nextprot.org/rdf/evidence/"));
+                        table.setValue(24, evidences.getLocalPart(evidence));
 
                     table.add();
                 }
@@ -257,8 +256,13 @@ public class Chromosome
                         if(!reference.isURI())
                             continue;
 
-                        table.setValue(1, getID(evidence, "http://nextprot.org/rdf/evidence/", evidences, mode));
-                        table.setValue(2, getIntID(reference, "http://nextprot.org/rdf/publication/"));
+                        Integer publication = getIntID(reference, "http://nextprot.org/rdf/publication/");
+
+                        if(!table.isNew(evidences.getId(evidence), publication))
+                            continue;
+
+                        table.setValue(1, evidences.getValue(evidence, mode));
+                        table.setValue(2, publication);
                         table.add();
                     }
                 }
@@ -304,15 +308,20 @@ public class Chromosome
         Table peptideSets = dispatcher.table(connection, type, "annotation_peptide_sets(annotation, peptide_set)");
 
         dispatcher.on(nextprot + "evidence", (annotation, evidence) -> {
-            annotationEvidences.setValue(1,
-                    getID(annotation, "http://nextprot.org/rdf/annotation/", annotations, mode));
-            annotationEvidences.setValue(2, getID(evidence, "http://nextprot.org/rdf/evidence/", evidences, mode));
+            if(!annotationEvidences.isNew(annotations.getId(annotation), evidences.getId(evidence)))
+                return;
+
+            annotationEvidences.setValue(1, annotations.getValue(annotation, mode));
+            annotationEvidences.setValue(2, evidences.getValue(evidence, mode));
             annotationEvidences.add();
         });
 
         dispatcher.on(nextprot + "negativeEvidence", (annotation, evidence) -> {
-            negativeEvidences.setValue(1, getID(annotation, "http://nextprot.org/rdf/annotation/", annotations, mode));
-            negativeEvidences.setValue(2, getID(evidence, "http://nextprot.org/rdf/evidence/", evidences, mode));
+            if(!negativeEvidences.isNew(annotations.getId(annotation), evidences.getId(evidence)))
+                return;
+
+            negativeEvidences.setValue(1, annotations.getValue(annotation, mode));
+            negativeEvidences.setValue(2, evidences.getValue(evidence, mode));
             negativeEvidences.add();
         });
 
@@ -320,13 +329,16 @@ public class Chromosome
             if(!annotation.isURI() || !annotation.getURI().startsWith("http://nextprot.org/rdf/annotation/"))
                 return;
 
-            diseases.setValue(1, getID(annotation, "http://nextprot.org/rdf/annotation/", annotations, mode));
-            diseases.setValue(2, getID(disease, "http://nextprot.org/rdf/terminology/", terms, mode));
+            if(!diseases.isNew(annotations.getId(annotation), terms.getId(disease)))
+                return;
+
+            diseases.setValue(1, annotations.getValue(annotation, mode));
+            diseases.setValue(2, terms.getValue(disease, mode));
             diseases.add();
         });
 
         dispatcher.on(rdfs + "comment", (annotation, comment) -> {
-            Object id = getID(annotation, "http://nextprot.org/rdf/annotation/", annotations, mode);
+            Object id = annotations.getValue(annotation, mode);
             String key = id + "\0" + getLiteralValue(comment);
 
             if(!comments.contains(key))
@@ -343,31 +355,37 @@ public class Chromosome
             if(!annotation.isURI() || !annotation.getURI().startsWith("http://nextprot.org/rdf/annotation/"))
                 return;
 
-            specificities.setValue(1, getID(annotation, "http://nextprot.org/rdf/annotation/", annotations, mode));
-            specificities.setValue(2, getID(specificity, nextprot, entities, mode));
+            if(!specificities.isNew(annotations.getId(annotation), entities.getId(specificity)))
+                return;
+
+            specificities.setValue(1, annotations.getValue(annotation, mode));
+            specificities.setValue(2, entities.getValue(specificity, mode));
             specificities.add();
         });
 
         dispatcher.on(nextprot + "interactant", (annotation, interactant) -> {
-            if(interactant.isURI() && interactant.getURI().startsWith("http://nextprot.org/rdf/entry/"))
+            if(interactant.isURI() && interactant.getURI().startsWith("http://nextprot.org/rdf/entry/")
+                    && entryInteractants.isNew(annotations.getId(annotation), entries.getId(interactant)))
             {
-                entryInteractants.setValue(1,
-                        getID(annotation, "http://nextprot.org/rdf/annotation/", annotations, mode));
-                entryInteractants.setValue(2, getID(interactant, "http://nextprot.org/rdf/entry/", entries, mode));
+                entryInteractants.setValue(1, annotations.getValue(annotation, mode));
+                entryInteractants.setValue(2, entries.getValue(interactant, mode));
                 entryInteractants.add();
             }
 
-            if(interactant.isURI() && interactant.getURI().startsWith("http://nextprot.org/rdf/isoform/"))
+            if(interactant.isURI() && interactant.getURI().startsWith("http://nextprot.org/rdf/isoform/")
+                    && isoformInteractants.isNew(annotations.getId(annotation), isoforms.getId(interactant)))
             {
-                isoformInteractants.setValue(1,
-                        getID(annotation, "http://nextprot.org/rdf/annotation/", annotations, mode));
-                isoformInteractants.setValue(2, getID(interactant, "http://nextprot.org/rdf/isoform/", isoforms, mode));
+                isoformInteractants.setValue(1, annotations.getValue(annotation, mode));
+                isoformInteractants.setValue(2, isoforms.getValue(interactant, mode));
                 isoformInteractants.add();
             }
         });
 
         dispatcher.on(nextprot + "peptideSet", (annotation, set) -> {
-            peptideSets.setValue(1, getID(annotation, "http://nextprot.org/rdf/annotation/", annotations, mode));
+            if(!peptideSets.isNew(annotations.getId(annotation), getLiteralValue(set)))
+                return;
+
+            peptideSets.setValue(1, annotations.getValue(annotation, mode));
             peptideSets.setValue(2, getLiteralValue(set));
             peptideSets.add();
         });
@@ -380,7 +398,7 @@ public class Chromosome
                             + "antibody_name, antibody_unicity" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
             {
                 /* the typed annotations with a quality, and the untyped impacted objects */
-                LinkedHashSet<Node> annotationNodes = new LinkedHashSet<Node>();
+                LinkedHashSet<Node> annotationNodes = new LinkedHashSet<>();
 
                 for(Node annotation : qualities.nodes())
                     if(types.get(annotation).stream().anyMatch(t -> !t.equals(evidenceType)))
@@ -392,17 +410,18 @@ public class Chromosome
 
                 for(Node annotation : annotationNodes)
                 {
+                    if(!table.isNew(annotations.getId(annotation)))
+                        continue;
+
                     Node annotationType = types.first(annotation, t -> !t.equals(evidenceType));
                     Node quality = annotationType != null ? qualities.first(annotation) : null;
 
-                    table.setValue(1, getID(annotation, "http://nextprot.org/rdf/annotation/", annotations, mode));
+                    table.setValue(1, annotations.getValue(annotation, mode));
                     table.setValue(2, getDoubleValue(resolutions.first(annotation)));
-                    table.setValue(3, getID(annotationType, nextprot, entities, mode));
-                    table.setValue(4, getID(quality, nextprot, entities, mode));
-                    table.setValue(5, getID(annotationTerms.first(annotation), "http://nextprot.org/rdf/terminology/",
-                            terms, mode));
-                    table.setValue(6, getID(impactedObjects.first(annotation), "http://nextprot.org/rdf/annotation/",
-                            annotations, mode));
+                    table.setValue(3, entities.getValue(annotationType, mode));
+                    table.setValue(4, entities.getValue(quality, mode));
+                    table.setValue(5, terms.getValue(annotationTerms.first(annotation), mode));
+                    table.setValue(6, annotations.getValue(impactedObjects.first(annotation), mode));
                     table.setValue(7, getBooleanValue(selfInteractions.first(annotation)));
                     table.setValue(8, getBooleanValue(proteotypics.first(annotation)));
                     table.setValue(9, getIntValue(starts.first(annotation)));
@@ -418,7 +437,7 @@ public class Chromosome
                     table.setValue(19, getLiteralValue(antibodyUnicities.first(annotation)));
 
                     if(mode == Mode.INDIRECT)
-                        table.setValue(20, getStringID(annotation, "http://nextprot.org/rdf/annotation/"));
+                        table.setValue(20, annotations.getLocalPart(annotation));
 
                     table.add();
                 }
@@ -463,28 +482,30 @@ public class Chromosome
             {
                 for(Node isoform : isoformNodes)
                 {
-                    table.setValue(1, getID(isoform, "http://nextprot.org/rdf/isoform/", isoforms, mode));
-                    table.setValue(2,
-                            getID(isoformEntries.first(isoform), "http://nextprot.org/rdf/entry/", entries, mode));
-                    table.setValue(3, getAnnotationID(absorptionMaxes.first(isoform), mode));
-                    table.setValue(4, getAnnotationID(absorptionNotes.first(isoform), mode));
-                    table.setValue(5, getAnnotationID(allergens.first(isoform), mode));
-                    table.setValue(6, getAnnotationID(initiatorMethionines.first(isoform), mode));
-                    table.setValue(7, getAnnotationID(kineticKMs.first(isoform), mode));
-                    table.setValue(8, getAnnotationID(kineticNotes.first(isoform), mode));
-                    table.setValue(9, getAnnotationID(kineticVmaxes.first(isoform), mode));
-                    table.setValue(10, getAnnotationID(nonConsecutiveResidues.first(isoform), mode));
-                    table.setValue(11, getAnnotationID(peroxisomeTransitPeptides.first(isoform), mode));
-                    table.setValue(12, getAnnotationID(pharmaceuticals.first(isoform), mode));
-                    table.setValue(13, getAnnotationID(phDependences.first(isoform), mode));
-                    table.setValue(14, getAnnotationID(redoxPotentials.first(isoform), mode));
-                    table.setValue(15, getAnnotationID(signalPeptides.first(isoform), mode));
-                    table.setValue(16, getAnnotationID(temperatureDependences.first(isoform), mode));
+                    if(!table.isNew(isoforms.getId(isoform)))
+                        continue;
+
+                    table.setValue(1, isoforms.getValue(isoform, mode));
+                    table.setValue(2, entries.getValue(isoformEntries.first(isoform), mode));
+                    table.setValue(3, annotations.getValue(absorptionMaxes.first(isoform), mode));
+                    table.setValue(4, annotations.getValue(absorptionNotes.first(isoform), mode));
+                    table.setValue(5, annotations.getValue(allergens.first(isoform), mode));
+                    table.setValue(6, annotations.getValue(initiatorMethionines.first(isoform), mode));
+                    table.setValue(7, annotations.getValue(kineticKMs.first(isoform), mode));
+                    table.setValue(8, annotations.getValue(kineticNotes.first(isoform), mode));
+                    table.setValue(9, annotations.getValue(kineticVmaxes.first(isoform), mode));
+                    table.setValue(10, annotations.getValue(nonConsecutiveResidues.first(isoform), mode));
+                    table.setValue(11, annotations.getValue(peroxisomeTransitPeptides.first(isoform), mode));
+                    table.setValue(12, annotations.getValue(pharmaceuticals.first(isoform), mode));
+                    table.setValue(13, annotations.getValue(phDependences.first(isoform), mode));
+                    table.setValue(14, annotations.getValue(redoxPotentials.first(isoform), mode));
+                    table.setValue(15, annotations.getValue(signalPeptides.first(isoform), mode));
+                    table.setValue(16, annotations.getValue(temperatureDependences.first(isoform), mode));
                     table.setValue(17, getBooleanValue(canonicalIsoforms.first(isoform)));
                     table.setValue(18, getBooleanValue(swissprotDisplayed.first(isoform)));
 
                     if(mode == Mode.INDIRECT)
-                        table.setValue(19, getStringID(isoform, "http://nextprot.org/rdf/isoform/"));
+                        table.setValue(19, isoforms.getLocalPart(isoform));
 
                     table.add();
                 }
@@ -496,8 +517,11 @@ public class Chromosome
                 {
                     for(Node proteoform : isoformProteoforms.get(isoform))
                     {
-                        table.setValue(1, getID(isoform, "http://nextprot.org/rdf/isoform/", isoforms, mode));
-                        table.setValue(2, getID(proteoform, "http://nextprot.org/rdf/proteoform/", proteoforms, mode));
+                        if(!table.isNew(isoforms.getId(isoform), proteoforms.getId(proteoform)))
+                            continue;
+
+                        table.setValue(1, isoforms.getValue(isoform, mode));
+                        table.setValue(2, proteoforms.getValue(proteoform, mode));
                         table.add();
                     }
                 }
@@ -511,8 +535,11 @@ public class Chromosome
                     {
                         for(Node annotation : links[i].get(isoform))
                         {
-                            table.setValue(1, getID(isoform, "http://nextprot.org/rdf/isoform/", isoforms, mode));
-                            table.setValue(2, getAnnotationID(annotation, mode));
+                            if(!table.isNew(isoforms.getId(isoform), annotations.getId(annotation)))
+                                continue;
+
+                            table.setValue(1, isoforms.getValue(isoform, mode));
+                            table.setValue(2, annotations.getValue(annotation, mode));
                             table.add();
                         }
                     }
@@ -550,13 +577,16 @@ public class Chromosome
                     if(page == null || !page.equals(uniprot))
                         throw new IOException("wrong swissprot page: " + entry);
 
-                    table.setValue(1, getID(entry, "http://nextprot.org/rdf/entry/", entries, mode));
-                    table.setValue(2, getID(existences.first(entry), nextprot, entities, mode));
+                    if(!table.isNew(entries.getId(entry)))
+                        continue;
+
+                    table.setValue(1, entries.getValue(entry, mode));
+                    table.setValue(2, entities.getValue(existences.first(entry), mode));
                     table.setValue(3, getIntValue(isoformCounts.first(entry)));
                     table.setValue(4, uniprot);
 
                     if(mode == Mode.INDIRECT)
-                        table.setValue(5, getStringID(entry, "http://nextprot.org/rdf/entry/"));
+                        table.setValue(5, entries.getLocalPart(entry));
 
                     table.add();
                 }
@@ -568,8 +598,11 @@ public class Chromosome
                 {
                     for(Node classifier : classifiers.get(entry))
                     {
-                        table.setValue(1, getID(entry, "http://nextprot.org/rdf/entry/", entries, mode));
-                        table.setValue(2, getID(classifier, "http://nextprot.org/rdf/terminology/", terms, mode));
+                        if(!table.isNew(entries.getId(entry), terms.getId(classifier)))
+                            continue;
+
+                        table.setValue(1, entries.getValue(entry, mode));
+                        table.setValue(2, terms.getValue(classifier, mode));
                         table.add();
                     }
                 }
@@ -581,8 +614,11 @@ public class Chromosome
                 {
                     for(Node gene : entryGenes.get(entry))
                     {
-                        table.setValue(1, getID(entry, "http://nextprot.org/rdf/entry/", entries, mode));
-                        table.setValue(2, getID(gene, "http://nextprot.org/rdf/gene/", genes, mode));
+                        if(!table.isNew(entries.getId(entry), genes.getId(gene)))
+                            continue;
+
+                        table.setValue(1, entries.getValue(entry, mode));
+                        table.setValue(2, genes.getValue(gene, mode));
                         table.add();
                     }
                 }
@@ -597,8 +633,13 @@ public class Chromosome
                         if(!reference.isURI())
                             continue;
 
-                        table.setValue(1, getID(entry, "http://nextprot.org/rdf/entry/", entries, mode));
-                        table.setValue(2, getIntID(reference, "http://nextprot.org/rdf/publication/"));
+                        Integer publication = getIntID(reference, "http://nextprot.org/rdf/publication/");
+
+                        if(!table.isNew(entries.getId(entry), publication))
+                            continue;
+
+                        table.setValue(1, entries.getValue(entry, mode));
+                        table.setValue(2, publication);
                         table.add();
                     }
                 }
@@ -610,7 +651,7 @@ public class Chromosome
                 {
                     for(Node name : recommendedNames.get(entry))
                     {
-                        table.setValue(1, getID(entry, "http://nextprot.org/rdf/entry/", entries, mode));
+                        table.setValue(1, entries.getValue(entry, mode));
                         table.setValue(2, getMappedID(name, names));
                         table.add();
                     }
@@ -623,7 +664,7 @@ public class Chromosome
                 {
                     for(Node name : alternativeNames.get(entry))
                     {
-                        table.setValue(1, getID(entry, "http://nextprot.org/rdf/entry/", entries, mode));
+                        table.setValue(1, entries.getValue(entry, mode));
                         table.setValue(2, getMappedID(name, names));
                         table.add();
                     }
@@ -633,7 +674,7 @@ public class Chromosome
             try(Table table = new Table(connection, type, "entry_additional_names(entry, name_list)"))
             {
                 additionalNames.forEach((entry, list) -> {
-                    table.setValue(1, getID(entry, "http://nextprot.org/rdf/entry/", entries, mode));
+                    table.setValue(1, entries.getValue(entry, mode));
                     table.setValue(2, getMappedID(list, nameLists));
                     table.add();
                 });
@@ -642,7 +683,7 @@ public class Chromosome
             try(Table table = new Table(connection, type, "entry_cleaved_region_names(entry, name_list)"))
             {
                 cleavedRegionNames.forEach((entry, list) -> {
-                    table.setValue(1, getID(entry, "http://nextprot.org/rdf/entry/", entries, mode));
+                    table.setValue(1, entries.getValue(entry, mode));
                     table.setValue(2, getMappedID(list, nameLists));
                     table.add();
                 });
@@ -651,7 +692,7 @@ public class Chromosome
             try(Table table = new Table(connection, type, "entry_functional_region_names(entry, name_list)"))
             {
                 functionalRegionNames.forEach((entry, list) -> {
-                    table.setValue(1, getID(entry, "http://nextprot.org/rdf/entry/", entries, mode));
+                    table.setValue(1, entries.getValue(entry, mode));
                     table.setValue(2, getMappedID(list, nameLists));
                     table.add();
                 });
@@ -676,11 +717,14 @@ public class Chromosome
             {
                 for(Node proteoform : proteoformNodes)
                 {
-                    table.setValue(1, getID(proteoform, "http://nextprot.org/rdf/proteoform/", proteoforms, mode));
+                    if(!table.isNew(proteoforms.getId(proteoform)))
+                        continue;
+
+                    table.setValue(1, proteoforms.getValue(proteoform, mode));
                     table.setValue(2, getLiteralValue(labels.first(proteoform)));
 
                     if(mode == Mode.INDIRECT)
-                        table.setValue(3, getStringID(proteoform, "http://nextprot.org/rdf/proteoform/"));
+                        table.setValue(3, proteoforms.getLocalPart(proteoform));
 
                     table.add();
                 }
@@ -695,9 +739,11 @@ public class Chromosome
                     {
                         for(Node annotation : links[i].get(proteoform))
                         {
-                            table.setValue(1,
-                                    getID(proteoform, "http://nextprot.org/rdf/proteoform/", proteoforms, mode));
-                            table.setValue(2, getAnnotationID(annotation, mode));
+                            if(!table.isNew(proteoforms.getId(proteoform), annotations.getId(annotation)))
+                                continue;
+
+                            table.setValue(1, proteoforms.getValue(proteoform, mode));
+                            table.setValue(2, annotations.getValue(annotation, mode));
                             table.add();
                         }
                     }
@@ -725,7 +771,10 @@ public class Chromosome
             {
                 for(Node gene : geneNodes)
                 {
-                    table.setValue(1, getID(gene, "http://nextprot.org/rdf/gene/", genes, mode));
+                    if(!table.isNew(genes.getId(gene)))
+                        continue;
+
+                    table.setValue(1, genes.getValue(gene, mode));
                     table.setValue(2, getIntValue(begins.first(gene)));
                     table.setValue(3, getIntValue(ends.first(gene)));
                     table.setValue(4, getIntValue(lengths.first(gene)));
@@ -734,7 +783,7 @@ public class Chromosome
                     table.setValue(7, getLiteralValue(strands.first(gene)));
 
                     if(mode == Mode.INDIRECT)
-                        table.setValue(8, getStringID(gene, "http://nextprot.org/rdf/gene/"));
+                        table.setValue(8, genes.getLocalPart(gene));
 
                     table.add();
                 }
@@ -746,8 +795,11 @@ public class Chromosome
                 {
                     for(Node mapping : bestGeneMappings.get(gene))
                     {
-                        table.setValue(1, getID(gene, "http://nextprot.org/rdf/gene/", genes, mode));
-                        table.setValue(2, getID(mapping, "http://nextprot.org/rdf/entry/", entries, mode));
+                        if(!table.isNew(genes.getId(gene), entries.getId(mapping)))
+                            continue;
+
+                        table.setValue(1, genes.getValue(gene, mode));
+                        table.setValue(2, entries.getValue(mapping, mode));
                         table.add();
                     }
                 }
@@ -759,7 +811,10 @@ public class Chromosome
                 {
                     for(Node name : geneNames.get(gene))
                     {
-                        table.setValue(1, getID(gene, "http://nextprot.org/rdf/gene/", genes, mode));
+                        if(!table.isNew(genes.getId(gene), getLiteralValue(name)))
+                            continue;
+
+                        table.setValue(1, genes.getValue(gene, mode));
                         table.setValue(2, getLiteralValue(name));
                         table.add();
                     }
@@ -792,7 +847,7 @@ public class Chromosome
                         table.setValue(1, sequenceId++);
                         table.setValue(2, getDoubleValue(molecularWeights.first(sequence)));
                         table.setValue(3, getDoubleValue(isoelectricPoints.first(sequence)));
-                        table.setValue(4, getID(isoform, "http://nextprot.org/rdf/isoform/", isoforms, mode));
+                        table.setValue(4, isoforms.getValue(isoform, mode));
                         table.setValue(5, getIntValue(lengths.first(sequence)));
                         table.setValue(6, getLiteralValue(chains.first(sequence)));
                         table.add();
@@ -823,9 +878,8 @@ public class Chromosome
                             continue;
 
                         table.setValue(1, familyId++);
-                        table.setValue(2, getID(entry, "http://nextprot.org/rdf/entry/", entries, mode));
-                        table.setValue(3,
-                                getID(familyTerms.first(family), "http://nextprot.org/rdf/terminology/", terms, mode));
+                        table.setValue(2, entries.getValue(entry, mode));
+                        table.setValue(3, terms.getValue(familyTerms.first(family), mode));
                         table.setValue(4, getLiteralValue(regions.first(family)));
                         table.setValue(5, getLiteralValue(descriptions.first(family)));
                         table.add();
@@ -859,7 +913,7 @@ public class Chromosome
                             continue;
 
                         table.setValue(1, historyId++);
-                        table.setValue(2, getID(entry, "http://nextprot.org/rdf/entry/", entries, mode));
+                        table.setValue(2, entries.getValue(entry, mode));
                         table.setValue(3, getLiteralValue(integrated.first(history)));
                         table.setValue(4, getLiteralValue(updated.first(history)));
                         table.setValue(5, getLiteralValue(lastSequenceUpdates.first(history)));
@@ -892,9 +946,8 @@ public class Chromosome
                             continue;
 
                         table.setValue(1, identifierId++);
-                        table.setValue(2, getID(entry, "http://nextprot.org/rdf/entry/", entries, mode));
-                        table.setValue(3,
-                                getID(provenances.first(identifier), "http://nextprot.org/rdf/db/", databases, mode));
+                        table.setValue(2, entries.getValue(entry, mode));
+                        table.setValue(3, databases.getValue(provenances.first(identifier), mode));
                         table.setValue(4, getLiteralValue(accessions.first(identifier)));
                         table.add();
                     }
@@ -923,9 +976,8 @@ public class Chromosome
                             continue;
 
                         table.setValue(1, entryXrefId++);
-                        table.setValue(2, getID(entry, "http://nextprot.org/rdf/entry/", entries, mode));
-                        table.setValue(3,
-                                getID(provenances.first(xref), "http://nextprot.org/rdf/db/", databases, mode));
+                        table.setValue(2, entries.getValue(entry, mode));
+                        table.setValue(3, databases.getValue(provenances.first(xref), mode));
                         table.setValue(4, getLiteralValue(accessions.first(xref)));
                         table.add();
                     }
@@ -954,9 +1006,8 @@ public class Chromosome
                             continue;
 
                         table.setValue(1, evidenceXrefId++);
-                        table.setValue(2, getID(evidence, "http://nextprot.org/rdf/evidence/", evidences, mode));
-                        table.setValue(3,
-                                getID(provenances.first(xref), "http://nextprot.org/rdf/db/", databases, mode));
+                        table.setValue(2, evidences.getValue(evidence, mode));
+                        table.setValue(3, databases.getValue(provenances.first(xref), mode));
                         table.setValue(4, getLiteralValue(accessions.first(xref)));
                         table.add();
                     }
@@ -1084,12 +1135,6 @@ public class Chromosome
     }
 
 
-    private static Object getAnnotationID(Node node, Mode mode) throws IOException
-    {
-        return getID(node, "http://nextprot.org/rdf/annotation/", annotations, mode);
-    }
-
-
     public static void load(String path, String file, Connection connection, Server type, Mode mode)
             throws IOException, SQLException
     {
@@ -1118,13 +1163,13 @@ public class Chromosome
                 "chebi_xref_bases(id, chebi, annotation, accession, label)", (table, annotation, chebi) -> {
                     table.setValue(1, chebiXrefId++);
                     table.setValue(2, getIntID(chebi, "http://purl.obolibrary.org/obo/CHEBI_"));
-                    table.setValue(3, getAnnotationID(annotation, mode));
+                    table.setValue(3, annotations.getValue(annotation, mode));
                 });
 
         loadInteractantXrefs(dispatcher, connection, type, mode, "DrugBank",
                 "drugbank_xref_bases(id, annotation, drugbank, accession, label)", (table, annotation, drugbank) -> {
                     table.setValue(1, drugBankXrefId++);
-                    table.setValue(2, getAnnotationID(annotation, mode));
+                    table.setValue(2, annotations.getValue(annotation, mode));
                     table.setValue(3, getStringID(drugbank,
                             "http://wifo5-04.informatik.uni-mannheim.de/drugbank/resource/drugs/DB"));
                 });
@@ -1132,7 +1177,7 @@ public class Chromosome
         loadInteractantXrefs(dispatcher, connection, type, mode, "UniProtKB",
                 "uniprot_xref_bases(id, annotation, uniprot, accession, label)", (table, annotation, uniprot) -> {
                     table.setValue(1, uniProtXrefId++);
-                    table.setValue(2, getAnnotationID(annotation, mode));
+                    table.setValue(2, annotations.getValue(annotation, mode));
                     table.setValue(3, getStringID(uniprot, "http://purl.uniprot.org/uniprot/"));
                 });
 

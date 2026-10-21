@@ -3,7 +3,6 @@ package cz.iocb.nextprot.load;
 import static cz.iocb.nextprot.load.Chromosome.annotations;
 import static cz.iocb.nextprot.load.Chromosome.isoforms;
 import static cz.iocb.nextprot.load.NeXtProt.nextprot;
-import static cz.iocb.nextprot.load.Nodes.getID;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -22,8 +21,11 @@ public class Expression
         Table expressions = dispatcher.table(connection, type, table + "(isoform, annotation)");
 
         dispatcher.on(nextprot + predicate, (isoform, annotation) -> {
-            expressions.setValue(1, getID(isoform, "http://nextprot.org/rdf/isoform/", isoforms, mode));
-            expressions.setValue(2, getID(annotation, "http://nextprot.org/rdf/annotation/", annotations, mode));
+            if(!expressions.isNew(isoforms.getId(isoform), annotations.getId(annotation)))
+                return;
+
+            expressions.setValue(1, isoforms.getValue(isoform, mode));
+            expressions.setValue(2, annotations.getValue(annotation, mode));
             expressions.add();
         });
 
