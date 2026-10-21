@@ -11,17 +11,17 @@ import cz.iocb.sparql.engine.mapping.classes.StringUserIriClass;
 
 
 /**
- * NeXtProt configuration over the {@code nextprot_indirect} schema, where entities are identified by integers and their
- * IRIs are kept in the {@code *_bases} tables. Unlike the integer variant, the IRI columns are mapped directly by
- * {@link cz.iocb.sparql.engine.mapping.classes.StringUserIriClass}es and references between entities are resolved by
- * join mappings to the {@code *_bases} table of the referenced entity.
+ * NeXtProt configuration over the {@code nextprot} schema loaded in the indirect mode, where entities are identified by
+ * integers and their IRIs are kept in the {@code *_bases} tables. Unlike the integer variant, the IRI columns are
+ * mapped directly by {@link cz.iocb.sparql.engine.mapping.classes.StringUserIriClass}es and references between entities
+ * are resolved by join mappings to the {@code *_bases} table of the referenced entity.
  */
 public class NeXtProtConfiguration extends SparqlDatabaseConfiguration
 {
     /**
      * Database schema holding the NeXtProt tables.
      */
-    static final String schema = "nextprot_indirect";
+    static final String schema = "nextprot";
 
 
     /**

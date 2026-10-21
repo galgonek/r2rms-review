@@ -11,8 +11,8 @@ import cz.iocb.sparql.engine.mapping.classes.StringUserIriClass;
 
 
 /**
- * NeXtProt configuration over the {@code nextprot_indirect} schema, where entities are identified by integers and their
- * IRIs are kept in the {@code *_bases} tables. Each entity class is a
+ * NeXtProt configuration over the {@code nextprot} schema loaded in the indirect mode, where entities are identified by
+ * integers and their IRIs are kept in the {@code *_bases} tables. Each entity class is a
  * {@link cz.iocb.sparql.engine.mapping.classes.MapUserIriClass} translating between the IRI and the integer id through
  * that table.
  */
@@ -21,7 +21,7 @@ public class NeXtProtConfiguration extends SparqlDatabaseConfiguration
     /**
      * Database schema holding the NeXtProt tables.
      */
-    static final String schema = "nextprot_indirect";
+    static final String schema = "nextprot";
 
 
     /**

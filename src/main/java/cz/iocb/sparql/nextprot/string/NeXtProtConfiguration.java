@@ -11,15 +11,16 @@ import cz.iocb.sparql.engine.mapping.classes.StringUserIriClass;
 
 
 /**
- * NeXtProt configuration over the {@code nextprot_direct} schema, where the local parts of the IRIs are stored directly
- * as varchar identifiers, so every entity gets a {@link cz.iocb.sparql.engine.mapping.classes.StringUserIriClass}.
+ * NeXtProt configuration over the {@code nextprot} schema loaded in the direct mode, where the local parts of the IRIs
+ * are stored directly as varchar identifiers, so every entity gets a
+ * {@link cz.iocb.sparql.engine.mapping.classes.StringUserIriClass}.
  */
 public class NeXtProtConfiguration extends SparqlDatabaseConfiguration
 {
     /**
      * Database schema holding the NeXtProt tables.
      */
-    static final String schema = "nextprot_direct";
+    static final String schema = "nextprot";
 
 
     /**
