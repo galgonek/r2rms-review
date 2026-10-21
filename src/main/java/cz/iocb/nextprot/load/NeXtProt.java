@@ -9,6 +9,14 @@ import java.sql.SQLException;
 
 public class NeXtProt
 {
+    static final String rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+    static final String rdfs = "http://www.w3.org/2000/01/rdf-schema#";
+    static final String owl = "http://www.w3.org/2002/07/owl#";
+    static final String skos = "http://www.w3.org/2004/02/skos/core#";
+    static final String nextprot = "http://nextprot.org/rdf#";
+    static final String db = "http://nextprot.org/rdf/db/";
+
+
     protected static enum Mode
     {
         INDIRECT, DIRECT;

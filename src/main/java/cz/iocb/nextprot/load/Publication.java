@@ -1,9 +1,15 @@
 package cz.iocb.nextprot.load;
 
+import static cz.iocb.nextprot.load.NeXtProt.nextprot;
+import static cz.iocb.nextprot.load.NeXtProt.rdf;
+import static cz.iocb.nextprot.load.Nodes.getIntID;
+import static cz.iocb.nextprot.load.Nodes.getLiteralValue;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import org.apache.jena.rdf.model.Model;
+import java.util.LinkedHashSet;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import cz.iocb.nextprot.load.NeXtProt.Mode;
 import cz.iocb.nextprot.load.NeXtProt.Server;
 
@@ -14,98 +20,97 @@ public class Publication
     public static void load(String path, String file, Connection connection, Server type, Mode mode)
             throws IOException, SQLException
     {
-        Model model = DataLoader.getModel(path, file);
+        TripleDispatcher dispatcher = new TripleDispatcher();
 
-        // @formatter:off
-        new DataLoader(model, connection, type,
-                "?publication rdf:type :Publication "
-                        + "bind (exists { ?publication rdf:type :LargeScalePublication } as ?large)"
-                        + "optional { ?publication :title ?title }"
-                        + "optional { ?publication :journal ?journal }"
-                        + "optional { ?publication :year ?year }"
-                        + "optional { ?publication :volume ?volume }"
-                        + "optional { ?publication :issue ?issue }"
-                        + "optional { ?publication :pubType ?pubType }"
-                        + "optional { ?publication :firstPage ?firstPage }"
-                        + "optional { ?publication :lastPage ?lastPage }"
-                        + "optional { ?publication :publisher ?publisher }"
-                        + "optional { ?publication :city ?city }",
-                "publication_bases"
-                        + "(id, large, title, journal, year, volume, issue, pub_type, first_page, last_page, publisher, city)")
-        // @formatter:on
-        {
-            @Override
-            public void insert() throws SQLException, IOException
+        LinkedHashSet<Node> publications = dispatcher.instances(nextprot + "Publication");
+        Node largeScalePublication = NodeFactory.createURI(nextprot + "LargeScalePublication");
+        Node person = NodeFactory.createURI(nextprot + "Person");
+
+        Values types = dispatcher.values(rdf + "type");
+        Values titles = dispatcher.values(nextprot + "title");
+        Values journals = dispatcher.values(nextprot + "journal");
+        Values years = dispatcher.values(nextprot + "year");
+        Values volumes = dispatcher.values(nextprot + "volume");
+        Values issues = dispatcher.values(nextprot + "issue");
+        Values pubTypes = dispatcher.values(nextprot + "pubType");
+        Values firstPages = dispatcher.values(nextprot + "firstPage");
+        Values lastPages = dispatcher.values(nextprot + "lastPage");
+        Values publishers = dispatcher.values(nextprot + "publisher");
+        Values cities = dispatcher.values(nextprot + "city");
+        Values authors = dispatcher.values(nextprot + "author");
+        Values editors = dispatcher.values(nextprot + "editor");
+        Values names = dispatcher.values(nextprot + "name");
+        Values suffixes = dispatcher.values(nextprot + "suffix");
+
+        Table links = dispatcher.table(connection, type, "publication_links(publication, link)");
+
+        dispatcher.on(nextprot + "from", (publication, link) -> {
+            links.setValue(1, getIntID(publication, "http://nextprot.org/rdf/publication/"));
+            links.setValue(2, getLiteralValue(link));
+            links.add();
+        });
+
+        dispatcher.after(() -> {
+            try(Table table = new Table(connection, type, "publication_bases(id, large, title, journal, year, "
+                    + "volume, issue, pub_type, first_page, last_page, publisher, city)"))
             {
-                setValue(1, getIntID("publication", "http://nextprot.org/rdf/publication/"));
-                setValue(2, getBooleanValue("large"));
-                setValue(3, getLiteralValue("title"));
-                setValue(4, getLiteralValue("journal"));
-                setValue(5, getLiteralValue("year"));
-                setValue(6, getLiteralValue("volume"));
-                setValue(7, getLiteralValue("issue"));
-                setValue(8, getLiteralValue("pubType"));
-                setValue(9, getLiteralValue("firstPage"));
-                setValue(10, getLiteralValue("lastPage"));
-                setValue(11, getLiteralValue("publisher"));
-                setValue(12, getLiteralValue("city"));
+                for(Node publication : publications)
+                {
+                    table.setValue(1, getIntID(publication, "http://nextprot.org/rdf/publication/"));
+                    table.setValue(2, types.contains(publication, largeScalePublication));
+                    table.setValue(3, getLiteralValue(titles.first(publication)));
+                    table.setValue(4, getLiteralValue(journals.first(publication)));
+                    table.setValue(5, getLiteralValue(years.first(publication)));
+                    table.setValue(6, getLiteralValue(volumes.first(publication)));
+                    table.setValue(7, getLiteralValue(issues.first(publication)));
+                    table.setValue(8, getLiteralValue(pubTypes.first(publication)));
+                    table.setValue(9, getLiteralValue(firstPages.first(publication)));
+                    table.setValue(10, getLiteralValue(lastPages.first(publication)));
+                    table.setValue(11, getLiteralValue(publishers.first(publication)));
+                    table.setValue(12, getLiteralValue(cities.first(publication)));
+                    table.add();
+                }
             }
-        }.load();
 
-
-        new DataLoader(model, connection, type, "?publication :from ?link", "publication_links(publication, link)")
-        {
-            @Override
-            public void insert() throws SQLException, IOException
+            try(Table table = new Table(connection, type, "publication_authors(id, publication, person, name, suffix)"))
             {
-                setValue(1, getIntID("publication", "http://nextprot.org/rdf/publication/"));
-                setValue(2, getLiteralValue("link"));
+                int id = 0;
+
+                for(Node publication : authors.nodes())
+                {
+                    for(Node author : authors.get(publication))
+                    {
+                        table.setValue(1, id++);
+                        table.setValue(2, getIntID(publication, "http://nextprot.org/rdf/publication/"));
+                        table.setValue(3, types.contains(author, person));
+                        table.setValue(4, getLiteralValue(names.first(author)));
+                        table.setValue(5, getLiteralValue(suffixes.first(author)));
+                        table.add();
+                    }
+                }
             }
-        }.load();
 
-
-        // @formatter:off
-        new DataLoader(model, connection, type,
-                "?publication :author ?author "
-                        + "bind (exists { ?author rdf:type :Person } as ?person)"
-                        + "optional { ?author :name ?name }"
-                        + "optional { ?author :suffix ?suffix }",
-                "publication_authors(id, publication, person, name, suffix)")
-        // @formatter:on
-        {
-            int id = 0;
-
-            @Override
-            public void insert() throws SQLException, IOException
+            try(Table table = new Table(connection, type, "publication_editors(id, publication, name)"))
             {
-                setValue(1, id++);
-                setValue(2, getIntID("publication", "http://nextprot.org/rdf/publication/"));
-                setValue(3, getBooleanValue("person"));
-                setValue(4, getLiteralValue("name"));
-                setValue(5, getLiteralValue("suffix"));
+                int id = 0;
+
+                for(Node publication : editors.nodes())
+                {
+                    for(Node editor : editors.get(publication))
+                    {
+                        if(!types.contains(editor, person))
+                            continue;
+
+                        table.setValue(1, id++);
+                        table.setValue(2, getIntID(publication, "http://nextprot.org/rdf/publication/"));
+                        table.setValue(3, getLiteralValue(names.first(editor)));
+                        table.add();
+                    }
+                }
             }
-        }.load();
+        });
 
-
-        // @formatter:off
-        new DataLoader(model, connection, type,
-                "?publication :editor ?editor. ?editor rdf:type :Person. "
-                        + "optional {?editor :name ?name}",
-                "publication_editors(id, publication, name)")
-        // @formatter:on
-        {
-            int id = 0;
-
-            @Override
-            public void insert() throws SQLException, IOException
-            {
-                setValue(1, id++);
-                setValue(2, getIntID("publication", "http://nextprot.org/rdf/publication/"));
-                setValue(3, getLiteralValue("name"));
-            }
-        }.load();
-
-        model.close();
+        dispatcher.load(path, file);
     }
 
 

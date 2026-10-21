@@ -17,16 +17,18 @@ import java.net.URLEncoder;
 public class Test
 {
     // @formatter:off
-    static String prefixes = "prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
-            + "prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
-            + "prefix xsd: <http://www.w3.org/2001/XMLSchema#>\n"
-            + "prefix : <http://nextprot.org/rdf#>\n"
-            + "prefix cv: <http://nextprot.org/rdf/terminology/>\n"
-            + "prefix db: <http://nextprot.org/rdf/db/>\n"
-            + "prefix entry: <http://nextprot.org/rdf/entry/>\n"
-            + "prefix source: <http://nextprot.org/rdf/source/>\n"
-            + "prefix chebi: <http://purl.obolibrary.org/obo/>\n"
-            + "prefix skos: <http://www.w3.org/2004/02/skos/core#>\n";
+    static String prefixes = """
+        prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+        prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+        prefix : <http://nextprot.org/rdf#>
+        prefix cv: <http://nextprot.org/rdf/terminology/>
+        prefix db: <http://nextprot.org/rdf/db/>
+        prefix entry: <http://nextprot.org/rdf/entry/>
+        prefix source: <http://nextprot.org/rdf/source/>
+        prefix chebi: <http://purl.obolibrary.org/obo/>
+        prefix skos: <http://www.w3.org/2004/02/skos/core#>
+        """;
     // @formatter:on
 
 

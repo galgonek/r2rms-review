@@ -1,10 +1,18 @@
 package cz.iocb.nextprot.load;
 
+import static cz.iocb.nextprot.load.NeXtProt.nextprot;
+import static cz.iocb.nextprot.load.NeXtProt.owl;
+import static cz.iocb.nextprot.load.NeXtProt.rdf;
+import static cz.iocb.nextprot.load.NeXtProt.rdfs;
+import static cz.iocb.nextprot.load.Nodes.getID;
+import static cz.iocb.nextprot.load.Nodes.getLiteralValue;
+import static cz.iocb.nextprot.load.Nodes.getStringID;
 import static cz.iocb.nextprot.load.Terminology.terms;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import org.apache.jena.rdf.model.Model;
+import java.util.LinkedHashSet;
+import org.apache.jena.graph.Node;
 import org.eclipse.collections.impl.map.mutable.primitive.ObjectIntHashMap;
 import cz.iocb.nextprot.load.NeXtProt.Mode;
 import cz.iocb.nextprot.load.NeXtProt.Server;
@@ -13,184 +21,156 @@ import cz.iocb.nextprot.load.NeXtProt.Server;
 
 public class Schema
 {
-    static ObjectIntHashMap<String> sources = new ObjectIntHashMap<String>();
-    static ObjectIntHashMap<String> databases = new ObjectIntHashMap<String>();
-    static ObjectIntHashMap<String> entities = new ObjectIntHashMap<String>();
-
-
-    private static void loadSources(Model model, Connection connection, Server type, Mode mode)
-            throws IOException, SQLException
-    {
-        // @formatter:off
-        new DataLoader(model, connection, type,
-                "?source rdf:type :Source "
-                        + "optional { ?source rdfs:comment ?comment }"
-                        + "optional { ?source rdfs:seeAlso ?reference }",
-                "source_bases(id, comment, reference" + (mode == Mode.INDIRECT ? ", iri" : "") + ")")
-        // @formatter:on
-        {
-            @Override
-            public void insert() throws SQLException, IOException
-            {
-                setValue(1, getID("source", "http://nextprot.org/rdf/source/", sources, mode));
-                setValue(2, getLiteralValue("comment"));
-                setValue(3, getLiteralValue("reference"));
-
-                if(mode == Mode.INDIRECT)
-                    setValue(4, getStringID("source", "http://nextprot.org/rdf/source/"));
-            }
-        }.load();
-    }
-
-
-    private static void loadDatabases(Model model, Connection connection, Server type, Mode mode)
-            throws IOException, SQLException
-    {
-        // @formatter:off
-        new DataLoader(model, connection, type,
-                "?database rdf:type :Database "
-                        + "optional { ?database rdfs:seeAlso ?reference }",
-                "database_bases(id, reference" + (mode == Mode.INDIRECT ? ", iri" : "") + ")")
-        // @formatter:on
-        {
-            @Override
-            public void insert() throws SQLException, IOException
-            {
-                setValue(1, getID("database", "http://nextprot.org/rdf/db/", databases, mode));
-                setValue(2, getLiteralValue("reference"));
-
-                if(mode == Mode.INDIRECT)
-                    setValue(3, getStringID("database", "http://nextprot.org/rdf/db/"));
-            }
-        }.load();
-
-
-        new DataLoader(model, connection, type, "?database rdf:type :Database; rdfs:comment ?comment",
-                "database_comments(db, comment)")
-        {
-            @Override
-            public void insert() throws SQLException, IOException
-            {
-                setValue(1, getID("database", "http://nextprot.org/rdf/db/", databases, mode));
-                setValue(2, getLiteralValue("comment"));
-            }
-        }.load();
-
-
-        new DataLoader(model, connection, type, "?database rdf:type :Database; :category ?category",
-                "database_categories(db, category)")
-        {
-            @Override
-            public void insert() throws SQLException, IOException
-            {
-                setValue(1, getID("database", "http://nextprot.org/rdf/db/", databases, mode));
-                setValue(2, getLiteralValue("category"));
-            }
-        }.load();
-    }
-
-
-    private static void loadSchema(Model model, Connection connection, Server type, Mode mode)
-            throws IOException, SQLException
-    {
-        // @formatter:off
-        new DataLoader(model, connection, type,
-                "{select distinct ?entity "
-                        + "{ { ?entity ?P ?O } union { ?S ?P ?entity } "
-                        + "filter(strstarts(str(?entity), 'http://nextprot.org/rdf#'))}}"
-                        + "optional { ?entity rdf:type ?type filter(strstarts(str(?type), 'http://nextprot.org/rdf#'))}"
-                        + "optional { ?entity rdfs:label ?label }"
-                        + "optional { ?entity rdfs:comment ?comment }"
-                        + "optional { ?entity rdfs:seeAlso ?reference }",
-                "schema_bases(id, type, label, comment, reference" + (mode == Mode.INDIRECT ? ", iri" : "") + ")")
-        // @formatter:on
-        {
-            @Override
-            public void insert() throws SQLException, IOException
-            {
-                setValue(1, getID("entity", "http://nextprot.org/rdf#", entities, mode));
-                setValue(2, getID("type", "http://nextprot.org/rdf#", entities, mode));
-                setValue(3, getLiteralValue("label"));
-                setValue(4, getLiteralValue("comment"));
-                setValue(5, getLiteralValue("reference"));
-
-                if(mode == Mode.INDIRECT)
-                    setValue(6, getStringID("entity", "http://nextprot.org/rdf#"));
-            }
-        }.load();
-
-
-        new DataLoader(model, connection, type,
-                "?entity rdf:type owl:Class filter(strstarts(str(?entity), 'http://nextprot.org/rdf#'))",
-                "schema_classes(entity)")
-        {
-            @Override
-            public void insert() throws SQLException, IOException
-            {
-                setValue(1, getID("entity", "http://nextprot.org/rdf#", entities, mode));
-            }
-        }.load();
-
-
-        new DataLoader(model, connection, type,
-                "?entity rdfs:subClassOf owl:Thing filter(strstarts(str(?entity), 'http://nextprot.org/rdf#'))",
-                "schema_thing_subclasses(entity)")
-        {
-            @Override
-            public void insert() throws SQLException, IOException
-            {
-                setValue(1, getID("entity", "http://nextprot.org/rdf#", entities, mode));
-            }
-        }.load();
-
-
-        new DataLoader(model, connection, type, "?entity :notIn ?notin", "schema_restrictions(entity, notin)")
-        {
-            @Override
-            public void insert() throws SQLException, IOException
-            {
-                setValue(1, getID("entity", "http://nextprot.org/rdf#", entities, mode));
-                setValue(2, getID("notin", "http://nextprot.org/rdf#", entities, mode));
-            }
-        }.load();
-
-
-        new DataLoader(model, connection, type, "?entity :related ?related", "schema_related_terms(entity, related)")
-        {
-            @Override
-            public void insert() throws SQLException, IOException
-            {
-                setValue(1, getID("entity", "http://nextprot.org/rdf#", entities, mode));
-                setValue(2, getID("related", "http://nextprot.org/rdf/terminology/", terms, mode));
-            }
-        }.load();
-
-
-        new DataLoader(model, connection, type,
-                "?entity rdfs:subClassOf ?parent filter(strstarts(str(?entity), 'http://nextprot.org/rdf#')) "
-                        + "filter(strstarts(str(?parent), 'http://nextprot.org/rdf#'))",
-                "schema_parent_classes(entity, parent)")
-        {
-            @Override
-            public void insert() throws SQLException, IOException
-            {
-                setValue(1, getID("entity", "http://nextprot.org/rdf#", entities, mode));
-                setValue(2, getID("parent", "http://nextprot.org/rdf#", entities, mode));
-            }
-        }.load();
-    }
+    static ObjectIntHashMap<String> sources = new ObjectIntHashMap<>();
+    static ObjectIntHashMap<String> databases = new ObjectIntHashMap<>();
+    static ObjectIntHashMap<String> entities = new ObjectIntHashMap<>();
 
 
     static void load(String path, Connection connection, Server type, Mode mode) throws IOException, SQLException
     {
-        Model model = DataLoader.getModel(path, "schema.ttl.gz");
-        model.add(DataLoader.getModel(path, "inferredSubClassOf-a.ttl.gz"));
-        model.add(DataLoader.getModel(path, "inferredSubClassOf-b.ttl.gz"));
+        TripleDispatcher dispatcher = new TripleDispatcher();
 
-        loadSources(model, connection, type, mode);
-        loadDatabases(model, connection, type, mode);
-        loadSchema(model, connection, type, mode);
+        LinkedHashSet<Node> sourceNodes = dispatcher.instances(nextprot + "Source");
+        LinkedHashSet<Node> databaseNodes = dispatcher.instances(nextprot + "Database");
+        LinkedHashSet<Node> entityNodes = new LinkedHashSet<>();
 
-        model.close();
+        Values types = dispatcher.values(rdf + "type");
+        Values labels = dispatcher.values(rdfs + "label");
+        Values comments = dispatcher.values(rdfs + "comment");
+        Values references = dispatcher.values(rdfs + "seeAlso");
+        Values categories = dispatcher.values(nextprot + "category");
+
+        dispatcher.onEvery((subject, _, object) -> {
+            if(subject.isURI() && subject.getURI().startsWith(nextprot))
+                entityNodes.add(subject);
+
+            if(object.isURI() && object.getURI().startsWith(nextprot))
+                entityNodes.add(object);
+        });
+
+        Table classes = dispatcher.table(connection, type, "schema_classes(entity)");
+        Table thingSubclasses = dispatcher.table(connection, type, "schema_thing_subclasses(entity)");
+        Table restrictions = dispatcher.table(connection, type, "schema_restrictions(entity, notin)");
+        Table relatedTerms = dispatcher.table(connection, type, "schema_related_terms(entity, related)");
+        Table parentClasses = dispatcher.table(connection, type, "schema_parent_classes(entity, parent)");
+
+        dispatcher.onType(owl + "Class", (entity, _) -> {
+            if(entity.isURI() && entity.getURI().startsWith(nextprot))
+            {
+                classes.setValue(1, getID(entity, nextprot, entities, mode));
+                classes.add();
+            }
+        });
+
+        dispatcher.on(rdfs + "subClassOf", (entity, parent) -> {
+            if(!entity.isURI() || !entity.getURI().startsWith(nextprot))
+                return;
+
+            if(parent.isURI() && parent.getURI().equals(owl + "Thing"))
+            {
+                thingSubclasses.setValue(1, getID(entity, nextprot, entities, mode));
+                thingSubclasses.add();
+            }
+
+            if(parent.isURI() && parent.getURI().startsWith(nextprot))
+            {
+                parentClasses.setValue(1, getID(entity, nextprot, entities, mode));
+                parentClasses.setValue(2, getID(parent, nextprot, entities, mode));
+                parentClasses.add();
+            }
+        });
+
+        dispatcher.on(nextprot + "notIn", (entity, notin) -> {
+            restrictions.setValue(1, getID(entity, nextprot, entities, mode));
+            restrictions.setValue(2, getID(notin, nextprot, entities, mode));
+            restrictions.add();
+        });
+
+        dispatcher.on(nextprot + "related", (entity, related) -> {
+            relatedTerms.setValue(1, getID(entity, nextprot, entities, mode));
+            relatedTerms.setValue(2, getID(related, "http://nextprot.org/rdf/terminology/", terms, mode));
+            relatedTerms.add();
+        });
+
+        dispatcher.after(() -> {
+            try(Table table = new Table(connection, type,
+                    "source_bases(id, comment, reference" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            {
+                for(Node source : sourceNodes)
+                {
+                    table.setValue(1, getID(source, "http://nextprot.org/rdf/source/", sources, mode));
+                    table.setValue(2, getLiteralValue(comments.first(source)));
+                    table.setValue(3, getLiteralValue(references.first(source)));
+
+                    if(mode == Mode.INDIRECT)
+                        table.setValue(4, getStringID(source, "http://nextprot.org/rdf/source/"));
+
+                    table.add();
+                }
+            }
+
+            try(Table table = new Table(connection, type,
+                    "database_bases(id, reference" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            {
+                for(Node database : databaseNodes)
+                {
+                    table.setValue(1, getID(database, "http://nextprot.org/rdf/db/", databases, mode));
+                    table.setValue(2, getLiteralValue(references.first(database)));
+
+                    if(mode == Mode.INDIRECT)
+                        table.setValue(3, getStringID(database, "http://nextprot.org/rdf/db/"));
+
+                    table.add();
+                }
+            }
+
+            try(Table table = new Table(connection, type, "database_comments(db, comment)"))
+            {
+                for(Node database : databaseNodes)
+                {
+                    for(Node comment : comments.get(database))
+                    {
+                        table.setValue(1, getID(database, "http://nextprot.org/rdf/db/", databases, mode));
+                        table.setValue(2, getLiteralValue(comment));
+                        table.add();
+                    }
+                }
+            }
+
+            try(Table table = new Table(connection, type, "database_categories(db, category)"))
+            {
+                for(Node database : databaseNodes)
+                {
+                    for(Node category : categories.get(database))
+                    {
+                        table.setValue(1, getID(database, "http://nextprot.org/rdf/db/", databases, mode));
+                        table.setValue(2, getLiteralValue(category));
+                        table.add();
+                    }
+                }
+            }
+
+            try(Table table = new Table(connection, type,
+                    "schema_bases(id, type, label, comment, reference" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            {
+                for(Node entity : entityNodes)
+                {
+                    Node entityType = types.first(entity, t -> t.isURI() && t.getURI().startsWith(nextprot));
+
+                    table.setValue(1, getID(entity, nextprot, entities, mode));
+                    table.setValue(2, getID(entityType, nextprot, entities, mode));
+                    table.setValue(3, getLiteralValue(labels.first(entity)));
+                    table.setValue(4, getLiteralValue(comments.first(entity)));
+                    table.setValue(5, getLiteralValue(references.first(entity)));
+
+                    if(mode == Mode.INDIRECT)
+                        table.setValue(6, getStringID(entity, nextprot));
+
+                    table.add();
+                }
+            }
+        });
+
+        dispatcher.load(path, "schema.ttl.gz", "inferredSubClassOf-a.ttl.gz", "inferredSubClassOf-b.ttl.gz");
     }
 }

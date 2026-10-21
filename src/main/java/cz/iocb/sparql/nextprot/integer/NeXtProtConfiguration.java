@@ -27,8 +27,7 @@ public class NeXtProtConfiguration extends SparqlDatabaseConfiguration
     /**
      * Creates the configuration (JNDI-compatible constructor).
      */
-    public NeXtProtConfiguration(String service, DataSource connectionPool, DatabaseSchema schema)
-            throws SQLException
+    public NeXtProtConfiguration(String service, DataSource connectionPool, DatabaseSchema schema) throws SQLException
     {
         super(service, connectionPool, schema);
 

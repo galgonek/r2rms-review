@@ -62,8 +62,8 @@ public class ConvertResult
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser saxParser = factory.newSAXParser();
 
-        ArrayList<String> variables = new ArrayList<String>();
-        ArrayList<Vector<String>> results = new ArrayList<Vector<String>>();
+        ArrayList<String> variables = new ArrayList<>();
+        ArrayList<Vector<String>> results = new ArrayList<>();
 
         DefaultHandler handler = new DefaultHandler()
         {
@@ -79,7 +79,7 @@ public class ConvertResult
             {
                 if(qName.equalsIgnoreCase("result"))
                 {
-                    result = new Vector<String>(variables.size());
+                    result = new Vector<>(variables.size());
                     result.setSize(variables.size());
                 }
                 else if(qName.equalsIgnoreCase("variable"))

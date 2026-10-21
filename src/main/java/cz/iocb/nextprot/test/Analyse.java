@@ -27,9 +27,9 @@ public class Analyse
 
     public static void main(String[] args)
     {
-        HashMap<String, Integer> classes = new HashMap<String, Integer>();
-        HashMap<Predicate, Integer> preds = new HashMap<Predicate, Integer>();
-        HashMap<Chain, Integer> chains = new HashMap<Chain, Integer>();
+        HashMap<String, Integer> classes = new HashMap<>();
+        HashMap<Predicate, Integer> preds = new HashMap<>();
+        HashMap<Chain, Integer> chains = new HashMap<>();
 
 
         try(BufferedReader br = Files.newBufferedReader(Paths.get("/home/galgonek/stats/CLASSES.tsv")))
