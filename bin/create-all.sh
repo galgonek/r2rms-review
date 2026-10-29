@@ -7,6 +7,8 @@ if [[ $BASH_SOURCE = */* ]]; then
 fi
 
 
+time ./bin/generate-sql.sh
+
 time ./bin/create-postgresql.sh direct idsm
 time ./bin/create-postgresql.sh indirect idsm
 time ./bin/create-postgresql.sh direct ontop

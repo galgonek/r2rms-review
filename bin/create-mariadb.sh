@@ -14,6 +14,7 @@ MAPPING="ontop"
 SERVER="mariadb"
 
 BASE="${PWD}"
+SQLFILE="${SQLBASEDIR}/${SERVER}-${MODE}.sql.gz"
 DATADIR="${DBBASEDIR}/${SERVER}-${MAPPING}-${MODE}"
 LOGDIR="${LOGBASEDIR}/${SERVER}-${MAPPING}-${MODE}"
 TMPDIR="$(mktemp -d)"
@@ -24,6 +25,7 @@ PIDFILE="${TMPDIR}/mariadb.pid"
 SLEEP="120"
 
 
+test -e "${SQLFILE}" || exit 1
 test -e "${DATADIR}" && exit 1
 
 mkdir -p "${DATADIR}"
@@ -40,7 +42,7 @@ cat sql/init/mariadb.sql | "${MARIADB_BINDIR}/mariadb" -v --socket="${SOCKET}" 2
 
 cat sql/defs.m4 sql/schema/* | m4 -DSERVER="${SERVER}" -DMAPPING="${MAPPING}" -DMODE="${MODE}" | "${MARIADB_BINDIR}/mariadb" -v --socket="${SOCKET}" --user=nextprot --password="password" 2>&1 | tee "${LOGDIR}/schema.log"
 
-java -Xmx44G -cp "${BASE}/target/classes:${BASE}/target/dependency/*" cz.iocb.nextprot.load.NeXtProt "jdbc:mariadb://localhost:3306/nextprot?rewriteBatchedStatements=true&user=nextprot&password=password" "${SERVER}" "${MODE}" "${SOURCEDIR}" 2>&1 | tee "${LOGDIR}/load.log"
+zcat "${SQLFILE}" | "${MARIADB_BINDIR}/mariadb" --socket="${SOCKET}" --user=nextprot --password="password" 2>&1 | tee "${LOGDIR}/load.log"
 
 "${MARIADB_BINDIR}/mariadb-check" --defaults-file="${CONFIG}" --optimize --socket="${SOCKET}" --all-databases 2>&1 | tee "${LOGDIR}/optimize.log"
 

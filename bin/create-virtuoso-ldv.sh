@@ -14,10 +14,12 @@ MAPPING="ldv"
 SERVER="virtuoso"
 
 BASE="${PWD}"
+SQLFILE="${SQLBASEDIR}/${SERVER}-${MODE}.sql.gz"
 DATADIR="${DBBASEDIR}/${SERVER}-${MAPPING}-${MODE}"
 LOGDIR="${LOGBASEDIR}/${SERVER}-${MAPPING}-${MODE}"
 
 
+test -e "${SQLFILE}" || exit 1
 test -e "${DATADIR}" && exit 1
 
 mkdir -p "${DATADIR}"
@@ -31,7 +33,8 @@ cat sql/init/virtuoso-ldv.sql | "${VIRTUOSO_BINDIR}/isql" 1111 dba dba ECHO=ON P
 
 cat sql/defs.m4 sql/schema/* | m4 -DSERVER="${SERVER}" -DMAPPING="${MAPPING}" -DMODE="${MODE}" | "${VIRTUOSO_BINDIR}/isql" 1111 nextprot "password" ECHO=ON PROMPT=OFF 2>&1 | tee "${LOGDIR}/schema.log"
 
-java -Xmx44G -cp "${BASE}/target/classes:${BASE}/target/dependency/*" cz.iocb.nextprot.load.NeXtProt "jdbc:virtuoso://localhost:1111/DATABASE=nextprot/UID=nextprot/PWD=password/charset=UTF-8" "${SERVER}" "${MODE}" "${SOURCEDIR}" 2>&1 | tee "${LOGDIR}/load.log"
+zcat "${SQLFILE}" | "${VIRTUOSO_BINDIR}/isql" 1111 nextprot "password" VERBOSE=OFF PROMPT=OFF 2>&1 | tee "${LOGDIR}/load.log"
+grep -q -F "*** Error" "${LOGDIR}/load.log" && exit 1
 
 echo "checkpoint;" | "${VIRTUOSO_BINDIR}/isql" 1111 dba dba ECHO=ON PROMPT=OFF
 
