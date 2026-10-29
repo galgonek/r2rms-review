@@ -13,6 +13,7 @@ time ./bin/create-postgresql.sh direct idsm
 time ./bin/create-postgresql.sh indirect idsm
 time ./bin/create-postgresql.sh direct ontop
 time ./bin/create-postgresql.sh indirect ontop
+time ./bin/create-postgresql-rdf.sh
 time ./bin/create-mariadb.sh direct
 time ./bin/create-mariadb.sh indirect
 time ./bin/create-virtuoso-ldv.sh direct

@@ -24,6 +24,12 @@ public class Targets implements AutoCloseable
     }
 
 
+    public boolean isEmpty()
+    {
+        return direct.isEmpty() && indirect.isEmpty();
+    }
+
+
     /*
      * Prepares the insertion into the table given as its name followed by the list of its columns in the indirect
      * mode.

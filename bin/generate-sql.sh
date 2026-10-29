@@ -9,8 +9,8 @@ fi
 . ./bin/config.sh
 
 
-# the variants as <server>-<mode>, all of them by default; the data are read once for all of them
-VARIANTS="${*:-postgresql-direct postgresql-indirect mariadb-direct mariadb-indirect virtuoso-direct virtuoso-indirect}"
+# the variants as <server>-<mode>, all of them by default, generated in one run
+VARIANTS="${*:-postgresql-direct postgresql-indirect postgresql-rdf mariadb-direct mariadb-indirect virtuoso-direct virtuoso-indirect}"
 
 BASE="${PWD}"
 LOGDIR="${LOGBASEDIR}/sql"

@@ -17,7 +17,7 @@ public class NeXtProt
 
     protected static enum Mode
     {
-        INDIRECT, DIRECT;
+        INDIRECT, DIRECT, RDF;
     }
 
 
@@ -30,14 +30,15 @@ public class NeXtProt
     /*
      * Loads the data into one or more targets at once, each of them given by three arguments: a database, given by its
      * JDBC URL, or a file of SQL statements that load the data into a database, the kind of the database server, and
-     * the mode of the schema.
+     * the mode of the schema. The triples of the rdf mode are written into a file for PostgreSQL only, while the
+     * loaders of the other modes read the data.
      */
     public static void main(String[] args) throws IOException, SQLException
     {
         if(args.length < 4 || args.length % 3 != 1)
         {
             System.err.println("usage: NeXtProt (<jdbc-url>|<sql-file>[.gz] postgresql|mariadb|virtuoso "
-                    + "direct|indirect)... <data-dir>");
+                    + "direct|indirect|rdf)... <data-dir>");
             System.exit(1);
         }
 
@@ -45,11 +46,22 @@ public class NeXtProt
 
         try(Targets targets = new Targets())
         {
+            String triples = null;
+
             for(int i = 0; i < args.length - 1; i += 3)
             {
                 String output = args[i];
                 Server type = Server.valueOf(args[i + 1].toUpperCase());
                 Mode mode = Mode.valueOf(args[i + 2].toUpperCase());
+
+                if(mode == Mode.RDF)
+                {
+                    if(triples != null || output.startsWith("jdbc:") || type != Server.POSTGRESQL)
+                        throw new IllegalArgumentException("the rdf mode needs one SQL file for PostgreSQL");
+
+                    triples = output;
+                    continue;
+                }
 
                 Target target = output.startsWith("jdbc:") ? new JdbcTarget(output, type) :
                         SqlTarget.create(output, type);
@@ -57,14 +69,20 @@ public class NeXtProt
                 targets.add(target, mode);
             }
 
-            Schema.load(path, targets);
-            Terminology.load(path, targets);
-            Publication.load(path, targets);
-            Context.load(path, targets);
-            Chromosome.load(path, targets);
-            Expression.load(path, targets);
+            try(TripleFile _ = triples != null ? new TripleFile(triples, path) : null)
+            {
+                if(!targets.isEmpty())
+                {
+                    Schema.load(path, targets);
+                    Terminology.load(path, targets);
+                    Publication.load(path, targets);
+                    Context.load(path, targets);
+                    Chromosome.load(path, targets);
+                    Expression.load(path, targets);
 
-            targets.commit();
+                    targets.commit();
+                }
+            }
         }
     }
 }
