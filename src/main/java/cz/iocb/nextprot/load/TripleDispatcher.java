@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +18,6 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFParser;
 import org.apache.jena.riot.system.StreamRDFBase;
-import cz.iocb.nextprot.load.NeXtProt.Server;
 
 
 
@@ -104,9 +102,9 @@ public class TripleDispatcher
      * Prepares the insertion into a table that the handlers fill while the files are read; the table is closed once
      * the actions registered by after() have run.
      */
-    public Table table(Connection connection, Server type, String table) throws SQLException
+    public Table table(Target target, String table) throws IOException, SQLException
     {
-        Table result = new Table(connection, type, table);
+        Table result = target.table(table);
         tables.add(result);
 
         return result;

@@ -17,7 +17,6 @@ import static cz.iocb.nextprot.load.Schema.entities;
 import static cz.iocb.nextprot.load.Schema.sources;
 import static cz.iocb.nextprot.load.Terminology.terms;
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -25,7 +24,6 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.eclipse.collections.impl.map.mutable.primitive.ObjectIntHashMap;
 import cz.iocb.nextprot.load.NeXtProt.Mode;
-import cz.iocb.nextprot.load.NeXtProt.Server;
 
 
 
@@ -175,7 +173,7 @@ public class Chromosome
     // @formatter:on
 
 
-    private static void loadEvidences(TripleDispatcher dispatcher, Connection connection, Server type, Mode mode)
+    private static void loadEvidences(TripleDispatcher dispatcher, Target target, Mode mode)
     {
         LinkedHashSet<Node> evidenceNodes = dispatcher.instances(nextprot + "Evidence");
         Values expressionScores = dispatcher.values(nextprot + "expressionScore");
@@ -203,7 +201,7 @@ public class Chromosome
         Values references = dispatcher.values(nextprot + "reference");
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type, "evidence_bases(id, expression_score, allele_frequency, "
+            try(Table table = target.table("evidence_bases(id, expression_score, allele_frequency, "
                     + "experimental_context, evidence_code, assigned_by, expression_level, from_xref, "
                     + "integration_level, quality, interaction_detection_method, negative, number_of_experiments, "
                     + "homozygote_count, allele_number, allele_count, isoform_specificity, antibodies_acc, "
@@ -247,7 +245,7 @@ public class Chromosome
                 }
             }
 
-            try(Table table = new Table(connection, type, "evidence_publication_references(evidence, publication)"))
+            try(Table table = target.table("evidence_publication_references(evidence, publication)"))
             {
                 for(Node evidence : evidenceNodes)
                 {
@@ -271,8 +269,8 @@ public class Chromosome
     }
 
 
-    private static void loadAnnotations(TripleDispatcher dispatcher, Connection connection, Server type, Mode mode)
-            throws SQLException
+    private static void loadAnnotations(TripleDispatcher dispatcher, Target target, Mode mode)
+            throws IOException, SQLException
     {
         Values types = dispatcher.values(rdf + "type");
         Values qualities = dispatcher.values(nextprot + "quality");
@@ -294,18 +292,15 @@ public class Chromosome
         Values antibodyNames = dispatcher.values(nextprot + "antibodyName");
         Values antibodyUnicities = dispatcher.values(nextprot + "antibodyUnicity");
 
-        Table annotationEvidences = dispatcher.table(connection, type, "annotation_evidences(annotation, evidence)");
-        Table negativeEvidences = dispatcher.table(connection, type,
-                "annotation_negative_evidences(annotation, evidence)");
-        Table diseases = dispatcher.table(connection, type, "annotation_diseases(annotation, disease)");
-        Table annotationComments = dispatcher.table(connection, type, "annotation_comments(annotation, seq, comment)");
-        Table specificities = dispatcher.table(connection, type,
-                "annotation_isoform_specificities(annotation, specificity)");
-        Table entryInteractants = dispatcher.table(connection, type,
-                "annotation_entry_interactants(annotation, interactant)");
-        Table isoformInteractants = dispatcher.table(connection, type,
+        Table annotationEvidences = dispatcher.table(target, "annotation_evidences(annotation, evidence)");
+        Table negativeEvidences = dispatcher.table(target, "annotation_negative_evidences(annotation, evidence)");
+        Table diseases = dispatcher.table(target, "annotation_diseases(annotation, disease)");
+        Table annotationComments = dispatcher.table(target, "annotation_comments(annotation, seq, comment)");
+        Table specificities = dispatcher.table(target, "annotation_isoform_specificities(annotation, specificity)");
+        Table entryInteractants = dispatcher.table(target, "annotation_entry_interactants(annotation, interactant)");
+        Table isoformInteractants = dispatcher.table(target,
                 "annotation_isoform_interactants(annotation, interactant)");
-        Table peptideSets = dispatcher.table(connection, type, "annotation_peptide_sets(annotation, peptide_set)");
+        Table peptideSets = dispatcher.table(target, "annotation_peptide_sets(annotation, peptide_set)");
 
         dispatcher.on(nextprot + "evidence", (annotation, evidence) -> {
             if(!annotationEvidences.isNew(annotations.getId(annotation), evidences.getId(evidence)))
@@ -391,8 +386,7 @@ public class Chromosome
         });
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type,
-                    "annotation_bases(id, resolution, type, quality, term, "
+            try(Table table = target.table("annotation_bases(id, resolution, type, quality, term, "
                             + "impacted_object, self_interaction, proteotypic, position_start, position_end, "
                             + "entry_annotation, variation, original, hgvs, method, peptide_name, peptide_unicity, "
                             + "antibody_name, antibody_unicity" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
@@ -446,7 +440,7 @@ public class Chromosome
     }
 
 
-    private static void loadIsoforms(TripleDispatcher dispatcher, Connection connection, Server type, Mode mode)
+    private static void loadIsoforms(TripleDispatcher dispatcher, Target target, Mode mode)
     {
         LinkedHashSet<Node> isoformNodes = dispatcher.instances(nextprot + "Isoform");
         Values isoformEntries = dispatcher.inverse(nextprot + "isoform");
@@ -474,7 +468,7 @@ public class Chromosome
             links[i] = dispatcher.values(nextprot + isoformAnnotations[i][0]);
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type, "isoform_bases (id, entry, absorption_max, "
+            try(Table table = target.table("isoform_bases (id, entry, absorption_max, "
                     + "absorption_note, allergen, initiator_methionine, kinetic_k_m, kinetic_note, kinetic_vmax, "
                     + "non_consecutive_residue, peroxisome_transit_peptide, pharmaceutical, ph_dependence,  "
                     + "redox_potential, signal_peptide, temperature_dependence, canonical_isoform, swissprot_displayed"
@@ -511,7 +505,7 @@ public class Chromosome
                 }
             }
 
-            try(Table table = new Table(connection, type, "isoform_proteoforms (isoform, proteoform)"))
+            try(Table table = target.table("isoform_proteoforms (isoform, proteoform)"))
             {
                 for(Node isoform : isoformNodes)
                 {
@@ -529,7 +523,7 @@ public class Chromosome
 
             for(int i = 0; i < isoformAnnotations.length; i++)
             {
-                try(Table table = new Table(connection, type, isoformAnnotations[i][1] + " (isoform, annotation)"))
+                try(Table table = target.table(isoformAnnotations[i][1] + " (isoform, annotation)"))
                 {
                     for(Node isoform : isoformNodes)
                     {
@@ -549,7 +543,7 @@ public class Chromosome
     }
 
 
-    private static void loadEntries(TripleDispatcher dispatcher, Connection connection, Server type, Mode mode)
+    private static void loadEntries(TripleDispatcher dispatcher, Target target, Mode mode)
     {
         LinkedHashSet<Node> entryNodes = dispatcher.instances(nextprot + "Entry");
         Values existences = dispatcher.values(nextprot + "existence");
@@ -566,8 +560,8 @@ public class Chromosome
         Values functionalRegionNames = dispatcher.values(nextprot + "fonctionalRegionNames");
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type,
-                    "entry_bases(id, existence, isoform_count, uniprot" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            try(Table table = target.table("entry_bases(id, existence, isoform_count, uniprot"
+                    + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
             {
                 for(Node entry : entryNodes)
                 {
@@ -592,7 +586,7 @@ public class Chromosome
                 }
             }
 
-            try(Table table = new Table(connection, type, "entry_classifiers(entry, classifier)"))
+            try(Table table = target.table("entry_classifiers(entry, classifier)"))
             {
                 for(Node entry : entryNodes)
                 {
@@ -608,7 +602,7 @@ public class Chromosome
                 }
             }
 
-            try(Table table = new Table(connection, type, "entry_genes(entry, gene)"))
+            try(Table table = target.table("entry_genes(entry, gene)"))
             {
                 for(Node entry : entryNodes)
                 {
@@ -624,7 +618,7 @@ public class Chromosome
                 }
             }
 
-            try(Table table = new Table(connection, type, "entry_publication_references(entry, publication)"))
+            try(Table table = target.table("entry_publication_references(entry, publication)"))
             {
                 for(Node entry : entryNodes)
                 {
@@ -645,7 +639,7 @@ public class Chromosome
                 }
             }
 
-            try(Table table = new Table(connection, type, "entry_recommended_names(entry, name)"))
+            try(Table table = target.table("entry_recommended_names(entry, name)"))
             {
                 for(Node entry : entryNodes)
                 {
@@ -658,7 +652,7 @@ public class Chromosome
                 }
             }
 
-            try(Table table = new Table(connection, type, "entry_alternative_names(entry, name)"))
+            try(Table table = target.table("entry_alternative_names(entry, name)"))
             {
                 for(Node entry : entryNodes)
                 {
@@ -671,7 +665,7 @@ public class Chromosome
                 }
             }
 
-            try(Table table = new Table(connection, type, "entry_additional_names(entry, name_list)"))
+            try(Table table = target.table("entry_additional_names(entry, name_list)"))
             {
                 additionalNames.forEach((entry, list) -> {
                     table.setValue(1, entries.getValue(entry, mode));
@@ -680,7 +674,7 @@ public class Chromosome
                 });
             }
 
-            try(Table table = new Table(connection, type, "entry_cleaved_region_names(entry, name_list)"))
+            try(Table table = target.table("entry_cleaved_region_names(entry, name_list)"))
             {
                 cleavedRegionNames.forEach((entry, list) -> {
                     table.setValue(1, entries.getValue(entry, mode));
@@ -689,7 +683,7 @@ public class Chromosome
                 });
             }
 
-            try(Table table = new Table(connection, type, "entry_functional_region_names(entry, name_list)"))
+            try(Table table = target.table("entry_functional_region_names(entry, name_list)"))
             {
                 functionalRegionNames.forEach((entry, list) -> {
                     table.setValue(1, entries.getValue(entry, mode));
@@ -701,7 +695,7 @@ public class Chromosome
     }
 
 
-    private static void loadProteoforms(TripleDispatcher dispatcher, Connection connection, Server type, Mode mode)
+    private static void loadProteoforms(TripleDispatcher dispatcher, Target target, Mode mode)
     {
         LinkedHashSet<Node> proteoformNodes = dispatcher.instances(nextprot + "Proteoform");
         Values labels = dispatcher.values(rdfs + "label");
@@ -712,8 +706,7 @@ public class Chromosome
             links[i] = dispatcher.values(nextprot + proteoformAnnotations[i][0]);
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type,
-                    "proteoform_bases(id, label" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            try(Table table = target.table("proteoform_bases(id, label" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
             {
                 for(Node proteoform : proteoformNodes)
                 {
@@ -732,8 +725,7 @@ public class Chromosome
 
             for(int i = 0; i < proteoformAnnotations.length; i++)
             {
-                try(Table table = new Table(connection, type,
-                        proteoformAnnotations[i][1] + " (proteoform, annotation)"))
+                try(Table table = target.table(proteoformAnnotations[i][1] + " (proteoform, annotation)"))
                 {
                     for(Node proteoform : proteoformNodes)
                     {
@@ -753,7 +745,7 @@ public class Chromosome
     }
 
 
-    private static void loadGenes(TripleDispatcher dispatcher, Connection connection, Server type, Mode mode)
+    private static void loadGenes(TripleDispatcher dispatcher, Target target, Mode mode)
     {
         LinkedHashSet<Node> geneNodes = dispatcher.instances(nextprot + "Gene");
         Values begins = dispatcher.values(nextprot + "begin");
@@ -766,7 +758,7 @@ public class Chromosome
         Values geneNames = dispatcher.values(nextprot + "name");
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type, "gene_bases(id, gene_begin, gene_end, length, band, "
+            try(Table table = target.table("gene_bases(id, gene_begin, gene_end, length, band, "
                     + "chromosome, strand" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
             {
                 for(Node gene : geneNodes)
@@ -789,7 +781,7 @@ public class Chromosome
                 }
             }
 
-            try(Table table = new Table(connection, type, "gene_best_mappings(gene, mapping)"))
+            try(Table table = target.table("gene_best_mappings(gene, mapping)"))
             {
                 for(Node gene : geneNodes)
                 {
@@ -805,7 +797,7 @@ public class Chromosome
                 }
             }
 
-            try(Table table = new Table(connection, type, "gene_names(gene, name)"))
+            try(Table table = target.table("gene_names(gene, name)"))
             {
                 for(Node gene : geneNodes)
                 {
@@ -824,7 +816,7 @@ public class Chromosome
     }
 
 
-    private static void loadProteinSequences(TripleDispatcher dispatcher, Connection connection, Server type, Mode mode)
+    private static void loadProteinSequences(TripleDispatcher dispatcher, Target target, Mode mode)
     {
         Values types = dispatcher.values(rdf + "type");
         Values sequences = dispatcher.values(nextprot + "sequence");
@@ -834,7 +826,7 @@ public class Chromosome
         Values chains = dispatcher.values(nextprot + "chain");
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type,
+            try(Table table = target.table(
                     "protein_sequence_bases(id, molecular_weight, isoelectric_point, isoform, length, chain)"))
             {
                 for(Node isoform : sequences.nodes())
@@ -858,8 +850,7 @@ public class Chromosome
     }
 
 
-    private static void loadProteinFamilyInfos(TripleDispatcher dispatcher, Connection connection, Server type,
-            Mode mode)
+    private static void loadProteinFamilyInfos(TripleDispatcher dispatcher, Target target, Mode mode)
     {
         Values types = dispatcher.values(rdf + "type");
         Values families = dispatcher.values(nextprot + "family");
@@ -868,7 +859,7 @@ public class Chromosome
         Values descriptions = dispatcher.values(nextprot + "description");
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type, "family_info_bases(id, entry, term, region, description)"))
+            try(Table table = target.table("family_info_bases(id, entry, term, region, description)"))
             {
                 for(Node entry : families.nodes())
                 {
@@ -890,7 +881,7 @@ public class Chromosome
     }
 
 
-    private static void loadHistories(TripleDispatcher dispatcher, Connection connection, Server type, Mode mode)
+    private static void loadHistories(TripleDispatcher dispatcher, Target target, Mode mode)
     {
         Values types = dispatcher.values(rdf + "type");
         Values histories = dispatcher.values(nextprot + "history");
@@ -902,7 +893,7 @@ public class Chromosome
         Values historyNames = dispatcher.values(nextprot + "name");
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type, "history_bases(id, entry, integrated, updated, "
+            try(Table table = target.table("history_bases(id, entry, integrated, updated, "
                     + "last_sequence_update, version, sequence_version, name)"))
             {
                 for(Node entry : histories.nodes())
@@ -928,7 +919,7 @@ public class Chromosome
     }
 
 
-    private static void loadIdentifiers(TripleDispatcher dispatcher, Connection connection, Server type, Mode mode)
+    private static void loadIdentifiers(TripleDispatcher dispatcher, Target target, Mode mode)
     {
         Values types = dispatcher.values(rdf + "type");
         Values references = dispatcher.values(nextprot + "reference");
@@ -936,7 +927,7 @@ public class Chromosome
         Values accessions = dispatcher.values(nextprot + "accession");
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type, "identifier_bases(id, entry, provenance, accession)"))
+            try(Table table = target.table("identifier_bases(id, entry, provenance, accession)"))
             {
                 for(Node entry : references.nodes())
                 {
@@ -957,7 +948,7 @@ public class Chromosome
     }
 
 
-    private static void loadEntryXrefs(TripleDispatcher dispatcher, Connection connection, Server type, Mode mode)
+    private static void loadEntryXrefs(TripleDispatcher dispatcher, Target target, Mode mode)
     {
         LinkedHashSet<Node> entryNodes = dispatcher.instances(nextprot + "Entry");
         Values types = dispatcher.values(rdf + "type");
@@ -966,7 +957,7 @@ public class Chromosome
         Values accessions = dispatcher.values(nextprot + "accession");
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type, "entry_xref_bases(id, entry, provenance, accession)"))
+            try(Table table = target.table("entry_xref_bases(id, entry, provenance, accession)"))
             {
                 for(Node entry : entryNodes)
                 {
@@ -987,7 +978,7 @@ public class Chromosome
     }
 
 
-    private static void loadEvidenceXrefs(TripleDispatcher dispatcher, Connection connection, Server type, Mode mode)
+    private static void loadEvidenceXrefs(TripleDispatcher dispatcher, Target target, Mode mode)
     {
         LinkedHashSet<Node> evidenceNodes = dispatcher.instances(nextprot + "Evidence");
         Values types = dispatcher.values(rdf + "type");
@@ -996,7 +987,7 @@ public class Chromosome
         Values accessions = dispatcher.values(nextprot + "accession");
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type, "evidence_xref_bases(id, evidence, provenance, accession)"))
+            try(Table table = target.table("evidence_xref_bases(id, evidence, provenance, accession)"))
             {
                 for(Node evidence : evidenceNodes)
                 {
@@ -1020,7 +1011,7 @@ public class Chromosome
     /*
      * Registers the loading of the cross-references to the database that annotations have as interactants.
      */
-    private static void loadInteractantXrefs(TripleDispatcher dispatcher, Connection connection, Server type, Mode mode,
+    private static void loadInteractantXrefs(TripleDispatcher dispatcher, Target target, Mode mode,
             String database, String table, XrefColumns columns)
     {
         Node provenance = NodeFactory.createURI(db + database);
@@ -1032,7 +1023,7 @@ public class Chromosome
         Values labels = dispatcher.values(rdfs + "label");
 
         dispatcher.after(() -> {
-            try(Table xrefs = new Table(connection, type, table))
+            try(Table xrefs = target.table(table))
             {
                 for(Node annotation : interactants.nodes())
                 {
@@ -1052,7 +1043,7 @@ public class Chromosome
     }
 
 
-    private static void loadNames(TripleDispatcher dispatcher, Connection connection, Server type)
+    private static void loadNames(TripleDispatcher dispatcher, Target target)
     {
         LinkedHashSet<Node> nameNodes = dispatcher.instances(nextprot + "Name");
         Values fullNames = dispatcher.values(nextprot + "fullName");
@@ -1065,7 +1056,7 @@ public class Chromosome
         Values allergens = dispatcher.values(nextprot + "allergenAllergen");
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type, "name_bases(id, full_name, short_name, full_region_name, "
+            try(Table table = target.table("name_bases(id, full_name, short_name, full_region_name, "
                     + "short_region_name, ec_enzyme_name, cd_antigen, inn_name, allergen)"))
             {
                 for(Node name : nameNodes)
@@ -1088,14 +1079,14 @@ public class Chromosome
     }
 
 
-    private static void loadNameLists(TripleDispatcher dispatcher, Connection connection, Server type)
+    private static void loadNameLists(TripleDispatcher dispatcher, Target target)
     {
         LinkedHashSet<Node> listNodes = dispatcher.instances(nextprot + "NameList");
         Values recommendedNames = dispatcher.values(nextprot + "recommendedName");
         Values alternativeNames = dispatcher.values(nextprot + "alternativeName");
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type, "name_list_bases(id)"))
+            try(Table table = target.table("name_list_bases(id)"))
             {
                 for(Node list : listNodes)
                 {
@@ -1106,7 +1097,7 @@ public class Chromosome
                 }
             }
 
-            try(Table table = new Table(connection, type, "name_list_recommended_names(list, name)"))
+            try(Table table = target.table("name_list_recommended_names(list, name)"))
             {
                 for(Node list : listNodes)
                 {
@@ -1119,7 +1110,7 @@ public class Chromosome
                 }
             }
 
-            try(Table table = new Table(connection, type, "name_list_alternative_names(list, name)"))
+            try(Table table = target.table("name_list_alternative_names(list, name)"))
             {
                 for(Node list : listNodes)
                 {
@@ -1135,7 +1126,7 @@ public class Chromosome
     }
 
 
-    public static void load(String path, String file, Connection connection, Server type, Mode mode)
+    public static void load(String path, String file, Target target, Mode mode)
             throws IOException, SQLException
     {
         names.clear();
@@ -1143,30 +1134,30 @@ public class Chromosome
 
         TripleDispatcher dispatcher = new TripleDispatcher();
 
-        loadNames(dispatcher, connection, type);
-        loadNameLists(dispatcher, connection, type);
+        loadNames(dispatcher, target);
+        loadNameLists(dispatcher, target);
 
-        loadIsoforms(dispatcher, connection, type, mode);
-        loadAnnotations(dispatcher, connection, type, mode);
-        loadEvidences(dispatcher, connection, type, mode);
-        loadEntries(dispatcher, connection, type, mode);
-        loadProteoforms(dispatcher, connection, type, mode);
-        loadGenes(dispatcher, connection, type, mode);
-        loadProteinSequences(dispatcher, connection, type, mode);
-        loadProteinFamilyInfos(dispatcher, connection, type, mode);
-        loadHistories(dispatcher, connection, type, mode);
-        loadIdentifiers(dispatcher, connection, type, mode);
-        loadEntryXrefs(dispatcher, connection, type, mode);
-        loadEvidenceXrefs(dispatcher, connection, type, mode);
+        loadIsoforms(dispatcher, target, mode);
+        loadAnnotations(dispatcher, target, mode);
+        loadEvidences(dispatcher, target, mode);
+        loadEntries(dispatcher, target, mode);
+        loadProteoforms(dispatcher, target, mode);
+        loadGenes(dispatcher, target, mode);
+        loadProteinSequences(dispatcher, target, mode);
+        loadProteinFamilyInfos(dispatcher, target, mode);
+        loadHistories(dispatcher, target, mode);
+        loadIdentifiers(dispatcher, target, mode);
+        loadEntryXrefs(dispatcher, target, mode);
+        loadEvidenceXrefs(dispatcher, target, mode);
 
-        loadInteractantXrefs(dispatcher, connection, type, mode, "ChEBI",
+        loadInteractantXrefs(dispatcher, target, mode, "ChEBI",
                 "chebi_xref_bases(id, chebi, annotation, accession, label)", (table, annotation, chebi) -> {
                     table.setValue(1, chebiXrefId++);
                     table.setValue(2, getIntID(chebi, "http://purl.obolibrary.org/obo/CHEBI_"));
                     table.setValue(3, annotations.getValue(annotation, mode));
                 });
 
-        loadInteractantXrefs(dispatcher, connection, type, mode, "DrugBank",
+        loadInteractantXrefs(dispatcher, target, mode, "DrugBank",
                 "drugbank_xref_bases(id, annotation, drugbank, accession, label)", (table, annotation, drugbank) -> {
                     table.setValue(1, drugBankXrefId++);
                     table.setValue(2, annotations.getValue(annotation, mode));
@@ -1174,7 +1165,7 @@ public class Chromosome
                             "http://wifo5-04.informatik.uni-mannheim.de/drugbank/resource/drugs/DB"));
                 });
 
-        loadInteractantXrefs(dispatcher, connection, type, mode, "UniProtKB",
+        loadInteractantXrefs(dispatcher, target, mode, "UniProtKB",
                 "uniprot_xref_bases(id, annotation, uniprot, accession, label)", (table, annotation, uniprot) -> {
                     table.setValue(1, uniProtXrefId++);
                     table.setValue(2, annotations.getValue(annotation, mode));
@@ -1185,33 +1176,33 @@ public class Chromosome
     }
 
 
-    public static void load(String path, Connection connection, Server type, Mode mode) throws IOException, SQLException
+    public static void load(String path, Target target, Mode mode) throws IOException, SQLException
     {
-        load(path, "nextprot_chromosome_MT.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_unknown.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_X.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_Y.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_01.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_02.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_03.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_04.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_05.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_06.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_07.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_08.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_09.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_10.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_11.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_12.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_13.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_14.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_15.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_16.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_17.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_18.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_19.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_20.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_21.ttl.gz", connection, type, mode);
-        load(path, "nextprot_chromosome_22.ttl.gz", connection, type, mode);
+        load(path, "nextprot_chromosome_MT.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_unknown.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_X.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_Y.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_01.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_02.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_03.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_04.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_05.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_06.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_07.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_08.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_09.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_10.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_11.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_12.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_13.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_14.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_15.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_16.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_17.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_18.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_19.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_20.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_21.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_22.ttl.gz", target, mode);
     }
 }

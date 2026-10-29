@@ -1,8 +1,6 @@
 package cz.iocb.nextprot.load;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 
@@ -29,27 +27,34 @@ public class NeXtProt
     }
 
 
+    /*
+     * Loads the data either into a database, given by its JDBC URL, or into a file of SQL statements that load them
+     * into a database. The kind of the database server is given either way.
+     */
     public static void main(String[] args) throws IOException, SQLException
     {
-        String url = args[0];
+        if(args.length != 4)
+        {
+            System.err.println("usage: NeXtProt <jdbc-url>|<sql-file>[.gz] postgresql|mariadb|virtuoso "
+                    + "direct|indirect <data-dir>");
+            System.exit(1);
+        }
+
+        String output = args[0];
         Server type = Server.valueOf(args[1].toUpperCase());
         Mode mode = Mode.valueOf(args[2].toUpperCase());
         String path = args[3];
 
-        try(Connection connection = DriverManager.getConnection(url))
+        try(Target target = output.startsWith("jdbc:") ? new JdbcTarget(output, type) : SqlTarget.create(output, type))
         {
-            if(type != Server.VIRTUOSO)
-                connection.setAutoCommit(false);
+            Schema.load(path, target, mode);
+            Terminology.load(path, target, mode);
+            Publication.load(path, target, mode);
+            Context.load(path, target, mode);
+            Chromosome.load(path, target, mode);
+            Expression.load(path, target, mode);
 
-            Schema.load(path, connection, type, mode);
-            Terminology.load(path, connection, type, mode);
-            Publication.load(path, connection, type, mode);
-            Context.load(path, connection, type, mode);
-            Chromosome.load(path, connection, type, mode);
-            Expression.load(path, connection, type, mode);
-
-            if(type != Server.VIRTUOSO)
-                connection.commit();
+            target.commit();
         }
     }
 }

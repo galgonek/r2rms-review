@@ -4,18 +4,16 @@ import static cz.iocb.nextprot.load.NeXtProt.nextprot;
 import static cz.iocb.nextprot.load.Nodes.getIntID;
 import static cz.iocb.nextprot.load.Terminology.terms;
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.LinkedHashSet;
 import org.apache.jena.graph.Node;
 import cz.iocb.nextprot.load.NeXtProt.Mode;
-import cz.iocb.nextprot.load.NeXtProt.Server;
 
 
 
 public class Context
 {
-    public static void load(String path, String file, Connection connection, Server type, Mode mode)
+    public static void load(String path, String file, Target target, Mode mode)
             throws IOException, SQLException
     {
         TripleDispatcher dispatcher = new TripleDispatcher();
@@ -29,8 +27,7 @@ public class Context
         Values stages = dispatcher.values(nextprot + "developmentalStage");
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type,
-                    "context_bases(id, metadata, method, disease, tissue, line, stage)"))
+            try(Table table = target.table("context_bases(id, metadata, method, disease, tissue, line, stage)"))
             {
                 for(Node context : contexts)
                 {
@@ -55,8 +52,8 @@ public class Context
     }
 
 
-    public static void load(String path, Connection connection, Server type, Mode mode) throws IOException, SQLException
+    public static void load(String path, Target target, Mode mode) throws IOException, SQLException
     {
-        load(path, "experimentalcontext.ttl.gz", connection, type, mode);
+        load(path, "experimentalcontext.ttl.gz", target, mode);
     }
 }

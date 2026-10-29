@@ -6,11 +6,9 @@ import static cz.iocb.nextprot.load.NeXtProt.rdfs;
 import static cz.iocb.nextprot.load.Nodes.getLiteralValue;
 import static cz.iocb.nextprot.load.Schema.entities;
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import org.apache.jena.graph.Node;
 import cz.iocb.nextprot.load.NeXtProt.Mode;
-import cz.iocb.nextprot.load.NeXtProt.Server;
 
 
 
@@ -19,15 +17,15 @@ public class Terminology
     static Ids terms = new Ids("http://nextprot.org/rdf/terminology/");
 
 
-    static void load(String path, Connection connection, Server type, Mode mode) throws IOException, SQLException
+    static void load(String path, Target target, Mode mode) throws IOException, SQLException
     {
         TripleDispatcher dispatcher = new TripleDispatcher();
 
         Values types = dispatcher.values(rdf + "type");
 
-        Table parents = dispatcher.table(connection, type, "terminology_parents(term, parent)");
-        Table relatedTerms = dispatcher.table(connection, type, "terminology_related_terms(term, related)");
-        Table labels = dispatcher.table(connection, type, "terminology_labels(term, label)");
+        Table parents = dispatcher.table(target, "terminology_parents(term, parent)");
+        Table relatedTerms = dispatcher.table(target, "terminology_related_terms(term, related)");
+        Table labels = dispatcher.table(target, "terminology_labels(term, label)");
 
         dispatcher.on(nextprot + "childOf", (term, parent) -> {
             if(!parents.isNew(terms.getId(term), terms.getId(parent)))
@@ -57,8 +55,7 @@ public class Terminology
         });
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type,
-                    "terminology_bases(id, type" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            try(Table table = target.table("terminology_bases(id, type" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
             {
                 for(Node term : types.nodes())
                 {

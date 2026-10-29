@@ -1,54 +1,57 @@
 package cz.iocb.nextprot.load;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.io.IOException;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.HashMap;
-import cz.iocb.nextprot.load.NeXtProt.Server;
 
 
 
 /*
- * Inserts rows into a table in batches. The loaders store no row twice: before a row with a natural primary key is
+ * Inserts rows into a table of the target. The loaders store no row twice: before a row with a natural primary key is
  * set, isNew() tells whether its key is new, also across the loads that fill the same table, such as the loads of the
  * chromosome files. A row whose key contains an id assigned by the loader, such as the id of a name, needs no check.
  */
-public class Table implements AutoCloseable
+public abstract class Table implements AutoCloseable
 {
-    private static final int batchSize = 10000;
     private static final HashMap<String, Keys> tableKeys = new HashMap<>();
 
-    private final PreparedStatement statement;
     private final Keys keys;
-    private int count = 0;
 
 
     /*
      * Prepares the insertion into the table given as its name followed by the list of its columns.
      */
-    public Table(Connection connection, Server type, String table) throws SQLException
+    protected Table(String table)
     {
-        String name = table.replaceFirst("[ (].*", "");
+        String name = getName(table);
 
         System.out.println("   store " + name);
 
-        StringBuilder values = new StringBuilder(" values(?");
+        keys = tableKeys.computeIfAbsent(name, _ -> new Keys());
+    }
+
+
+    /*
+     * Returns the name of the table given as its name followed by the list of its columns.
+     */
+    protected static String getName(String table)
+    {
+        return table.replaceFirst("[ (].*", "");
+    }
+
+
+    /*
+     * Returns the number of the columns of the table given as its name followed by the list of its columns.
+     */
+    protected static int getColumnCount(String table)
+    {
+        int count = 1;
 
         for(int i = 0; i < table.length(); i++)
             if(table.charAt(i) == ',')
-                values.append(",?");
+                count++;
 
-        values.append(")");
-
-        String sql = switch(type)
-        {
-            case POSTGRESQL, MARIADB -> "insert into nextprot." + table + values;
-            case VIRTUOSO -> "insert into nextprot.nextprot." + table + values;
-        };
-
-        statement = connection.prepareStatement(sql);
-        keys = tableKeys.computeIfAbsent(name, _ -> new Keys());
+        return count;
     }
 
 
@@ -82,66 +85,40 @@ public class Table implements AutoCloseable
     /*
      * Adds the row whose values have been set.
      */
-    public void add() throws SQLException
-    {
-        statement.addBatch();
+    public abstract void add() throws IOException, SQLException;
 
-        if(++count % batchSize == 0)
-            statement.executeBatch();
-    }
+
+    /*
+     * Stores the rows that have been added and not stored yet and releases the resources of the table.
+     */
+    protected abstract void finish() throws IOException, SQLException;
 
 
     @Override
-    public void close() throws SQLException
+    public void close() throws IOException, SQLException
     {
         try
         {
-            if(count % batchSize != 0)
-                statement.executeBatch();
+            finish();
         }
         finally
         {
-            statement.close();
             keys.finish();
         }
     }
 
 
-    public void setValue(int idx, Object value) throws SQLException
-    {
-        statement.setObject(idx, value);
-    }
+    public abstract void setValue(int idx, Object value) throws IOException, SQLException;
 
 
-    public void setValue(int idx, int value) throws SQLException
-    {
-        statement.setInt(idx, value);
-    }
+    public abstract void setValue(int idx, int value) throws IOException, SQLException;
 
 
-    public void setValue(int idx, Integer value) throws SQLException
-    {
-        if(value != null)
-            statement.setInt(idx, value);
-        else
-            statement.setNull(idx, Types.INTEGER);
-    }
+    public abstract void setValue(int idx, Integer value) throws IOException, SQLException;
 
 
-    public void setValue(int idx, Double value) throws SQLException
-    {
-        if(value != null)
-            statement.setDouble(idx, value);
-        else
-            statement.setNull(idx, Types.DOUBLE);
-    }
+    public abstract void setValue(int idx, Double value) throws IOException, SQLException;
 
 
-    public void setValue(int idx, String value) throws SQLException
-    {
-        if(value != null)
-            statement.setString(idx, value);
-        else
-            statement.setNull(idx, Types.VARCHAR);
-    }
+    public abstract void setValue(int idx, String value) throws IOException, SQLException;
 }

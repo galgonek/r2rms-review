@@ -7,12 +7,10 @@ import static cz.iocb.nextprot.load.NeXtProt.rdfs;
 import static cz.iocb.nextprot.load.Nodes.getLiteralValue;
 import static cz.iocb.nextprot.load.Terminology.terms;
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.LinkedHashSet;
 import org.apache.jena.graph.Node;
 import cz.iocb.nextprot.load.NeXtProt.Mode;
-import cz.iocb.nextprot.load.NeXtProt.Server;
 
 
 
@@ -23,7 +21,7 @@ public class Schema
     static Ids entities = new Ids(nextprot);
 
 
-    static void load(String path, Connection connection, Server type, Mode mode) throws IOException, SQLException
+    static void load(String path, Target target, Mode mode) throws IOException, SQLException
     {
         TripleDispatcher dispatcher = new TripleDispatcher();
 
@@ -45,11 +43,11 @@ public class Schema
                 entityNodes.add(object);
         });
 
-        Table classes = dispatcher.table(connection, type, "schema_classes(entity)");
-        Table thingSubclasses = dispatcher.table(connection, type, "schema_thing_subclasses(entity)");
-        Table restrictions = dispatcher.table(connection, type, "schema_restrictions(entity, notin)");
-        Table relatedTerms = dispatcher.table(connection, type, "schema_related_terms(entity, related)");
-        Table parentClasses = dispatcher.table(connection, type, "schema_parent_classes(entity, parent)");
+        Table classes = dispatcher.table(target, "schema_classes(entity)");
+        Table thingSubclasses = dispatcher.table(target, "schema_thing_subclasses(entity)");
+        Table restrictions = dispatcher.table(target, "schema_restrictions(entity, notin)");
+        Table relatedTerms = dispatcher.table(target, "schema_related_terms(entity, related)");
+        Table parentClasses = dispatcher.table(target, "schema_parent_classes(entity, parent)");
 
         dispatcher.onType(owl + "Class", (entity, _) -> {
             if(entity.isURI() && entity.getURI().startsWith(nextprot) && classes.isNew(entities.getId(entity)))
@@ -97,8 +95,8 @@ public class Schema
         });
 
         dispatcher.after(() -> {
-            try(Table table = new Table(connection, type,
-                    "source_bases(id, comment, reference" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            try(Table table = target.table("source_bases(id, comment, reference"
+                    + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
             {
                 for(Node source : sourceNodes)
                 {
@@ -116,8 +114,8 @@ public class Schema
                 }
             }
 
-            try(Table table = new Table(connection, type,
-                    "database_bases(id, reference" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            try(Table table = target.table("database_bases(id, reference" + (mode == Mode.INDIRECT ? ", iri" : "")
+                    + ")"))
             {
                 for(Node database : databaseNodes)
                 {
@@ -134,7 +132,7 @@ public class Schema
                 }
             }
 
-            try(Table table = new Table(connection, type, "database_comments(db, comment)"))
+            try(Table table = target.table("database_comments(db, comment)"))
             {
                 for(Node database : databaseNodes)
                 {
@@ -150,7 +148,7 @@ public class Schema
                 }
             }
 
-            try(Table table = new Table(connection, type, "database_categories(db, category)"))
+            try(Table table = target.table("database_categories(db, category)"))
             {
                 for(Node database : databaseNodes)
                 {
@@ -166,8 +164,8 @@ public class Schema
                 }
             }
 
-            try(Table table = new Table(connection, type,
-                    "schema_bases(id, type, label, comment, reference" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            try(Table table = target.table("schema_bases(id, type, label, comment, reference"
+                    + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
             {
                 for(Node entity : entityNodes)
                 {
