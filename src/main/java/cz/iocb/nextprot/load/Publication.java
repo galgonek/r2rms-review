@@ -9,14 +9,12 @@ import java.sql.SQLException;
 import java.util.LinkedHashSet;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import cz.iocb.nextprot.load.NeXtProt.Mode;
 
 
 
 public class Publication
 {
-    public static void load(String path, String file, Target target, Mode mode)
-            throws IOException, SQLException
+    public static void load(String path, String file, Targets targets) throws IOException, SQLException
     {
         TripleDispatcher dispatcher = new TripleDispatcher();
 
@@ -40,7 +38,7 @@ public class Publication
         Values names = dispatcher.values(nextprot + "name");
         Values suffixes = dispatcher.values(nextprot + "suffix");
 
-        Table links = dispatcher.table(target, "publication_links(publication, link)");
+        Table links = dispatcher.table(targets, "publication_links(publication, link)");
 
         dispatcher.on(nextprot + "from", (publication, link) -> {
             Integer id = getIntID(publication, "http://nextprot.org/rdf/publication/");
@@ -54,7 +52,7 @@ public class Publication
         });
 
         dispatcher.after(() -> {
-            try(Table table = target.table("publication_bases(id, large, title, journal, year, "
+            try(Table table = targets.table("publication_bases(id, large, title, journal, year, "
                     + "volume, issue, pub_type, first_page, last_page, publisher, city)"))
             {
                 for(Node publication : publications)
@@ -80,7 +78,7 @@ public class Publication
                 }
             }
 
-            try(Table table = target.table("publication_authors(id, publication, person, name, suffix)"))
+            try(Table table = targets.table("publication_authors(id, publication, person, name, suffix)"))
             {
                 int id = 0;
 
@@ -98,7 +96,7 @@ public class Publication
                 }
             }
 
-            try(Table table = target.table("publication_editors(id, publication, name)"))
+            try(Table table = targets.table("publication_editors(id, publication, name)"))
             {
                 int id = 0;
 
@@ -122,8 +120,8 @@ public class Publication
     }
 
 
-    public static void load(String path, Target target, Mode mode) throws IOException, SQLException
+    public static void load(String path, Targets targets) throws IOException, SQLException
     {
-        load(path, "publication.ttl.gz", target, mode);
+        load(path, "publication.ttl.gz", targets);
     }
 }

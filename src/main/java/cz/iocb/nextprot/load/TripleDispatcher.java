@@ -102,9 +102,9 @@ public class TripleDispatcher
      * Prepares the insertion into a table that the handlers fill while the files are read; the table is closed once
      * the actions registered by after() have run.
      */
-    public Table table(Target target, String table) throws IOException, SQLException
+    public Table table(Targets targets, String table) throws IOException, SQLException
     {
-        Table result = target.table(table);
+        Table result = targets.table(table);
         tables.add(result);
 
         return result;

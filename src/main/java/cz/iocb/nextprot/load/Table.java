@@ -2,39 +2,73 @@ package cz.iocb.nextprot.load;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import org.apache.jena.graph.Node;
+import cz.iocb.nextprot.load.Target.Sink;
 
 
 
 /*
- * Inserts rows into a table of the target. The loaders store no row twice: before a row with a natural primary key is
- * set, isNew() tells whether its key is new, also across the loads that fill the same table, such as the loads of the
- * chromosome files. A row whose key contains an id assigned by the loader, such as the id of a name, needs no check.
+ * Inserts rows into a table of all the targets. The loaders store no row twice: before a row with a natural primary
+ * key is set, isNew() tells whether its key is new, also across the loads that fill the same table, such as the loads
+ * of the chromosome files. A row whose key contains an id assigned by the loader, such as the id of a name, needs no
+ * check.
+ *
+ * The rows are given as in the indirect mode, and the targets of the direct mode get them without the column iri, which
+ * is the last column of a table that has it. A column referring to an entity is set by the node of the entity, as it
+ * holds the local part of the IRI in the direct mode and the id of the IRI in the indirect mode.
  */
-public abstract class Table implements AutoCloseable
+public class Table implements AutoCloseable
 {
     private static final HashMap<String, Keys> tableKeys = new HashMap<>();
+    private static final Object unset = new Object();
 
+    private final String table;
     private final Keys keys;
+    private final Sink[] directSinks;
+    private final Sink[] indirectSinks;
+    private final int directColumns;
+    private final Object[] direct;
+    private Object[] indirect;
 
 
     /*
-     * Prepares the insertion into the table given as its name followed by the list of its columns.
+     * Prepares the insertion into the table given as its name followed by the list of its columns in the indirect
+     * mode.
      */
-    protected Table(String table)
+    Table(String table, List<Target> directTargets, List<Target> indirectTargets) throws IOException, SQLException
     {
         String name = getName(table);
+        String directTable = table.replaceFirst(",\\s*iri\\)$", ")");
+        int columns = getColumnCount(table);
 
         System.out.println("   store " + name);
 
-        keys = tableKeys.computeIfAbsent(name, _ -> new Keys());
+        this.table = table;
+        this.keys = tableKeys.computeIfAbsent(name, _ -> new Keys());
+        this.directColumns = getColumnCount(directTable);
+
+        directSinks = new Sink[directTargets.size()];
+
+        for(int i = 0; i < directSinks.length; i++)
+            directSinks[i] = directTargets.get(i).sink(directTable);
+
+        indirectSinks = new Sink[indirectTargets.size()];
+
+        for(int i = 0; i < indirectSinks.length; i++)
+            indirectSinks[i] = indirectTargets.get(i).sink(table);
+
+        direct = newRow(columns);
+        indirect = newRow(columns);
     }
 
 
     /*
      * Returns the name of the table given as its name followed by the list of its columns.
      */
-    protected static String getName(String table)
+    static String getName(String table)
     {
         return table.replaceFirst("[ (].*", "");
     }
@@ -43,7 +77,7 @@ public abstract class Table implements AutoCloseable
     /*
      * Returns the number of the columns of the table given as its name followed by the list of its columns.
      */
-    protected static int getColumnCount(String table)
+    static int getColumnCount(String table)
     {
         int count = 1;
 
@@ -52,6 +86,15 @@ public abstract class Table implements AutoCloseable
                 count++;
 
         return count;
+    }
+
+
+    private static Object[] newRow(int length)
+    {
+        Object[] row = new Object[length];
+        Arrays.fill(row, unset);
+
+        return row;
     }
 
 
@@ -82,16 +125,67 @@ public abstract class Table implements AutoCloseable
     }
 
 
+    public void setValue(int idx, Object value)
+    {
+        direct[idx - 1] = value;
+        indirect[idx - 1] = value;
+    }
+
+
+    /*
+     * Sets the value of a column referring to the entity given by its node, or to no entity for a null node.
+     */
+    public void setValue(int idx, Ids ids, Node node) throws IOException
+    {
+        if(directSinks.length > 0)
+            direct[idx - 1] = node == null ? null : ids.getLocalPart(node);
+
+        if(indirectSinks.length > 0)
+            indirect[idx - 1] = node == null ? null : ids.getId(node);
+    }
+
+
     /*
      * Adds the row whose values have been set.
      */
-    public abstract void add() throws IOException, SQLException;
+    public void add() throws IOException, SQLException
+    {
+        if(directSinks.length > 0)
+        {
+            Object[] row = new Object[directColumns];
+
+            for(int i = 0; i < row.length; i++)
+                row[i] = checkValue(direct, i);
+
+            for(Sink sink : directSinks)
+                sink.add(row);
+
+            Arrays.fill(direct, unset);
+        }
+
+        if(indirectSinks.length > 0)
+        {
+            for(int i = 0; i < indirect.length; i++)
+                checkValue(indirect, i);
+
+            for(Sink sink : indirectSinks)
+                sink.add(indirect);
+
+            indirect = newRow(indirect.length);
+        }
+    }
 
 
     /*
-     * Stores the rows that have been added and not stored yet and releases the resources of the table.
+     * Returns the value of a column of the row, which must have been set.
      */
-    protected abstract void finish() throws IOException, SQLException;
+    private Object checkValue(Object[] row, int column)
+    {
+        if(row[column] == unset)
+            throw new IllegalStateException("value of column " + (column + 1) + " not set: " + table);
+
+        return row[column];
+    }
 
 
     @Override
@@ -99,26 +193,15 @@ public abstract class Table implements AutoCloseable
     {
         try
         {
-            finish();
+            for(Sink sink : directSinks)
+                sink.close();
+
+            for(Sink sink : indirectSinks)
+                sink.close();
         }
         finally
         {
             keys.finish();
         }
     }
-
-
-    public abstract void setValue(int idx, Object value) throws IOException, SQLException;
-
-
-    public abstract void setValue(int idx, int value) throws IOException, SQLException;
-
-
-    public abstract void setValue(int idx, Integer value) throws IOException, SQLException;
-
-
-    public abstract void setValue(int idx, Double value) throws IOException, SQLException;
-
-
-    public abstract void setValue(int idx, String value) throws IOException, SQLException;
 }

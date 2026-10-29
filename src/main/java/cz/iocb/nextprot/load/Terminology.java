@@ -8,7 +8,6 @@ import static cz.iocb.nextprot.load.Schema.entities;
 import java.io.IOException;
 import java.sql.SQLException;
 import org.apache.jena.graph.Node;
-import cz.iocb.nextprot.load.NeXtProt.Mode;
 
 
 
@@ -17,22 +16,22 @@ public class Terminology
     static Ids terms = new Ids("http://nextprot.org/rdf/terminology/");
 
 
-    static void load(String path, Target target, Mode mode) throws IOException, SQLException
+    static void load(String path, Targets targets) throws IOException, SQLException
     {
         TripleDispatcher dispatcher = new TripleDispatcher();
 
         Values types = dispatcher.values(rdf + "type");
 
-        Table parents = dispatcher.table(target, "terminology_parents(term, parent)");
-        Table relatedTerms = dispatcher.table(target, "terminology_related_terms(term, related)");
-        Table labels = dispatcher.table(target, "terminology_labels(term, label)");
+        Table parents = dispatcher.table(targets, "terminology_parents(term, parent)");
+        Table relatedTerms = dispatcher.table(targets, "terminology_related_terms(term, related)");
+        Table labels = dispatcher.table(targets, "terminology_labels(term, label)");
 
         dispatcher.on(nextprot + "childOf", (term, parent) -> {
             if(!parents.isNew(terms.getId(term), terms.getId(parent)))
                 return;
 
-            parents.setValue(1, terms.getValue(term, mode));
-            parents.setValue(2, terms.getValue(parent, mode));
+            parents.setValue(1, terms, term);
+            parents.setValue(2, terms, parent);
             parents.add();
         });
 
@@ -40,8 +39,8 @@ public class Terminology
             if(!relatedTerms.isNew(terms.getId(term), terms.getId(related)))
                 return;
 
-            relatedTerms.setValue(1, terms.getValue(term, mode));
-            relatedTerms.setValue(2, terms.getValue(related, mode));
+            relatedTerms.setValue(1, terms, term);
+            relatedTerms.setValue(2, terms, related);
             relatedTerms.add();
         });
 
@@ -49,25 +48,22 @@ public class Terminology
             if(!labels.isNew(terms.getId(term), getLiteralValue(label)))
                 return;
 
-            labels.setValue(1, terms.getValue(term, mode));
+            labels.setValue(1, terms, term);
             labels.setValue(2, getLiteralValue(label));
             labels.add();
         });
 
         dispatcher.after(() -> {
-            try(Table table = target.table("terminology_bases(id, type" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            try(Table table = targets.table("terminology_bases(id, type, iri)"))
             {
                 for(Node term : types.nodes())
                 {
                     if(!table.isNew(terms.getId(term)))
                         continue;
 
-                    table.setValue(1, terms.getValue(term, mode));
-                    table.setValue(2, entities.getValue(types.first(term), mode));
-
-                    if(mode == Mode.INDIRECT)
-                        table.setValue(3, terms.getLocalPart(term));
-
+                    table.setValue(1, terms, term);
+                    table.setValue(2, entities, types.first(term));
+                    table.setValue(3, terms.getLocalPart(term));
                     table.add();
                 }
             }

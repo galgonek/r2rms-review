@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Types;
 import cz.iocb.nextprot.load.NeXtProt.Server;
 
 
@@ -32,9 +31,9 @@ public class JdbcTarget implements Target
 
 
     @Override
-    public Table table(String table) throws SQLException
+    public Sink sink(String table) throws SQLException
     {
-        return new JdbcTable(table);
+        return new JdbcSink(table);
     }
 
 
@@ -53,19 +52,17 @@ public class JdbcTarget implements Target
     }
 
 
-    private class JdbcTable extends Table
+    private class JdbcSink implements Sink
     {
         private final PreparedStatement statement;
         private int count = 0;
 
 
-        private JdbcTable(String table) throws SQLException
+        private JdbcSink(String table) throws SQLException
         {
-            super(table);
-
             StringBuilder values = new StringBuilder(" values(?");
 
-            for(int i = 1; i < getColumnCount(table); i++)
+            for(int i = 1; i < Table.getColumnCount(table); i++)
                 values.append(",?");
 
             values.append(")");
@@ -81,8 +78,11 @@ public class JdbcTarget implements Target
 
 
         @Override
-        public void add() throws SQLException
+        public void add(Object[] values) throws SQLException
         {
+            for(int i = 0; i < values.length; i++)
+                statement.setObject(i + 1, values[i]);
+
             statement.addBatch();
 
             if(++count % batchSize == 0)
@@ -91,7 +91,7 @@ public class JdbcTarget implements Target
 
 
         @Override
-        protected void finish() throws SQLException
+        public void close() throws SQLException
         {
             try
             {
@@ -102,50 +102,6 @@ public class JdbcTarget implements Target
             {
                 statement.close();
             }
-        }
-
-
-        @Override
-        public void setValue(int idx, Object value) throws SQLException
-        {
-            statement.setObject(idx, value);
-        }
-
-
-        @Override
-        public void setValue(int idx, int value) throws SQLException
-        {
-            statement.setInt(idx, value);
-        }
-
-
-        @Override
-        public void setValue(int idx, Integer value) throws SQLException
-        {
-            if(value != null)
-                statement.setInt(idx, value);
-            else
-                statement.setNull(idx, Types.INTEGER);
-        }
-
-
-        @Override
-        public void setValue(int idx, Double value) throws SQLException
-        {
-            if(value != null)
-                statement.setDouble(idx, value);
-            else
-                statement.setNull(idx, Types.DOUBLE);
-        }
-
-
-        @Override
-        public void setValue(int idx, String value) throws SQLException
-        {
-            if(value != null)
-                statement.setString(idx, value);
-            else
-                statement.setNull(idx, Types.VARCHAR);
         }
     }
 }

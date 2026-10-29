@@ -28,33 +28,43 @@ public class NeXtProt
 
 
     /*
-     * Loads the data either into a database, given by its JDBC URL, or into a file of SQL statements that load them
-     * into a database. The kind of the database server is given either way.
+     * Loads the data into one or more targets at once, each of them given by three arguments: a database, given by its
+     * JDBC URL, or a file of SQL statements that load the data into a database, the kind of the database server, and
+     * the mode of the schema.
      */
     public static void main(String[] args) throws IOException, SQLException
     {
-        if(args.length != 4)
+        if(args.length < 4 || args.length % 3 != 1)
         {
-            System.err.println("usage: NeXtProt <jdbc-url>|<sql-file>[.gz] postgresql|mariadb|virtuoso "
-                    + "direct|indirect <data-dir>");
+            System.err.println("usage: NeXtProt (<jdbc-url>|<sql-file>[.gz] postgresql|mariadb|virtuoso "
+                    + "direct|indirect)... <data-dir>");
             System.exit(1);
         }
 
-        String output = args[0];
-        Server type = Server.valueOf(args[1].toUpperCase());
-        Mode mode = Mode.valueOf(args[2].toUpperCase());
-        String path = args[3];
+        String path = args[args.length - 1];
 
-        try(Target target = output.startsWith("jdbc:") ? new JdbcTarget(output, type) : SqlTarget.create(output, type))
+        try(Targets targets = new Targets())
         {
-            Schema.load(path, target, mode);
-            Terminology.load(path, target, mode);
-            Publication.load(path, target, mode);
-            Context.load(path, target, mode);
-            Chromosome.load(path, target, mode);
-            Expression.load(path, target, mode);
+            for(int i = 0; i < args.length - 1; i += 3)
+            {
+                String output = args[i];
+                Server type = Server.valueOf(args[i + 1].toUpperCase());
+                Mode mode = Mode.valueOf(args[i + 2].toUpperCase());
 
-            target.commit();
+                Target target = output.startsWith("jdbc:") ? new JdbcTarget(output, type) :
+                        SqlTarget.create(output, type);
+
+                targets.add(target, mode);
+            }
+
+            Schema.load(path, targets);
+            Terminology.load(path, targets);
+            Publication.load(path, targets);
+            Context.load(path, targets);
+            Chromosome.load(path, targets);
+            Expression.load(path, targets);
+
+            targets.commit();
         }
     }
 }

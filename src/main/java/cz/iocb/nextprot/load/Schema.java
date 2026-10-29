@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.LinkedHashSet;
 import org.apache.jena.graph.Node;
-import cz.iocb.nextprot.load.NeXtProt.Mode;
 
 
 
@@ -21,7 +20,7 @@ public class Schema
     static Ids entities = new Ids(nextprot);
 
 
-    static void load(String path, Target target, Mode mode) throws IOException, SQLException
+    static void load(String path, Targets targets) throws IOException, SQLException
     {
         TripleDispatcher dispatcher = new TripleDispatcher();
 
@@ -43,16 +42,16 @@ public class Schema
                 entityNodes.add(object);
         });
 
-        Table classes = dispatcher.table(target, "schema_classes(entity)");
-        Table thingSubclasses = dispatcher.table(target, "schema_thing_subclasses(entity)");
-        Table restrictions = dispatcher.table(target, "schema_restrictions(entity, notin)");
-        Table relatedTerms = dispatcher.table(target, "schema_related_terms(entity, related)");
-        Table parentClasses = dispatcher.table(target, "schema_parent_classes(entity, parent)");
+        Table classes = dispatcher.table(targets, "schema_classes(entity)");
+        Table thingSubclasses = dispatcher.table(targets, "schema_thing_subclasses(entity)");
+        Table restrictions = dispatcher.table(targets, "schema_restrictions(entity, notin)");
+        Table relatedTerms = dispatcher.table(targets, "schema_related_terms(entity, related)");
+        Table parentClasses = dispatcher.table(targets, "schema_parent_classes(entity, parent)");
 
         dispatcher.onType(owl + "Class", (entity, _) -> {
             if(entity.isURI() && entity.getURI().startsWith(nextprot) && classes.isNew(entities.getId(entity)))
             {
-                classes.setValue(1, entities.getValue(entity, mode));
+                classes.setValue(1, entities, entity);
                 classes.add();
             }
         });
@@ -63,15 +62,15 @@ public class Schema
 
             if(parent.isURI() && parent.getURI().equals(owl + "Thing") && thingSubclasses.isNew(entities.getId(entity)))
             {
-                thingSubclasses.setValue(1, entities.getValue(entity, mode));
+                thingSubclasses.setValue(1, entities, entity);
                 thingSubclasses.add();
             }
 
             if(parent.isURI() && parent.getURI().startsWith(nextprot)
                     && parentClasses.isNew(entities.getId(entity), entities.getId(parent)))
             {
-                parentClasses.setValue(1, entities.getValue(entity, mode));
-                parentClasses.setValue(2, entities.getValue(parent, mode));
+                parentClasses.setValue(1, entities, entity);
+                parentClasses.setValue(2, entities, parent);
                 parentClasses.add();
             }
         });
@@ -80,8 +79,8 @@ public class Schema
             if(!restrictions.isNew(entities.getId(entity), entities.getId(notin)))
                 return;
 
-            restrictions.setValue(1, entities.getValue(entity, mode));
-            restrictions.setValue(2, entities.getValue(notin, mode));
+            restrictions.setValue(1, entities, entity);
+            restrictions.setValue(2, entities, notin);
             restrictions.add();
         });
 
@@ -89,50 +88,42 @@ public class Schema
             if(!relatedTerms.isNew(entities.getId(entity), terms.getId(related)))
                 return;
 
-            relatedTerms.setValue(1, entities.getValue(entity, mode));
-            relatedTerms.setValue(2, terms.getValue(related, mode));
+            relatedTerms.setValue(1, entities, entity);
+            relatedTerms.setValue(2, terms, related);
             relatedTerms.add();
         });
 
         dispatcher.after(() -> {
-            try(Table table = target.table("source_bases(id, comment, reference"
-                    + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            try(Table table = targets.table("source_bases(id, comment, reference, iri)"))
             {
                 for(Node source : sourceNodes)
                 {
                     if(!table.isNew(sources.getId(source)))
                         continue;
 
-                    table.setValue(1, sources.getValue(source, mode));
+                    table.setValue(1, sources, source);
                     table.setValue(2, getLiteralValue(comments.first(source)));
                     table.setValue(3, getLiteralValue(references.first(source)));
-
-                    if(mode == Mode.INDIRECT)
-                        table.setValue(4, sources.getLocalPart(source));
-
+                    table.setValue(4, sources.getLocalPart(source));
                     table.add();
                 }
             }
 
-            try(Table table = target.table("database_bases(id, reference" + (mode == Mode.INDIRECT ? ", iri" : "")
-                    + ")"))
+            try(Table table = targets.table("database_bases(id, reference, iri)"))
             {
                 for(Node database : databaseNodes)
                 {
                     if(!table.isNew(databases.getId(database)))
                         continue;
 
-                    table.setValue(1, databases.getValue(database, mode));
+                    table.setValue(1, databases, database);
                     table.setValue(2, getLiteralValue(references.first(database)));
-
-                    if(mode == Mode.INDIRECT)
-                        table.setValue(3, databases.getLocalPart(database));
-
+                    table.setValue(3, databases.getLocalPart(database));
                     table.add();
                 }
             }
 
-            try(Table table = target.table("database_comments(db, comment)"))
+            try(Table table = targets.table("database_comments(db, comment)"))
             {
                 for(Node database : databaseNodes)
                 {
@@ -141,14 +132,14 @@ public class Schema
                         if(!table.isNew(databases.getId(database), getLiteralValue(comment)))
                             continue;
 
-                        table.setValue(1, databases.getValue(database, mode));
+                        table.setValue(1, databases, database);
                         table.setValue(2, getLiteralValue(comment));
                         table.add();
                     }
                 }
             }
 
-            try(Table table = target.table("database_categories(db, category)"))
+            try(Table table = targets.table("database_categories(db, category)"))
             {
                 for(Node database : databaseNodes)
                 {
@@ -157,15 +148,14 @@ public class Schema
                         if(!table.isNew(databases.getId(database), getLiteralValue(category)))
                             continue;
 
-                        table.setValue(1, databases.getValue(database, mode));
+                        table.setValue(1, databases, database);
                         table.setValue(2, getLiteralValue(category));
                         table.add();
                     }
                 }
             }
 
-            try(Table table = target.table("schema_bases(id, type, label, comment, reference"
-                    + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            try(Table table = targets.table("schema_bases(id, type, label, comment, reference, iri)"))
             {
                 for(Node entity : entityNodes)
                 {
@@ -174,15 +164,12 @@ public class Schema
 
                     Node entityType = types.first(entity, t -> t.isURI() && t.getURI().startsWith(nextprot));
 
-                    table.setValue(1, entities.getValue(entity, mode));
-                    table.setValue(2, entities.getValue(entityType, mode));
+                    table.setValue(1, entities, entity);
+                    table.setValue(2, entities, entityType);
                     table.setValue(3, getLiteralValue(labels.first(entity)));
                     table.setValue(4, getLiteralValue(comments.first(entity)));
                     table.setValue(5, getLiteralValue(references.first(entity)));
-
-                    if(mode == Mode.INDIRECT)
-                        table.setValue(6, entities.getLocalPart(entity));
-
+                    table.setValue(6, entities.getLocalPart(entity));
                     table.add();
                 }
             }

@@ -5,25 +5,24 @@ import static cz.iocb.nextprot.load.Chromosome.isoforms;
 import static cz.iocb.nextprot.load.NeXtProt.nextprot;
 import java.io.IOException;
 import java.sql.SQLException;
-import cz.iocb.nextprot.load.NeXtProt.Mode;
 
 
 
 public class Expression
 {
-    private static void loadExpressions(String path, String file, String predicate, String table, Target target,
-            Mode mode) throws IOException, SQLException
+    private static void loadExpressions(String path, String file, String predicate, String table, Targets targets)
+            throws IOException, SQLException
     {
         TripleDispatcher dispatcher = new TripleDispatcher();
 
-        Table expressions = dispatcher.table(target, table + "(isoform, annotation)");
+        Table expressions = dispatcher.table(targets, table + "(isoform, annotation)");
 
         dispatcher.on(nextprot + predicate, (isoform, annotation) -> {
             if(!expressions.isNew(isoforms.getId(isoform), annotations.getId(annotation)))
                 return;
 
-            expressions.setValue(1, isoforms.getValue(isoform, mode));
-            expressions.setValue(2, annotations.getValue(annotation, mode));
+            expressions.setValue(1, isoforms, isoform);
+            expressions.setValue(2, annotations, annotation);
             expressions.add();
         });
 
@@ -31,11 +30,10 @@ public class Expression
     }
 
 
-    public static void load(String path, Target target, Mode mode) throws IOException, SQLException
+    public static void load(String path, Targets targets) throws IOException, SQLException
     {
-        loadExpressions(path, "expression_low.ttl.gz", "lowExpression", "isoform_low_expressions", target, mode);
-        loadExpressions(path, "expression_medium.ttl.gz", "mediumExpression", "isoform_medium_expressions", target,
-                mode);
-        loadExpressions(path, "expression_high.ttl.gz", "highExpression", "isoform_high_expressions", target, mode);
+        loadExpressions(path, "expression_low.ttl.gz", "lowExpression", "isoform_low_expressions", targets);
+        loadExpressions(path, "expression_medium.ttl.gz", "mediumExpression", "isoform_medium_expressions", targets);
+        loadExpressions(path, "expression_high.ttl.gz", "highExpression", "isoform_high_expressions", targets);
     }
 }

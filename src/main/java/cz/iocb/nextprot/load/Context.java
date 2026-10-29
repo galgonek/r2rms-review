@@ -7,14 +7,12 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.LinkedHashSet;
 import org.apache.jena.graph.Node;
-import cz.iocb.nextprot.load.NeXtProt.Mode;
 
 
 
 public class Context
 {
-    public static void load(String path, String file, Target target, Mode mode)
-            throws IOException, SQLException
+    public static void load(String path, String file, Targets targets) throws IOException, SQLException
     {
         TripleDispatcher dispatcher = new TripleDispatcher();
 
@@ -27,7 +25,7 @@ public class Context
         Values stages = dispatcher.values(nextprot + "developmentalStage");
 
         dispatcher.after(() -> {
-            try(Table table = target.table("context_bases(id, metadata, method, disease, tissue, line, stage)"))
+            try(Table table = targets.table("context_bases(id, metadata, method, disease, tissue, line, stage)"))
             {
                 for(Node context : contexts)
                 {
@@ -38,11 +36,11 @@ public class Context
 
                     table.setValue(1, id);
                     table.setValue(2, getIntID(metadata.first(context), "http://nextprot.org/rdf/publication/"));
-                    table.setValue(3, terms.getValue(methods.first(context), mode));
-                    table.setValue(4, terms.getValue(diseases.first(context), mode));
-                    table.setValue(5, terms.getValue(tissues.first(context), mode));
-                    table.setValue(6, terms.getValue(lines.first(context), mode));
-                    table.setValue(7, terms.getValue(stages.first(context), mode));
+                    table.setValue(3, terms, methods.first(context));
+                    table.setValue(4, terms, diseases.first(context));
+                    table.setValue(5, terms, tissues.first(context));
+                    table.setValue(6, terms, lines.first(context));
+                    table.setValue(7, terms, stages.first(context));
                     table.add();
                 }
             }
@@ -52,8 +50,8 @@ public class Context
     }
 
 
-    public static void load(String path, Target target, Mode mode) throws IOException, SQLException
+    public static void load(String path, Targets targets) throws IOException, SQLException
     {
-        load(path, "experimentalcontext.ttl.gz", target, mode);
+        load(path, "experimentalcontext.ttl.gz", targets);
     }
 }

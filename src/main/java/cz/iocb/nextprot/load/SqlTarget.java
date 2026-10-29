@@ -7,8 +7,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.zip.GZIPOutputStream;
 import cz.iocb.nextprot.load.NeXtProt.Server;
 
@@ -26,11 +30,20 @@ import cz.iocb.nextprot.load.NeXtProt.Server;
  *
  * The files for PostgreSQL and MariaDB store the rows in a single transaction. Virtuoso commits every statement, as
  * when the rows are stored by JDBC.
+ *
+ * The rows are handed over in batches to a thread of the file, which writes the statements, so that writing several
+ * files at once does not hold up the reading of the data.
  */
 public abstract class SqlTarget implements Target
 {
+    private static final int batchSize = 1000;
+    private static final int pendingBatches = 64;
+
     private final Writer writer;
     private final int blockSize;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final Semaphore pending = new Semaphore(pendingBatches);
+    private volatile Throwable failure;
 
 
     /*
@@ -63,24 +76,70 @@ public abstract class SqlTarget implements Target
 
 
     @Override
-    public Table table(String table)
+    public Sink sink(String table)
     {
-        return new SqlTable(table);
+        return new SqlSink(table);
     }
 
 
     @Override
     public void commit() throws IOException
     {
-        writeCommit();
-        writer.flush();
+        submit(() -> {
+            writeCommit();
+            writer.flush();
+        });
     }
 
 
+    /*
+     * Closes the file once the thread has written everything submitted.
+     */
     @Override
     public void close() throws IOException
     {
+        executor.close();
         writer.close();
+        checkFailure();
+    }
+
+
+    /*
+     * Submits a task to the thread of the file, which runs the tasks in the order of their submission. The thread is
+     * given only a limited number of tasks in advance, so that the rows do not pile up in memory.
+     */
+    private void submit(Task task) throws IOException
+    {
+        checkFailure();
+        pending.acquireUninterruptibly();
+
+        executor.execute(() -> {
+            try
+            {
+                if(failure == null)
+                    task.run();
+            }
+            catch(Throwable throwable)
+            {
+                failure = throwable;
+            }
+            finally
+            {
+                pending.release();
+            }
+        });
+    }
+
+
+    /*
+     * Reports the failure of a task run by the thread of the file.
+     */
+    private void checkFailure() throws IOException
+    {
+        if(failure instanceof IOException exception)
+            throw new IOException(exception.getMessage(), exception);
+        else if(failure != null)
+            throw new IOException("writing of the SQL file failed", failure);
     }
 
 
@@ -407,84 +466,81 @@ public abstract class SqlTarget implements Target
     }
 
 
-    private class SqlTable extends Table
+    /*
+     * A task run by the thread of the file.
+     */
+    @FunctionalInterface
+    private interface Task
+    {
+        void run() throws IOException;
+    }
+
+
+    /*
+     * Hands the rows over to the thread of the file, which collects them into blocks.
+     */
+    private class SqlSink implements Sink
     {
         private final String table;
-        private final String[] values;
-        private final StringBuilder rows = new StringBuilder();
+        private final StringBuilder block = new StringBuilder();
+        private List<Object[]> batch = new ArrayList<>(batchSize);
 
 
-        private SqlTable(String table)
+        private SqlSink(String table)
         {
-            super(table);
-
             this.table = table;
-            this.values = new String[getColumnCount(table)];
         }
 
 
         @Override
-        public void add() throws IOException
+        public void add(Object[] values) throws IOException
         {
-            for(int i = 0; i < values.length; i++)
-                if(values[i] == null)
-                    throw new IllegalStateException("value of column " + (i + 1) + " not set: " + table);
+            batch.add(values);
 
-            appendRow(rows, values);
-            Arrays.fill(values, null);
-
-            if(rows.length() >= blockSize)
-                flush();
+            if(batch.size() == batchSize)
+                submitBatch();
         }
 
 
         @Override
-        protected void finish() throws IOException
+        public void close() throws IOException
         {
-            if(!rows.isEmpty())
-                flush();
+            if(!batch.isEmpty())
+                submitBatch();
+
+            submit(() -> {
+                if(!block.isEmpty())
+                    writeBlock();
+            });
         }
 
 
-        private void flush() throws IOException
+        private void submitBatch() throws IOException
         {
-            writeBlock(table, rows);
-            rows.setLength(0);
+            List<Object[]> rows = batch;
+            batch = new ArrayList<>(batchSize);
+
+            submit(() -> {
+                for(Object[] values : rows)
+                {
+                    String[] literals = new String[values.length];
+
+                    for(int i = 0; i < values.length; i++)
+                        literals[i] = getLiteral(values[i]);
+
+                    appendRow(block, literals);
+
+                    if(block.length() >= blockSize)
+                        writeBlock();
+                }
+            });
         }
 
 
-        @Override
-        public void setValue(int idx, Object value) throws IOException
+        private void writeBlock() throws IOException
         {
-            values[idx - 1] = getLiteral(value);
-        }
-
-
-        @Override
-        public void setValue(int idx, int value)
-        {
-            values[idx - 1] = Integer.toString(value);
-        }
-
-
-        @Override
-        public void setValue(int idx, Integer value) throws IOException
-        {
-            values[idx - 1] = getLiteral(value);
-        }
-
-
-        @Override
-        public void setValue(int idx, Double value) throws IOException
-        {
-            values[idx - 1] = getLiteral(value);
-        }
-
-
-        @Override
-        public void setValue(int idx, String value) throws IOException
-        {
-            values[idx - 1] = getLiteral(value);
+            SqlTarget.this.writeBlock(table, block);
+            block.setLength(0);
         }
     }
 }

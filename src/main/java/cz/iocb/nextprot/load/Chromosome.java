@@ -23,7 +23,6 @@ import java.util.LinkedHashSet;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.eclipse.collections.impl.map.mutable.primitive.ObjectIntHashMap;
-import cz.iocb.nextprot.load.NeXtProt.Mode;
 
 
 
@@ -173,7 +172,7 @@ public class Chromosome
     // @formatter:on
 
 
-    private static void loadEvidences(TripleDispatcher dispatcher, Target target, Mode mode)
+    private static void loadEvidences(TripleDispatcher dispatcher, Targets targets)
     {
         LinkedHashSet<Node> evidenceNodes = dispatcher.instances(nextprot + "Evidence");
         Values expressionScores = dispatcher.values(nextprot + "expressionScore");
@@ -201,30 +200,30 @@ public class Chromosome
         Values references = dispatcher.values(nextprot + "reference");
 
         dispatcher.after(() -> {
-            try(Table table = target.table("evidence_bases(id, expression_score, allele_frequency, "
-                    + "experimental_context, evidence_code, assigned_by, expression_level, from_xref, "
-                    + "integration_level, quality, interaction_detection_method, negative, number_of_experiments, "
-                    + "homozygote_count, allele_number, allele_count, isoform_specificity, antibodies_acc, "
-                    + "assoc_type, cell_line, go_qualifier, intensity, negative_isoform_specificity"
-                    + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            try(Table table = targets.table("""
+                    evidence_bases(id, expression_score, allele_frequency, \
+                    experimental_context, evidence_code, assigned_by, expression_level, from_xref, \
+                    integration_level, quality, interaction_detection_method, negative, number_of_experiments, \
+                    homozygote_count, allele_number, allele_count, isoform_specificity, antibodies_acc, \
+                    assoc_type, cell_line, go_qualifier, intensity, negative_isoform_specificity, iri)"""))
             {
                 for(Node evidence : evidenceNodes)
                 {
                     if(!table.isNew(evidences.getId(evidence)))
                         continue;
 
-                    table.setValue(1, evidences.getValue(evidence, mode));
+                    table.setValue(1, evidences, evidence);
                     table.setValue(2, getDoubleValue(expressionScores.first(evidence)));
                     table.setValue(3, getDoubleValue(alleleFrequencies.first(evidence)));
                     table.setValue(4,
                             getIntID(experimentalContexts.first(evidence), "http://nextprot.org/rdf/context/"));
-                    table.setValue(5, terms.getValue(evidenceCodes.first(evidence), mode));
-                    table.setValue(6, sources.getValue(assignedBy.first(evidence), mode));
-                    table.setValue(7, entities.getValue(expressionLevels.first(evidence), mode));
-                    table.setValue(8, databases.getValue(fromXrefs.first(evidence), mode));
-                    table.setValue(9, entities.getValue(integrationLevels.first(evidence), mode));
-                    table.setValue(10, entities.getValue(qualities.first(evidence), mode));
-                    table.setValue(11, terms.getValue(detectionMethods.first(evidence), mode));
+                    table.setValue(5, terms, evidenceCodes.first(evidence));
+                    table.setValue(6, sources, assignedBy.first(evidence));
+                    table.setValue(7, entities, expressionLevels.first(evidence));
+                    table.setValue(8, databases, fromXrefs.first(evidence));
+                    table.setValue(9, entities, integrationLevels.first(evidence));
+                    table.setValue(10, entities, qualities.first(evidence));
+                    table.setValue(11, terms, detectionMethods.first(evidence));
                     table.setValue(12, getBooleanValue(negatives.first(evidence)));
                     table.setValue(13, getIntValue(numbersOfExperiments.first(evidence)));
                     table.setValue(14, getIntValue(homozygoteCounts.first(evidence)));
@@ -237,15 +236,12 @@ public class Chromosome
                     table.setValue(21, getLiteralValue(goQualifiers.first(evidence)));
                     table.setValue(22, getLiteralValue(intensities.first(evidence)));
                     table.setValue(23, getLiteralValue(negativeIsoformSpecificities.first(evidence)));
-
-                    if(mode == Mode.INDIRECT)
-                        table.setValue(24, evidences.getLocalPart(evidence));
-
+                    table.setValue(24, evidences.getLocalPart(evidence));
                     table.add();
                 }
             }
 
-            try(Table table = target.table("evidence_publication_references(evidence, publication)"))
+            try(Table table = targets.table("evidence_publication_references(evidence, publication)"))
             {
                 for(Node evidence : evidenceNodes)
                 {
@@ -259,7 +255,7 @@ public class Chromosome
                         if(!table.isNew(evidences.getId(evidence), publication))
                             continue;
 
-                        table.setValue(1, evidences.getValue(evidence, mode));
+                        table.setValue(1, evidences, evidence);
                         table.setValue(2, publication);
                         table.add();
                     }
@@ -269,8 +265,7 @@ public class Chromosome
     }
 
 
-    private static void loadAnnotations(TripleDispatcher dispatcher, Target target, Mode mode)
-            throws IOException, SQLException
+    private static void loadAnnotations(TripleDispatcher dispatcher, Targets targets) throws IOException, SQLException
     {
         Values types = dispatcher.values(rdf + "type");
         Values qualities = dispatcher.values(nextprot + "quality");
@@ -292,22 +287,22 @@ public class Chromosome
         Values antibodyNames = dispatcher.values(nextprot + "antibodyName");
         Values antibodyUnicities = dispatcher.values(nextprot + "antibodyUnicity");
 
-        Table annotationEvidences = dispatcher.table(target, "annotation_evidences(annotation, evidence)");
-        Table negativeEvidences = dispatcher.table(target, "annotation_negative_evidences(annotation, evidence)");
-        Table diseases = dispatcher.table(target, "annotation_diseases(annotation, disease)");
-        Table annotationComments = dispatcher.table(target, "annotation_comments(annotation, seq, comment)");
-        Table specificities = dispatcher.table(target, "annotation_isoform_specificities(annotation, specificity)");
-        Table entryInteractants = dispatcher.table(target, "annotation_entry_interactants(annotation, interactant)");
-        Table isoformInteractants = dispatcher.table(target,
+        Table annotationEvidences = dispatcher.table(targets, "annotation_evidences(annotation, evidence)");
+        Table negativeEvidences = dispatcher.table(targets, "annotation_negative_evidences(annotation, evidence)");
+        Table diseases = dispatcher.table(targets, "annotation_diseases(annotation, disease)");
+        Table annotationComments = dispatcher.table(targets, "annotation_comments(annotation, seq, comment)");
+        Table specificities = dispatcher.table(targets, "annotation_isoform_specificities(annotation, specificity)");
+        Table entryInteractants = dispatcher.table(targets, "annotation_entry_interactants(annotation, interactant)");
+        Table isoformInteractants = dispatcher.table(targets,
                 "annotation_isoform_interactants(annotation, interactant)");
-        Table peptideSets = dispatcher.table(target, "annotation_peptide_sets(annotation, peptide_set)");
+        Table peptideSets = dispatcher.table(targets, "annotation_peptide_sets(annotation, peptide_set)");
 
         dispatcher.on(nextprot + "evidence", (annotation, evidence) -> {
             if(!annotationEvidences.isNew(annotations.getId(annotation), evidences.getId(evidence)))
                 return;
 
-            annotationEvidences.setValue(1, annotations.getValue(annotation, mode));
-            annotationEvidences.setValue(2, evidences.getValue(evidence, mode));
+            annotationEvidences.setValue(1, annotations, annotation);
+            annotationEvidences.setValue(2, evidences, evidence);
             annotationEvidences.add();
         });
 
@@ -315,8 +310,8 @@ public class Chromosome
             if(!negativeEvidences.isNew(annotations.getId(annotation), evidences.getId(evidence)))
                 return;
 
-            negativeEvidences.setValue(1, annotations.getValue(annotation, mode));
-            negativeEvidences.setValue(2, evidences.getValue(evidence, mode));
+            negativeEvidences.setValue(1, annotations, annotation);
+            negativeEvidences.setValue(2, evidences, evidence);
             negativeEvidences.add();
         });
 
@@ -327,18 +322,17 @@ public class Chromosome
             if(!diseases.isNew(annotations.getId(annotation), terms.getId(disease)))
                 return;
 
-            diseases.setValue(1, annotations.getValue(annotation, mode));
-            diseases.setValue(2, terms.getValue(disease, mode));
+            diseases.setValue(1, annotations, annotation);
+            diseases.setValue(2, terms, disease);
             diseases.add();
         });
 
         dispatcher.on(rdfs + "comment", (annotation, comment) -> {
-            Object id = annotations.getValue(annotation, mode);
-            String key = id + "\0" + getLiteralValue(comment);
+            String key = annotations.getId(annotation) + "\0" + getLiteralValue(comment);
 
             if(!comments.contains(key))
             {
-                annotationComments.setValue(1, id);
+                annotationComments.setValue(1, annotations, annotation);
                 annotationComments.setValue(2, comments.size());
                 annotationComments.setValue(3, getLiteralValue(comment));
                 annotationComments.add();
@@ -353,8 +347,8 @@ public class Chromosome
             if(!specificities.isNew(annotations.getId(annotation), entities.getId(specificity)))
                 return;
 
-            specificities.setValue(1, annotations.getValue(annotation, mode));
-            specificities.setValue(2, entities.getValue(specificity, mode));
+            specificities.setValue(1, annotations, annotation);
+            specificities.setValue(2, entities, specificity);
             specificities.add();
         });
 
@@ -362,16 +356,16 @@ public class Chromosome
             if(interactant.isURI() && interactant.getURI().startsWith("http://nextprot.org/rdf/entry/")
                     && entryInteractants.isNew(annotations.getId(annotation), entries.getId(interactant)))
             {
-                entryInteractants.setValue(1, annotations.getValue(annotation, mode));
-                entryInteractants.setValue(2, entries.getValue(interactant, mode));
+                entryInteractants.setValue(1, annotations, annotation);
+                entryInteractants.setValue(2, entries, interactant);
                 entryInteractants.add();
             }
 
             if(interactant.isURI() && interactant.getURI().startsWith("http://nextprot.org/rdf/isoform/")
                     && isoformInteractants.isNew(annotations.getId(annotation), isoforms.getId(interactant)))
             {
-                isoformInteractants.setValue(1, annotations.getValue(annotation, mode));
-                isoformInteractants.setValue(2, isoforms.getValue(interactant, mode));
+                isoformInteractants.setValue(1, annotations, annotation);
+                isoformInteractants.setValue(2, isoforms, interactant);
                 isoformInteractants.add();
             }
         });
@@ -380,16 +374,17 @@ public class Chromosome
             if(!peptideSets.isNew(annotations.getId(annotation), getLiteralValue(set)))
                 return;
 
-            peptideSets.setValue(1, annotations.getValue(annotation, mode));
+            peptideSets.setValue(1, annotations, annotation);
             peptideSets.setValue(2, getLiteralValue(set));
             peptideSets.add();
         });
 
         dispatcher.after(() -> {
-            try(Table table = target.table("annotation_bases(id, resolution, type, quality, term, "
-                            + "impacted_object, self_interaction, proteotypic, position_start, position_end, "
-                            + "entry_annotation, variation, original, hgvs, method, peptide_name, peptide_unicity, "
-                            + "antibody_name, antibody_unicity" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            try(Table table = targets.table("""
+                    annotation_bases(id, resolution, type, quality, term, \
+                    impacted_object, self_interaction, proteotypic, position_start, position_end, \
+                    entry_annotation, variation, original, hgvs, method, peptide_name, peptide_unicity, \
+                    antibody_name, antibody_unicity, iri)"""))
             {
                 /* the typed annotations with a quality, and the untyped impacted objects */
                 LinkedHashSet<Node> annotationNodes = new LinkedHashSet<>();
@@ -410,12 +405,12 @@ public class Chromosome
                     Node annotationType = types.first(annotation, t -> !t.equals(evidenceType));
                     Node quality = annotationType != null ? qualities.first(annotation) : null;
 
-                    table.setValue(1, annotations.getValue(annotation, mode));
+                    table.setValue(1, annotations, annotation);
                     table.setValue(2, getDoubleValue(resolutions.first(annotation)));
-                    table.setValue(3, entities.getValue(annotationType, mode));
-                    table.setValue(4, entities.getValue(quality, mode));
-                    table.setValue(5, terms.getValue(annotationTerms.first(annotation), mode));
-                    table.setValue(6, annotations.getValue(impactedObjects.first(annotation), mode));
+                    table.setValue(3, entities, annotationType);
+                    table.setValue(4, entities, quality);
+                    table.setValue(5, terms, annotationTerms.first(annotation));
+                    table.setValue(6, annotations, impactedObjects.first(annotation));
                     table.setValue(7, getBooleanValue(selfInteractions.first(annotation)));
                     table.setValue(8, getBooleanValue(proteotypics.first(annotation)));
                     table.setValue(9, getIntValue(starts.first(annotation)));
@@ -429,10 +424,7 @@ public class Chromosome
                     table.setValue(17, getLiteralValue(peptideUnicities.first(annotation)));
                     table.setValue(18, getLiteralValue(antibodyNames.first(annotation)));
                     table.setValue(19, getLiteralValue(antibodyUnicities.first(annotation)));
-
-                    if(mode == Mode.INDIRECT)
-                        table.setValue(20, annotations.getLocalPart(annotation));
-
+                    table.setValue(20, annotations.getLocalPart(annotation));
                     table.add();
                 }
             }
@@ -440,7 +432,7 @@ public class Chromosome
     }
 
 
-    private static void loadIsoforms(TripleDispatcher dispatcher, Target target, Mode mode)
+    private static void loadIsoforms(TripleDispatcher dispatcher, Targets targets)
     {
         LinkedHashSet<Node> isoformNodes = dispatcher.instances(nextprot + "Isoform");
         Values isoformEntries = dispatcher.inverse(nextprot + "isoform");
@@ -468,44 +460,42 @@ public class Chromosome
             links[i] = dispatcher.values(nextprot + isoformAnnotations[i][0]);
 
         dispatcher.after(() -> {
-            try(Table table = target.table("isoform_bases (id, entry, absorption_max, "
-                    + "absorption_note, allergen, initiator_methionine, kinetic_k_m, kinetic_note, kinetic_vmax, "
-                    + "non_consecutive_residue, peroxisome_transit_peptide, pharmaceutical, ph_dependence,  "
-                    + "redox_potential, signal_peptide, temperature_dependence, canonical_isoform, swissprot_displayed"
-                    + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            try(Table table = targets.table("""
+                    isoform_bases (id, entry, absorption_max, \
+                    absorption_note, allergen, initiator_methionine, kinetic_k_m, kinetic_note, kinetic_vmax, \
+                    non_consecutive_residue, peroxisome_transit_peptide, pharmaceutical, ph_dependence,  \
+                    redox_potential, signal_peptide, temperature_dependence, canonical_isoform, swissprot_displayed\
+                    , iri)"""))
             {
                 for(Node isoform : isoformNodes)
                 {
                     if(!table.isNew(isoforms.getId(isoform)))
                         continue;
 
-                    table.setValue(1, isoforms.getValue(isoform, mode));
-                    table.setValue(2, entries.getValue(isoformEntries.first(isoform), mode));
-                    table.setValue(3, annotations.getValue(absorptionMaxes.first(isoform), mode));
-                    table.setValue(4, annotations.getValue(absorptionNotes.first(isoform), mode));
-                    table.setValue(5, annotations.getValue(allergens.first(isoform), mode));
-                    table.setValue(6, annotations.getValue(initiatorMethionines.first(isoform), mode));
-                    table.setValue(7, annotations.getValue(kineticKMs.first(isoform), mode));
-                    table.setValue(8, annotations.getValue(kineticNotes.first(isoform), mode));
-                    table.setValue(9, annotations.getValue(kineticVmaxes.first(isoform), mode));
-                    table.setValue(10, annotations.getValue(nonConsecutiveResidues.first(isoform), mode));
-                    table.setValue(11, annotations.getValue(peroxisomeTransitPeptides.first(isoform), mode));
-                    table.setValue(12, annotations.getValue(pharmaceuticals.first(isoform), mode));
-                    table.setValue(13, annotations.getValue(phDependences.first(isoform), mode));
-                    table.setValue(14, annotations.getValue(redoxPotentials.first(isoform), mode));
-                    table.setValue(15, annotations.getValue(signalPeptides.first(isoform), mode));
-                    table.setValue(16, annotations.getValue(temperatureDependences.first(isoform), mode));
+                    table.setValue(1, isoforms, isoform);
+                    table.setValue(2, entries, isoformEntries.first(isoform));
+                    table.setValue(3, annotations, absorptionMaxes.first(isoform));
+                    table.setValue(4, annotations, absorptionNotes.first(isoform));
+                    table.setValue(5, annotations, allergens.first(isoform));
+                    table.setValue(6, annotations, initiatorMethionines.first(isoform));
+                    table.setValue(7, annotations, kineticKMs.first(isoform));
+                    table.setValue(8, annotations, kineticNotes.first(isoform));
+                    table.setValue(9, annotations, kineticVmaxes.first(isoform));
+                    table.setValue(10, annotations, nonConsecutiveResidues.first(isoform));
+                    table.setValue(11, annotations, peroxisomeTransitPeptides.first(isoform));
+                    table.setValue(12, annotations, pharmaceuticals.first(isoform));
+                    table.setValue(13, annotations, phDependences.first(isoform));
+                    table.setValue(14, annotations, redoxPotentials.first(isoform));
+                    table.setValue(15, annotations, signalPeptides.first(isoform));
+                    table.setValue(16, annotations, temperatureDependences.first(isoform));
                     table.setValue(17, getBooleanValue(canonicalIsoforms.first(isoform)));
                     table.setValue(18, getBooleanValue(swissprotDisplayed.first(isoform)));
-
-                    if(mode == Mode.INDIRECT)
-                        table.setValue(19, isoforms.getLocalPart(isoform));
-
+                    table.setValue(19, isoforms.getLocalPart(isoform));
                     table.add();
                 }
             }
 
-            try(Table table = target.table("isoform_proteoforms (isoform, proteoform)"))
+            try(Table table = targets.table("isoform_proteoforms (isoform, proteoform)"))
             {
                 for(Node isoform : isoformNodes)
                 {
@@ -514,8 +504,8 @@ public class Chromosome
                         if(!table.isNew(isoforms.getId(isoform), proteoforms.getId(proteoform)))
                             continue;
 
-                        table.setValue(1, isoforms.getValue(isoform, mode));
-                        table.setValue(2, proteoforms.getValue(proteoform, mode));
+                        table.setValue(1, isoforms, isoform);
+                        table.setValue(2, proteoforms, proteoform);
                         table.add();
                     }
                 }
@@ -523,7 +513,7 @@ public class Chromosome
 
             for(int i = 0; i < isoformAnnotations.length; i++)
             {
-                try(Table table = target.table(isoformAnnotations[i][1] + " (isoform, annotation)"))
+                try(Table table = targets.table(isoformAnnotations[i][1] + " (isoform, annotation)"))
                 {
                     for(Node isoform : isoformNodes)
                     {
@@ -532,8 +522,8 @@ public class Chromosome
                             if(!table.isNew(isoforms.getId(isoform), annotations.getId(annotation)))
                                 continue;
 
-                            table.setValue(1, isoforms.getValue(isoform, mode));
-                            table.setValue(2, annotations.getValue(annotation, mode));
+                            table.setValue(1, isoforms, isoform);
+                            table.setValue(2, annotations, annotation);
                             table.add();
                         }
                     }
@@ -543,7 +533,7 @@ public class Chromosome
     }
 
 
-    private static void loadEntries(TripleDispatcher dispatcher, Target target, Mode mode)
+    private static void loadEntries(TripleDispatcher dispatcher, Targets targets)
     {
         LinkedHashSet<Node> entryNodes = dispatcher.instances(nextprot + "Entry");
         Values existences = dispatcher.values(nextprot + "existence");
@@ -560,8 +550,7 @@ public class Chromosome
         Values functionalRegionNames = dispatcher.values(nextprot + "fonctionalRegionNames");
 
         dispatcher.after(() -> {
-            try(Table table = target.table("entry_bases(id, existence, isoform_count, uniprot"
-                    + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            try(Table table = targets.table("entry_bases(id, existence, isoform_count, uniprot, iri)"))
             {
                 for(Node entry : entryNodes)
                 {
@@ -574,19 +563,16 @@ public class Chromosome
                     if(!table.isNew(entries.getId(entry)))
                         continue;
 
-                    table.setValue(1, entries.getValue(entry, mode));
-                    table.setValue(2, entities.getValue(existences.first(entry), mode));
+                    table.setValue(1, entries, entry);
+                    table.setValue(2, entities, existences.first(entry));
                     table.setValue(3, getIntValue(isoformCounts.first(entry)));
                     table.setValue(4, uniprot);
-
-                    if(mode == Mode.INDIRECT)
-                        table.setValue(5, entries.getLocalPart(entry));
-
+                    table.setValue(5, entries.getLocalPart(entry));
                     table.add();
                 }
             }
 
-            try(Table table = target.table("entry_classifiers(entry, classifier)"))
+            try(Table table = targets.table("entry_classifiers(entry, classifier)"))
             {
                 for(Node entry : entryNodes)
                 {
@@ -595,14 +581,14 @@ public class Chromosome
                         if(!table.isNew(entries.getId(entry), terms.getId(classifier)))
                             continue;
 
-                        table.setValue(1, entries.getValue(entry, mode));
-                        table.setValue(2, terms.getValue(classifier, mode));
+                        table.setValue(1, entries, entry);
+                        table.setValue(2, terms, classifier);
                         table.add();
                     }
                 }
             }
 
-            try(Table table = target.table("entry_genes(entry, gene)"))
+            try(Table table = targets.table("entry_genes(entry, gene)"))
             {
                 for(Node entry : entryNodes)
                 {
@@ -611,14 +597,14 @@ public class Chromosome
                         if(!table.isNew(entries.getId(entry), genes.getId(gene)))
                             continue;
 
-                        table.setValue(1, entries.getValue(entry, mode));
-                        table.setValue(2, genes.getValue(gene, mode));
+                        table.setValue(1, entries, entry);
+                        table.setValue(2, genes, gene);
                         table.add();
                     }
                 }
             }
 
-            try(Table table = target.table("entry_publication_references(entry, publication)"))
+            try(Table table = targets.table("entry_publication_references(entry, publication)"))
             {
                 for(Node entry : entryNodes)
                 {
@@ -632,61 +618,61 @@ public class Chromosome
                         if(!table.isNew(entries.getId(entry), publication))
                             continue;
 
-                        table.setValue(1, entries.getValue(entry, mode));
+                        table.setValue(1, entries, entry);
                         table.setValue(2, publication);
                         table.add();
                     }
                 }
             }
 
-            try(Table table = target.table("entry_recommended_names(entry, name)"))
+            try(Table table = targets.table("entry_recommended_names(entry, name)"))
             {
                 for(Node entry : entryNodes)
                 {
                     for(Node name : recommendedNames.get(entry))
                     {
-                        table.setValue(1, entries.getValue(entry, mode));
+                        table.setValue(1, entries, entry);
                         table.setValue(2, getMappedID(name, names));
                         table.add();
                     }
                 }
             }
 
-            try(Table table = target.table("entry_alternative_names(entry, name)"))
+            try(Table table = targets.table("entry_alternative_names(entry, name)"))
             {
                 for(Node entry : entryNodes)
                 {
                     for(Node name : alternativeNames.get(entry))
                     {
-                        table.setValue(1, entries.getValue(entry, mode));
+                        table.setValue(1, entries, entry);
                         table.setValue(2, getMappedID(name, names));
                         table.add();
                     }
                 }
             }
 
-            try(Table table = target.table("entry_additional_names(entry, name_list)"))
+            try(Table table = targets.table("entry_additional_names(entry, name_list)"))
             {
                 additionalNames.forEach((entry, list) -> {
-                    table.setValue(1, entries.getValue(entry, mode));
+                    table.setValue(1, entries, entry);
                     table.setValue(2, getMappedID(list, nameLists));
                     table.add();
                 });
             }
 
-            try(Table table = target.table("entry_cleaved_region_names(entry, name_list)"))
+            try(Table table = targets.table("entry_cleaved_region_names(entry, name_list)"))
             {
                 cleavedRegionNames.forEach((entry, list) -> {
-                    table.setValue(1, entries.getValue(entry, mode));
+                    table.setValue(1, entries, entry);
                     table.setValue(2, getMappedID(list, nameLists));
                     table.add();
                 });
             }
 
-            try(Table table = target.table("entry_functional_region_names(entry, name_list)"))
+            try(Table table = targets.table("entry_functional_region_names(entry, name_list)"))
             {
                 functionalRegionNames.forEach((entry, list) -> {
-                    table.setValue(1, entries.getValue(entry, mode));
+                    table.setValue(1, entries, entry);
                     table.setValue(2, getMappedID(list, nameLists));
                     table.add();
                 });
@@ -695,7 +681,7 @@ public class Chromosome
     }
 
 
-    private static void loadProteoforms(TripleDispatcher dispatcher, Target target, Mode mode)
+    private static void loadProteoforms(TripleDispatcher dispatcher, Targets targets)
     {
         LinkedHashSet<Node> proteoformNodes = dispatcher.instances(nextprot + "Proteoform");
         Values labels = dispatcher.values(rdfs + "label");
@@ -706,26 +692,23 @@ public class Chromosome
             links[i] = dispatcher.values(nextprot + proteoformAnnotations[i][0]);
 
         dispatcher.after(() -> {
-            try(Table table = target.table("proteoform_bases(id, label" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            try(Table table = targets.table("proteoform_bases(id, label, iri)"))
             {
                 for(Node proteoform : proteoformNodes)
                 {
                     if(!table.isNew(proteoforms.getId(proteoform)))
                         continue;
 
-                    table.setValue(1, proteoforms.getValue(proteoform, mode));
+                    table.setValue(1, proteoforms, proteoform);
                     table.setValue(2, getLiteralValue(labels.first(proteoform)));
-
-                    if(mode == Mode.INDIRECT)
-                        table.setValue(3, proteoforms.getLocalPart(proteoform));
-
+                    table.setValue(3, proteoforms.getLocalPart(proteoform));
                     table.add();
                 }
             }
 
             for(int i = 0; i < proteoformAnnotations.length; i++)
             {
-                try(Table table = target.table(proteoformAnnotations[i][1] + " (proteoform, annotation)"))
+                try(Table table = targets.table(proteoformAnnotations[i][1] + " (proteoform, annotation)"))
                 {
                     for(Node proteoform : proteoformNodes)
                     {
@@ -734,8 +717,8 @@ public class Chromosome
                             if(!table.isNew(proteoforms.getId(proteoform), annotations.getId(annotation)))
                                 continue;
 
-                            table.setValue(1, proteoforms.getValue(proteoform, mode));
-                            table.setValue(2, annotations.getValue(annotation, mode));
+                            table.setValue(1, proteoforms, proteoform);
+                            table.setValue(2, annotations, annotation);
                             table.add();
                         }
                     }
@@ -745,7 +728,7 @@ public class Chromosome
     }
 
 
-    private static void loadGenes(TripleDispatcher dispatcher, Target target, Mode mode)
+    private static void loadGenes(TripleDispatcher dispatcher, Targets targets)
     {
         LinkedHashSet<Node> geneNodes = dispatcher.instances(nextprot + "Gene");
         Values begins = dispatcher.values(nextprot + "begin");
@@ -758,30 +741,27 @@ public class Chromosome
         Values geneNames = dispatcher.values(nextprot + "name");
 
         dispatcher.after(() -> {
-            try(Table table = target.table("gene_bases(id, gene_begin, gene_end, length, band, "
-                    + "chromosome, strand" + (mode == Mode.INDIRECT ? ", iri" : "") + ")"))
+            try(Table table = targets
+                    .table("gene_bases(id, gene_begin, gene_end, length, band, " + "chromosome, strand, iri)"))
             {
                 for(Node gene : geneNodes)
                 {
                     if(!table.isNew(genes.getId(gene)))
                         continue;
 
-                    table.setValue(1, genes.getValue(gene, mode));
+                    table.setValue(1, genes, gene);
                     table.setValue(2, getIntValue(begins.first(gene)));
                     table.setValue(3, getIntValue(ends.first(gene)));
                     table.setValue(4, getIntValue(lengths.first(gene)));
                     table.setValue(5, getLiteralValue(bands.first(gene)));
                     table.setValue(6, getLiteralValue(chromosomes.first(gene)));
                     table.setValue(7, getLiteralValue(strands.first(gene)));
-
-                    if(mode == Mode.INDIRECT)
-                        table.setValue(8, genes.getLocalPart(gene));
-
+                    table.setValue(8, genes.getLocalPart(gene));
                     table.add();
                 }
             }
 
-            try(Table table = target.table("gene_best_mappings(gene, mapping)"))
+            try(Table table = targets.table("gene_best_mappings(gene, mapping)"))
             {
                 for(Node gene : geneNodes)
                 {
@@ -790,14 +770,14 @@ public class Chromosome
                         if(!table.isNew(genes.getId(gene), entries.getId(mapping)))
                             continue;
 
-                        table.setValue(1, genes.getValue(gene, mode));
-                        table.setValue(2, entries.getValue(mapping, mode));
+                        table.setValue(1, genes, gene);
+                        table.setValue(2, entries, mapping);
                         table.add();
                     }
                 }
             }
 
-            try(Table table = target.table("gene_names(gene, name)"))
+            try(Table table = targets.table("gene_names(gene, name)"))
             {
                 for(Node gene : geneNodes)
                 {
@@ -806,7 +786,7 @@ public class Chromosome
                         if(!table.isNew(genes.getId(gene), getLiteralValue(name)))
                             continue;
 
-                        table.setValue(1, genes.getValue(gene, mode));
+                        table.setValue(1, genes, gene);
                         table.setValue(2, getLiteralValue(name));
                         table.add();
                     }
@@ -816,7 +796,7 @@ public class Chromosome
     }
 
 
-    private static void loadProteinSequences(TripleDispatcher dispatcher, Target target, Mode mode)
+    private static void loadProteinSequences(TripleDispatcher dispatcher, Targets targets)
     {
         Values types = dispatcher.values(rdf + "type");
         Values sequences = dispatcher.values(nextprot + "sequence");
@@ -826,8 +806,8 @@ public class Chromosome
         Values chains = dispatcher.values(nextprot + "chain");
 
         dispatcher.after(() -> {
-            try(Table table = target.table(
-                    "protein_sequence_bases(id, molecular_weight, isoelectric_point, isoform, length, chain)"))
+            try(Table table = targets
+                    .table("protein_sequence_bases(id, molecular_weight, isoelectric_point, isoform, length, chain)"))
             {
                 for(Node isoform : sequences.nodes())
                 {
@@ -839,7 +819,7 @@ public class Chromosome
                         table.setValue(1, sequenceId++);
                         table.setValue(2, getDoubleValue(molecularWeights.first(sequence)));
                         table.setValue(3, getDoubleValue(isoelectricPoints.first(sequence)));
-                        table.setValue(4, isoforms.getValue(isoform, mode));
+                        table.setValue(4, isoforms, isoform);
                         table.setValue(5, getIntValue(lengths.first(sequence)));
                         table.setValue(6, getLiteralValue(chains.first(sequence)));
                         table.add();
@@ -850,7 +830,7 @@ public class Chromosome
     }
 
 
-    private static void loadProteinFamilyInfos(TripleDispatcher dispatcher, Target target, Mode mode)
+    private static void loadProteinFamilyInfos(TripleDispatcher dispatcher, Targets targets)
     {
         Values types = dispatcher.values(rdf + "type");
         Values families = dispatcher.values(nextprot + "family");
@@ -859,7 +839,7 @@ public class Chromosome
         Values descriptions = dispatcher.values(nextprot + "description");
 
         dispatcher.after(() -> {
-            try(Table table = target.table("family_info_bases(id, entry, term, region, description)"))
+            try(Table table = targets.table("family_info_bases(id, entry, term, region, description)"))
             {
                 for(Node entry : families.nodes())
                 {
@@ -869,8 +849,8 @@ public class Chromosome
                             continue;
 
                         table.setValue(1, familyId++);
-                        table.setValue(2, entries.getValue(entry, mode));
-                        table.setValue(3, terms.getValue(familyTerms.first(family), mode));
+                        table.setValue(2, entries, entry);
+                        table.setValue(3, terms, familyTerms.first(family));
                         table.setValue(4, getLiteralValue(regions.first(family)));
                         table.setValue(5, getLiteralValue(descriptions.first(family)));
                         table.add();
@@ -881,7 +861,7 @@ public class Chromosome
     }
 
 
-    private static void loadHistories(TripleDispatcher dispatcher, Target target, Mode mode)
+    private static void loadHistories(TripleDispatcher dispatcher, Targets targets)
     {
         Values types = dispatcher.values(rdf + "type");
         Values histories = dispatcher.values(nextprot + "history");
@@ -893,7 +873,7 @@ public class Chromosome
         Values historyNames = dispatcher.values(nextprot + "name");
 
         dispatcher.after(() -> {
-            try(Table table = target.table("history_bases(id, entry, integrated, updated, "
+            try(Table table = targets.table("history_bases(id, entry, integrated, updated, "
                     + "last_sequence_update, version, sequence_version, name)"))
             {
                 for(Node entry : histories.nodes())
@@ -904,7 +884,7 @@ public class Chromosome
                             continue;
 
                         table.setValue(1, historyId++);
-                        table.setValue(2, entries.getValue(entry, mode));
+                        table.setValue(2, entries, entry);
                         table.setValue(3, getLiteralValue(integrated.first(history)));
                         table.setValue(4, getLiteralValue(updated.first(history)));
                         table.setValue(5, getLiteralValue(lastSequenceUpdates.first(history)));
@@ -919,7 +899,7 @@ public class Chromosome
     }
 
 
-    private static void loadIdentifiers(TripleDispatcher dispatcher, Target target, Mode mode)
+    private static void loadIdentifiers(TripleDispatcher dispatcher, Targets targets)
     {
         Values types = dispatcher.values(rdf + "type");
         Values references = dispatcher.values(nextprot + "reference");
@@ -927,7 +907,7 @@ public class Chromosome
         Values accessions = dispatcher.values(nextprot + "accession");
 
         dispatcher.after(() -> {
-            try(Table table = target.table("identifier_bases(id, entry, provenance, accession)"))
+            try(Table table = targets.table("identifier_bases(id, entry, provenance, accession)"))
             {
                 for(Node entry : references.nodes())
                 {
@@ -937,8 +917,8 @@ public class Chromosome
                             continue;
 
                         table.setValue(1, identifierId++);
-                        table.setValue(2, entries.getValue(entry, mode));
-                        table.setValue(3, databases.getValue(provenances.first(identifier), mode));
+                        table.setValue(2, entries, entry);
+                        table.setValue(3, databases, provenances.first(identifier));
                         table.setValue(4, getLiteralValue(accessions.first(identifier)));
                         table.add();
                     }
@@ -948,7 +928,7 @@ public class Chromosome
     }
 
 
-    private static void loadEntryXrefs(TripleDispatcher dispatcher, Target target, Mode mode)
+    private static void loadEntryXrefs(TripleDispatcher dispatcher, Targets targets)
     {
         LinkedHashSet<Node> entryNodes = dispatcher.instances(nextprot + "Entry");
         Values types = dispatcher.values(rdf + "type");
@@ -957,7 +937,7 @@ public class Chromosome
         Values accessions = dispatcher.values(nextprot + "accession");
 
         dispatcher.after(() -> {
-            try(Table table = target.table("entry_xref_bases(id, entry, provenance, accession)"))
+            try(Table table = targets.table("entry_xref_bases(id, entry, provenance, accession)"))
             {
                 for(Node entry : entryNodes)
                 {
@@ -967,8 +947,8 @@ public class Chromosome
                             continue;
 
                         table.setValue(1, entryXrefId++);
-                        table.setValue(2, entries.getValue(entry, mode));
-                        table.setValue(3, databases.getValue(provenances.first(xref), mode));
+                        table.setValue(2, entries, entry);
+                        table.setValue(3, databases, provenances.first(xref));
                         table.setValue(4, getLiteralValue(accessions.first(xref)));
                         table.add();
                     }
@@ -978,7 +958,7 @@ public class Chromosome
     }
 
 
-    private static void loadEvidenceXrefs(TripleDispatcher dispatcher, Target target, Mode mode)
+    private static void loadEvidenceXrefs(TripleDispatcher dispatcher, Targets targets)
     {
         LinkedHashSet<Node> evidenceNodes = dispatcher.instances(nextprot + "Evidence");
         Values types = dispatcher.values(rdf + "type");
@@ -987,7 +967,7 @@ public class Chromosome
         Values accessions = dispatcher.values(nextprot + "accession");
 
         dispatcher.after(() -> {
-            try(Table table = target.table("evidence_xref_bases(id, evidence, provenance, accession)"))
+            try(Table table = targets.table("evidence_xref_bases(id, evidence, provenance, accession)"))
             {
                 for(Node evidence : evidenceNodes)
                 {
@@ -997,8 +977,8 @@ public class Chromosome
                             continue;
 
                         table.setValue(1, evidenceXrefId++);
-                        table.setValue(2, evidences.getValue(evidence, mode));
-                        table.setValue(3, databases.getValue(provenances.first(xref), mode));
+                        table.setValue(2, evidences, evidence);
+                        table.setValue(3, databases, provenances.first(xref));
                         table.setValue(4, getLiteralValue(accessions.first(xref)));
                         table.add();
                     }
@@ -1011,8 +991,8 @@ public class Chromosome
     /*
      * Registers the loading of the cross-references to the database that annotations have as interactants.
      */
-    private static void loadInteractantXrefs(TripleDispatcher dispatcher, Target target, Mode mode,
-            String database, String table, XrefColumns columns)
+    private static void loadInteractantXrefs(TripleDispatcher dispatcher, Targets targets, String database,
+            String table, XrefColumns columns)
     {
         Node provenance = NodeFactory.createURI(db + database);
         Values types = dispatcher.values(rdf + "type");
@@ -1023,7 +1003,7 @@ public class Chromosome
         Values labels = dispatcher.values(rdfs + "label");
 
         dispatcher.after(() -> {
-            try(Table xrefs = target.table(table))
+            try(Table xrefs = targets.table(table))
             {
                 for(Node annotation : interactants.nodes())
                 {
@@ -1043,7 +1023,7 @@ public class Chromosome
     }
 
 
-    private static void loadNames(TripleDispatcher dispatcher, Target target)
+    private static void loadNames(TripleDispatcher dispatcher, Targets targets)
     {
         LinkedHashSet<Node> nameNodes = dispatcher.instances(nextprot + "Name");
         Values fullNames = dispatcher.values(nextprot + "fullName");
@@ -1056,7 +1036,7 @@ public class Chromosome
         Values allergens = dispatcher.values(nextprot + "allergenAllergen");
 
         dispatcher.after(() -> {
-            try(Table table = target.table("name_bases(id, full_name, short_name, full_region_name, "
+            try(Table table = targets.table("name_bases(id, full_name, short_name, full_region_name, "
                     + "short_region_name, ec_enzyme_name, cd_antigen, inn_name, allergen)"))
             {
                 for(Node name : nameNodes)
@@ -1079,14 +1059,14 @@ public class Chromosome
     }
 
 
-    private static void loadNameLists(TripleDispatcher dispatcher, Target target)
+    private static void loadNameLists(TripleDispatcher dispatcher, Targets targets)
     {
         LinkedHashSet<Node> listNodes = dispatcher.instances(nextprot + "NameList");
         Values recommendedNames = dispatcher.values(nextprot + "recommendedName");
         Values alternativeNames = dispatcher.values(nextprot + "alternativeName");
 
         dispatcher.after(() -> {
-            try(Table table = target.table("name_list_bases(id)"))
+            try(Table table = targets.table("name_list_bases(id)"))
             {
                 for(Node list : listNodes)
                 {
@@ -1097,7 +1077,7 @@ public class Chromosome
                 }
             }
 
-            try(Table table = target.table("name_list_recommended_names(list, name)"))
+            try(Table table = targets.table("name_list_recommended_names(list, name)"))
             {
                 for(Node list : listNodes)
                 {
@@ -1110,7 +1090,7 @@ public class Chromosome
                 }
             }
 
-            try(Table table = target.table("name_list_alternative_names(list, name)"))
+            try(Table table = targets.table("name_list_alternative_names(list, name)"))
             {
                 for(Node list : listNodes)
                 {
@@ -1126,49 +1106,48 @@ public class Chromosome
     }
 
 
-    public static void load(String path, String file, Target target, Mode mode)
-            throws IOException, SQLException
+    public static void load(String path, String file, Targets targets) throws IOException, SQLException
     {
         names.clear();
         nameLists.clear();
 
         TripleDispatcher dispatcher = new TripleDispatcher();
 
-        loadNames(dispatcher, target);
-        loadNameLists(dispatcher, target);
+        loadNames(dispatcher, targets);
+        loadNameLists(dispatcher, targets);
 
-        loadIsoforms(dispatcher, target, mode);
-        loadAnnotations(dispatcher, target, mode);
-        loadEvidences(dispatcher, target, mode);
-        loadEntries(dispatcher, target, mode);
-        loadProteoforms(dispatcher, target, mode);
-        loadGenes(dispatcher, target, mode);
-        loadProteinSequences(dispatcher, target, mode);
-        loadProteinFamilyInfos(dispatcher, target, mode);
-        loadHistories(dispatcher, target, mode);
-        loadIdentifiers(dispatcher, target, mode);
-        loadEntryXrefs(dispatcher, target, mode);
-        loadEvidenceXrefs(dispatcher, target, mode);
+        loadIsoforms(dispatcher, targets);
+        loadAnnotations(dispatcher, targets);
+        loadEvidences(dispatcher, targets);
+        loadEntries(dispatcher, targets);
+        loadProteoforms(dispatcher, targets);
+        loadGenes(dispatcher, targets);
+        loadProteinSequences(dispatcher, targets);
+        loadProteinFamilyInfos(dispatcher, targets);
+        loadHistories(dispatcher, targets);
+        loadIdentifiers(dispatcher, targets);
+        loadEntryXrefs(dispatcher, targets);
+        loadEvidenceXrefs(dispatcher, targets);
 
-        loadInteractantXrefs(dispatcher, target, mode, "ChEBI",
-                "chebi_xref_bases(id, chebi, annotation, accession, label)", (table, annotation, chebi) -> {
+        loadInteractantXrefs(dispatcher, targets, "ChEBI", "chebi_xref_bases(id, chebi, annotation, accession, label)",
+                (table, annotation, chebi) -> {
                     table.setValue(1, chebiXrefId++);
                     table.setValue(2, getIntID(chebi, "http://purl.obolibrary.org/obo/CHEBI_"));
-                    table.setValue(3, annotations.getValue(annotation, mode));
+                    table.setValue(3, annotations, annotation);
                 });
 
-        loadInteractantXrefs(dispatcher, target, mode, "DrugBank",
+        loadInteractantXrefs(dispatcher, targets, "DrugBank",
                 "drugbank_xref_bases(id, annotation, drugbank, accession, label)", (table, annotation, drugbank) -> {
                     table.setValue(1, drugBankXrefId++);
-                    table.setValue(2, annotations.getValue(annotation, mode));
+                    table.setValue(2, annotations, annotation);
                     table.setValue(3, getStringID(drugbank,
                             "http://wifo5-04.informatik.uni-mannheim.de/drugbank/resource/drugs/DB"));
                 });
 
-        loadInteractantXrefs(dispatcher, target, mode, "UniProtKB",
+        loadInteractantXrefs(dispatcher, targets, "UniProtKB",
                 "uniprot_xref_bases(id, annotation, uniprot, accession, label)", (table, annotation, uniprot) -> {
                     table.setValue(1, uniProtXrefId++);
-                    table.setValue(2, annotations.getValue(annotation, mode));
+                    table.setValue(2, annotations, annotation);
                     table.setValue(3, getStringID(uniprot, "http://purl.uniprot.org/uniprot/"));
                 });
 
@@ -1176,33 +1155,33 @@ public class Chromosome
     }
 
 
-    public static void load(String path, Target target, Mode mode) throws IOException, SQLException
+    public static void load(String path, Targets targets) throws IOException, SQLException
     {
-        load(path, "nextprot_chromosome_MT.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_unknown.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_X.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_Y.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_01.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_02.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_03.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_04.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_05.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_06.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_07.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_08.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_09.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_10.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_11.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_12.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_13.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_14.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_15.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_16.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_17.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_18.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_19.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_20.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_21.ttl.gz", target, mode);
-        load(path, "nextprot_chromosome_22.ttl.gz", target, mode);
+        load(path, "nextprot_chromosome_MT.ttl.gz", targets);
+        load(path, "nextprot_chromosome_unknown.ttl.gz", targets);
+        load(path, "nextprot_chromosome_X.ttl.gz", targets);
+        load(path, "nextprot_chromosome_Y.ttl.gz", targets);
+        load(path, "nextprot_chromosome_01.ttl.gz", targets);
+        load(path, "nextprot_chromosome_02.ttl.gz", targets);
+        load(path, "nextprot_chromosome_03.ttl.gz", targets);
+        load(path, "nextprot_chromosome_04.ttl.gz", targets);
+        load(path, "nextprot_chromosome_05.ttl.gz", targets);
+        load(path, "nextprot_chromosome_06.ttl.gz", targets);
+        load(path, "nextprot_chromosome_07.ttl.gz", targets);
+        load(path, "nextprot_chromosome_08.ttl.gz", targets);
+        load(path, "nextprot_chromosome_09.ttl.gz", targets);
+        load(path, "nextprot_chromosome_10.ttl.gz", targets);
+        load(path, "nextprot_chromosome_11.ttl.gz", targets);
+        load(path, "nextprot_chromosome_12.ttl.gz", targets);
+        load(path, "nextprot_chromosome_13.ttl.gz", targets);
+        load(path, "nextprot_chromosome_14.ttl.gz", targets);
+        load(path, "nextprot_chromosome_15.ttl.gz", targets);
+        load(path, "nextprot_chromosome_16.ttl.gz", targets);
+        load(path, "nextprot_chromosome_17.ttl.gz", targets);
+        load(path, "nextprot_chromosome_18.ttl.gz", targets);
+        load(path, "nextprot_chromosome_19.ttl.gz", targets);
+        load(path, "nextprot_chromosome_20.ttl.gz", targets);
+        load(path, "nextprot_chromosome_21.ttl.gz", targets);
+        load(path, "nextprot_chromosome_22.ttl.gz", targets);
     }
 }

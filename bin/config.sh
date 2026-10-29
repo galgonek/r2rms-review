@@ -1,4 +1,5 @@
 SOURCEDIR="${HOME}/data/nextprot-2021-11-19.repaired/rdf/ttl"
+SQLBASEDIR="${HOME}/sql"
 DBBASEDIR="${HOME}/db"
 LOGBASEDIR="${HOME}/log/create"
 OUTBASEDIR="${HOME}/log/test"
