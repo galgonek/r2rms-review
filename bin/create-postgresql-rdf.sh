@@ -7,6 +7,7 @@ if [[ "${BASH_SOURCE}" = */* ]]; then
 fi
 
 . ./bin/config.sh
+. ./bin/containers.sh
 
 
 MODE="rdf"
@@ -16,7 +17,6 @@ SERVER="postgresql"
 SQLFILE="${SQLBASEDIR}/${SERVER}-${MODE}.sql.gz"
 DATADIR="${DBBASEDIR}/${SERVER}-${MAPPING}-${MODE}"
 LOGDIR="${LOGBASEDIR}/${SERVER}-${MAPPING}-${MODE}"
-TMPDIR="$(mktemp -d)"
 
 
 test -e "${SQLFILE}" || exit 1
@@ -26,31 +26,29 @@ mkdir -p "${DATADIR}"
 mkdir -p "${LOGDIR}"
 
 
-"${POSTGRESQL_BINDIR}/initdb" --pgdata="${DATADIR}" --encoding=UTF8 --locale=C --username=postgres
+start_postgresql "${DATADIR}"
 
-"${POSTGRESQL_BINDIR}/pg_ctl" --pgdata="${DATADIR}" --log="${LOGDIR}/${SERVER}.log" -o "--unix_socket_directories='${TMPDIR}'" start
+cat sql/init/postgresql.sql | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U postgres 2>&1 | tee "${LOGDIR}/init.log"
 
-cat sql/init/postgresql.sql | "${POSTGRESQL_BINDIR}/psql" -v ON_ERROR_STOP=1 --host="${TMPDIR}" --echo-all -U postgres 2>&1 | tee "${LOGDIR}/init.log"
+cat "sql/init/postgresql-${MAPPING}.sql" | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U postgres -d nextprot 2>&1 | tee "${LOGDIR}/init.log"
 
-cat "sql/init/postgresql-${MAPPING}.sql" | "${POSTGRESQL_BINDIR}/psql" -v ON_ERROR_STOP=1 --host="${TMPDIR}" --echo-all -U postgres -d nextprot 2>&1 | tee "${LOGDIR}/init.log"
+stop_container "${SERVER}" "${LOGDIR}/${SERVER}.log"
 
-"${POSTGRESQL_BINDIR}/pg_ctl" --pgdata="${DATADIR}" --log="${LOGDIR}/${SERVER}.log" -o "--unix_socket_directories='${TMPDIR}'" -o --shared_buffers=1GB -o --effective_cache_size=3GB -o --maintenance_work_mem=512MB -o --work_mem=256MB restart
-
-
-cat sql/rdf/schema.sql | "${POSTGRESQL_BINDIR}/psql" -v ON_ERROR_STOP=1 --host="${TMPDIR}" --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/schema.log"
-
-zcat "${SQLFILE}" | "${POSTGRESQL_BINDIR}/psql" -v ON_ERROR_STOP=1 --host="${TMPDIR}" -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/load.log"
-
-cat sql/rdf/distinct.sql | "${POSTGRESQL_BINDIR}/psql" -v ON_ERROR_STOP=1 --host="${TMPDIR}" --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/distinct.log"
-
-cat sql/rdf/settings.sql | "${POSTGRESQL_BINDIR}/psql" -v ON_ERROR_STOP=1 --host="${TMPDIR}" --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/settings.log"
-
-echo "analyze verbose" | "${POSTGRESQL_BINDIR}/psql" -v ON_ERROR_STOP=1 --host="${TMPDIR}" --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/analyze.log"
+start_postgresql "${DATADIR}" -c shared_buffers=1GB -c effective_cache_size=3GB -c maintenance_work_mem=512MB -c work_mem=256MB
 
 
-"${POSTGRESQL_BINDIR}/pg_ctl" --pgdata="${DATADIR}" stop
+cat sql/rdf/schema.sql | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/schema.log"
 
-rm -r "${TMPDIR}"
+zcat "${SQLFILE}" | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/load.log"
+
+cat sql/rdf/distinct.sql | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/distinct.log"
+
+cat sql/rdf/settings.sql | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/settings.log"
+
+echo "analyze verbose" | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/analyze.log"
+
+
+stop_container "${SERVER}" "${LOGDIR}/${SERVER}.log"
 
 
 echo "done"

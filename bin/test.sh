@@ -7,6 +7,7 @@ if [[ "${BASH_SOURCE}" = */* ]]; then
 fi
 
 . ./bin/config.sh
+. ./bin/containers.sh
 
 
 SERVER="$1"
@@ -70,10 +71,8 @@ sleep "${SLEEP}"
 case "${SERVER}" in
   "virtuoso")
     cat "${BASE}/etc/virtuoso/virtuoso.ini" | sed -r "/ThreadsPerQuery/s|1$|${CPU}|" > "${TMPDIR}/virtuoso.ini"
-  
-    cd "${DATADIR}"
-    "${VIRTUOSO_BINDIR}/virtuoso-t" +wait +configfile "${TMPDIR}/virtuoso.ini"
-    cd -
+
+    start_virtuoso "${DATADIR}" "${TMPDIR}/virtuoso.ini"
 
     if [ "${METHOD}" != "rdf" ]; then
       SETTINGS="define input:storage virtrdf:NeXtProt${METHOD^}QuadStorage"
@@ -83,14 +82,13 @@ case "${SERVER}" in
     ;;
 
   "postgresql")
-    "${POSTGRESQL_BINDIR}/pg_ctl" --pgdata="${DATADIR}" -o "--unix_socket_directories='${TMPDIR}'" -o --max_parallel_workers_per_gather=$(("${CPU}" - 1)) start
+    start_postgresql "${DATADIR}" -c max_parallel_workers_per_gather=$(("${CPU}" - 1))
 
     ENDPOINT="http://localhost:8080/sparql/"
     ;;
 
   "mariadb")
-    "${MARIADB_BINDIR}/mariadbd-safe" --defaults-file="${BASE}/etc/mariadb/mariadb.cnf" --datadir="${DATADIR}" --socket="${TMPDIR}/mariadb.sock" --pid-file="${TMPDIR}/mariadb.pid" &
-    sleep "${SLEEP}"
+    start_mariadb "${DATADIR}"
 
     ENDPOINT="http://localhost:8080/sparql/"
     ;;
@@ -124,7 +122,7 @@ case "${SERVER}" in
   "qlever") 
     . "${QLEVER}/bin/activate"
     cd "${DATADIR}";
-    cat "${BASE}/etc/qlever/Qleverfile" | sed -r "s|NUM_THREADS = .*|num_threads = ${CPU}|" > Qleverfile
+    cat "${BASE}/etc/qlever/Qleverfile" | sed -r -e "s|NUM_THREADS = .*|num_threads = ${CPU}|" -e "s|SYSTEM = .*|SYSTEM = ${CONTAINER}|" > Qleverfile
     qlever start
     deactivate
     cd -
@@ -170,16 +168,8 @@ if [ -n "${PID-}" ]; then
 fi
 
 case "${SERVER}" in
-  "virtuoso"*)
-    "${VIRTUOSO_BINDIR}/isql" 1111 dba dba -K
-    ;;
-
-  "postgresql")
-    "${POSTGRESQL_BINDIR}/pg_ctl" --pgdata="${DATADIR}" stop
-    ;;
-
-  "mariadb")
-    "${MARIADB_BINDIR}/mariadb-admin" --defaults-file="${BASE}/etc/mariadb/mariadb.cnf" --socket="${TMPDIR}/mariadb.sock" shutdown
+  "virtuoso" | "postgresql" | "mariadb")
+    stop_container "${SERVER}" /dev/stdout
     ;;
 
   "qlever") 

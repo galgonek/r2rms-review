@@ -7,22 +7,16 @@ if [[ "${BASH_SOURCE}" = */* ]]; then
 fi
 
 . ./bin/config.sh
+. ./bin/containers.sh
 
 
 MODE="$1"
 MAPPING="ontop"
 SERVER="mariadb"
 
-BASE="${PWD}"
 SQLFILE="${SQLBASEDIR}/${SERVER}-${MODE}.sql.gz"
 DATADIR="${DBBASEDIR}/${SERVER}-${MAPPING}-${MODE}"
 LOGDIR="${LOGBASEDIR}/${SERVER}-${MAPPING}-${MODE}"
-TMPDIR="$(mktemp -d)"
-
-CONFIG="${BASE}/etc/mariadb/mariadb.cnf"
-SOCKET="${TMPDIR}/mariadb.sock"
-PIDFILE="${TMPDIR}/mariadb.pid"
-SLEEP="120"
 
 
 test -e "${SQLFILE}" || exit 1
@@ -32,30 +26,25 @@ mkdir -p "${DATADIR}"
 mkdir -p "${LOGDIR}"
 
 
-"${MARIADB_BINDIR}/mariadb-install-db" --defaults-file="${CONFIG}" --datadir="${DATADIR}"
+start_mariadb "${DATADIR}" --innodb_buffer_pool_size=4G
 
-"${MARIADB_BINDIR}/mariadbd-safe" --defaults-file="${CONFIG}" --datadir="${DATADIR}" --log-error="${LOGDIR}/${SERVER}.log" --socket="${SOCKET}" --pid-file="${PIDFILE}" --innodb_buffer_pool_size=4G &
-sleep "${SLEEP}"
-
-cat sql/init/mariadb.sql | "${MARIADB_BINDIR}/mariadb" -v --socket="${SOCKET}" 2>&1 | tee "${LOGDIR}/init.log"
+cat sql/init/mariadb.sql | in_container "${SERVER}" mariadb -v --user=root 2>&1 | tee "${LOGDIR}/init.log"
 
 
-cat sql/defs.m4 sql/schema/* | m4 -DSERVER="${SERVER}" -DMAPPING="${MAPPING}" -DMODE="${MODE}" | "${MARIADB_BINDIR}/mariadb" -v --socket="${SOCKET}" --user=nextprot --password="password" 2>&1 | tee "${LOGDIR}/schema.log"
+cat sql/defs.m4 sql/schema/* | m4 -DSERVER="${SERVER}" -DMAPPING="${MAPPING}" -DMODE="${MODE}" | in_container "${SERVER}" mariadb -v --user=nextprot --password="password" 2>&1 | tee "${LOGDIR}/schema.log"
 
-zcat "${SQLFILE}" | "${MARIADB_BINDIR}/mariadb" --socket="${SOCKET}" --user=nextprot --password="password" 2>&1 | tee "${LOGDIR}/load.log"
+zcat "${SQLFILE}" | in_container "${SERVER}" mariadb --user=nextprot --password="password" 2>&1 | tee "${LOGDIR}/load.log"
 
-"${MARIADB_BINDIR}/mariadb-check" --defaults-file="${CONFIG}" --optimize --socket="${SOCKET}" --all-databases 2>&1 | tee "${LOGDIR}/optimize.log"
+in_container "${SERVER}" mariadb-check --user=root --optimize --all-databases 2>&1 | tee "${LOGDIR}/optimize.log"
 
-cat sql/defs.m4 sql/settings/* | m4 -DSERVER="${SERVER}" -DMAPPING="${MAPPING}" -DMODE="${MODE}" | "${MARIADB_BINDIR}/mariadb" -v --socket="${SOCKET}" --user=nextprot --password="password" 2>&1 | tee "${LOGDIR}/settings.log"
+cat sql/defs.m4 sql/settings/* | m4 -DSERVER="${SERVER}" -DMAPPING="${MAPPING}" -DMODE="${MODE}" | in_container "${SERVER}" mariadb -v --user=nextprot --password="password" 2>&1 | tee "${LOGDIR}/settings.log"
 
-cat sql/defs.m4 sql/post/foreignkey.sql | m4 -DSERVER="${SERVER}" -DMAPPING="${MAPPING}" -DMODE="${MODE}" | "${MARIADB_BINDIR}/mariadb" -v --socket="${SOCKET}" --user=nextprot --password="password" 2>&1 | tee "${LOGDIR}/foreignkey.log"
+cat sql/defs.m4 sql/post/foreignkey.sql | m4 -DSERVER="${SERVER}" -DMAPPING="${MAPPING}" -DMODE="${MODE}" | in_container "${SERVER}" mariadb -v --user=nextprot --password="password" 2>&1 | tee "${LOGDIR}/foreignkey.log"
 
-"${MARIADB_BINDIR}/mariadb-check" --defaults-file="${CONFIG}" --analyze --socket="${SOCKET}" --persistent --all-databases 2>&1 | tee "${LOGDIR}/analyze.log"
+in_container "${SERVER}" mariadb-check --user=root --analyze --persistent --all-databases 2>&1 | tee "${LOGDIR}/analyze.log"
 
 
-"${MARIADB_BINDIR}/mariadb-admin" --defaults-file="${CONFIG}" --socket="${SOCKET}" shutdown
-
-rm -r "${TMPDIR}"
+stop_container "${SERVER}" "${LOGDIR}/${SERVER}.log"
 
 
 echo "done"

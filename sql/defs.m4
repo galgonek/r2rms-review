@@ -16,4 +16,4 @@ define(`XSDBOOLEAN', ifelse(SERVER, `virtuoso', `smallint', `boolean'))dnl
 define(`XSDINTEGER', ifelse(MAPPING, `ontop', `bigint', `numeric'))dnl
 define(`XSDINTEGER_SIZE', ifelse(MAPPING, `ontop', `8B', `xB'))dnl
 dnl
-define(`SPARQL', ifelse(SERVER, `virtuoso', ```"SPARQL"''', ifelse(SERVER, `mariadb', `sparql@localhost', `sparql')))dnl
+define(`SPARQL', ifelse(SERVER, `virtuoso', ```"SPARQL"''', `sparql'))dnl

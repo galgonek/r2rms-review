@@ -7,6 +7,7 @@ if [[ $BASH_SOURCE = */* ]]; then
 fi
 
 
+time ./bin/build-images.sh
 time ./bin/generate-sql.sh
 
 time ./bin/create-postgresql.sh direct idsm
