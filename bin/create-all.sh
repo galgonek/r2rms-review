@@ -24,3 +24,4 @@ time ./bin/create-virtuoso-rdf.sh
 time ./bin/create-jena-tdb2.sh
 time ./bin/create-graphdb.sh
 time ./bin/create-blazegraph.sh
+time ./bin/create-qlever.sh

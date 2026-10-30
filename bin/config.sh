@@ -4,8 +4,8 @@ DBBASEDIR="${HOME}/db"
 LOGBASEDIR="${HOME}/log/create"
 OUTBASEDIR="${HOME}/log/test"
 
-# PostgreSQL, MariaDB and Virtuoso run in containers of this runtime (podman or docker) and publish their ports on
-# PUBLISH_ADDRESS; bin/build-images.sh builds the images of PostgreSQL with pgsparql and of Virtuoso
+# PostgreSQL, MariaDB, Virtuoso and QLever run in containers of this runtime (podman or docker) and publish their
+# ports on PUBLISH_ADDRESS; bin/build-images.sh builds the images of PostgreSQL with pgsparql and of Virtuoso
 CONTAINER="podman"
 PUBLISH_ADDRESS="127.0.0.1"
 POSTGRESQL_IMAGE="nextprot-postgresql"
@@ -15,6 +15,7 @@ PGSPARQL_BRANCH="next"
 MARIADB_IMAGE="docker.io/library/mariadb:13.0.2"
 VIRTUOSO_IMAGE="nextprot-virtuoso"
 VIRTUOSO_BASE_IMAGE="docker.io/openlink/virtuoso-opensource-7:7.2.17"
+QLEVER_IMAGE="docker.io/adfreiburg/qlever:commit-16a682506e"
 
 GRAPHDB_BINDIR="${HOME}/graphdb-11.5.2/bin"
 GRAPHDB_LICENSE="${HOME}/graphdb.license"
@@ -22,4 +23,3 @@ JENA_BINDIR="${HOME}/apache-jena-6.2.0/bin"
 FUSEKI_BINDIR="${HOME}/apache-jena-fuseki-6.2.0/"
 BLAZEGRAPH_HOME="${HOME}/blazegraph-tgz-2.1.6-SNAPSHOT"
 ONTOPDIR="${HOME}/ontop-cli-5.5.0"
-QLEVER="${HOME}/qlever"

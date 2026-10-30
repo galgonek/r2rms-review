@@ -62,6 +62,16 @@ start_virtuoso()
 }
 
 
+# start_qlever <index directory> [<server option>...]
+#   serves the index nextprot on the port 8888; the server ends on the stop signal only under an init process
+start_qlever()
+{
+  "${CONTAINER}" run --detach --name nextprot-qlever "${CONTAINER_USER[@]}" --init --publish "${PUBLISH_ADDRESS}:8888:8888" --volume "$1:/index" --workdir /index --entrypoint qlever-server "${QLEVER_IMAGE}" -i nextprot -p 8888 "${@:2}"
+
+  wait_for_server qlever curl --silent --fail http://localhost:8888/ping
+}
+
+
 # in_container <server> <command>...
 #   runs the command in the container of the server, with the standard input of the caller
 in_container()

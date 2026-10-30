@@ -121,13 +121,9 @@ case "${SERVER}" in
     ENDPOINT="http://localhost:9999/blazegraph/namespace/nextprot/sparql"
     ;;
 
-  "qlever") 
-    . "${QLEVER}/bin/activate"
-    cd "${DATADIR}";
-    cat "${BASE}/etc/qlever/Qleverfile" | sed -r -e "s|NUM_THREADS = .*|num_threads = ${CPU}|" -e "s|SYSTEM = .*|SYSTEM = ${CONTAINER}|" > Qleverfile
-    qlever start
-    deactivate
-    cd -
+  "qlever")
+    # no cache, the timeout of the other stores; -j is the number of simultaneous queries
+    start_qlever "${DATADIR}" -j "${CPU}" -m 128G -c 0B -e 0B -k 0 -s 1000s -a _F7YYBYaoSzs9
 
     ENDPOINT="http://localhost:8888"
     ;;
@@ -170,16 +166,8 @@ if [ -n "${PID-}" ]; then
 fi
 
 case "${SERVER}" in
-  "virtuoso" | "postgresql" | "mariadb")
+  "virtuoso" | "postgresql" | "mariadb" | "qlever")
     stop_container "${SERVER}" /dev/stdout
-    ;;
-
-  "qlever") 
-    . "${QLEVER}/bin/activate"
-    cd "${DATADIR}";
-    qlever stop
-    deactivate
-    cd -
     ;;
 esac
 
