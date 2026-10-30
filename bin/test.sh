@@ -94,7 +94,9 @@ case "${SERVER}" in
     ;;
 
   "graphdb")
-    GDB_HEAP_SIZE=42g "${GRAPHDB_BINDIR}/graphdb" -Dgraphdb.home="${DATADIR}" -s &
+    test -e "${GRAPHDB_LICENSE}" || exit 1
+
+    GDB_HEAP_SIZE=42g "${GRAPHDB_BINDIR}/graphdb" -Dgraphdb.home="${DATADIR}" -Dgraphdb.license.file="${GRAPHDB_LICENSE}" -s &
     PID=$!
 
     ENDPOINT="http://localhost:7200/repositories/nextprot"

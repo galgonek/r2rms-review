@@ -1,6 +1,6 @@
 # PostgreSQL with pgsparql, built by bin/build-images.sh
 
-ARG BASE_IMAGE=docker.io/library/postgres:18
+ARG BASE_IMAGE=docker.io/library/postgres:18.6
 
 
 FROM ${BASE_IMAGE} AS build

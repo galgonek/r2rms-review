@@ -14,13 +14,14 @@ DATADIR="${DBBASEDIR}/graphdb"
 LOGDIR="${LOGBASEDIR}/graphdb"
 
 
+test -e "${GRAPHDB_LICENSE}" || exit 1
 test -e "${DATADIR}" && exit 1
 
 mkdir -p "${DATADIR}"
 mkdir -p "${LOGDIR}"
 
 
-"${GRAPHDB_BINDIR}/importrdf" preload -Xms42g -Xmx42g -Dgraphdb.home="${DATADIR}" -c "${BASE}/etc/graphdb/nextprot.ttl" "${SOURCEDIR}"/* 2>&1 | tee "${LOGDIR}/load.log"
+"${GRAPHDB_BINDIR}/importrdf" preload -Xms42g -Xmx42g -Dgraphdb.home="${DATADIR}" -Dgraphdb.license.file="${GRAPHDB_LICENSE}" -c "${BASE}/etc/graphdb/nextprot.ttl" "${SOURCEDIR}"/* 2>&1 | tee "${LOGDIR}/load.log"
 
 
 echo "done"
