@@ -6,6 +6,8 @@ import javax.sql.DataSource;
 import cz.iocb.sparql.engine.config.SparqlDatabaseConfiguration;
 import cz.iocb.sparql.engine.database.DatabaseSchema;
 import cz.iocb.sparql.engine.database.DatabaseTable;
+import cz.iocb.sparql.engine.database.GroupedStatistics;
+import cz.iocb.sparql.engine.database.TableColumn;
 
 
 
@@ -71,7 +73,8 @@ public class NeXtProtConfiguration extends SparqlDatabaseConfiguration
 
     /**
      * Registers the quad mapping of the table of the triples, in the graph of the other modes, which the default graph
-     * includes too.
+     * includes too, and the statistics of the table kept per predicate by the loader (see {@code statistics.sql}),
+     * which the engine consults when it orders the joins.
      */
     private void addQuadMappings()
     {
@@ -79,5 +82,8 @@ public class NeXtProtConfiguration extends SparqlDatabaseConfiguration
 
         addQuadMapping(table, createIriMapping("<http://nextprot.org/rdf>"), createTermMapping(box, "subject"),
                 createTermMapping(box, "predicate"), createTermMapping(box, "object"));
+
+        addTableStatistics(table, new GroupedStatistics(table, (TableColumn) getColumn(table, "predicate"),
+                new DatabaseTable(schema, "triples_statistics"), new DatabaseTable(schema, "triples_values")));
     }
 }

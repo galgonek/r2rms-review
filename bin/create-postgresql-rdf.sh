@@ -45,6 +45,8 @@ cat sql/rdf/distinct.sql | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --ec
 
 cat sql/rdf/settings.sql | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/settings.log"
 
+cat sql/rdf/statistics.sql | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/statistics.log"
+
 echo "analyze verbose" | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/analyze.log"
 
 
