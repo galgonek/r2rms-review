@@ -85,5 +85,7 @@ public class NeXtProtConfiguration extends SparqlDatabaseConfiguration
 
         addTableStatistics(table, new GroupedStatistics(table, (TableColumn) getColumn(table, "predicate"),
                 new DatabaseTable(schema, "triples_statistics"), new DatabaseTable(schema, "triples_values")));
+
+        setJoinOptimizer(true);
     }
 }
