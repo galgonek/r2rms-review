@@ -7,8 +7,12 @@ DBBASEDIR="${BASE}/db"
 LOGBASEDIR="${BASE}/log/create"
 OUTBASEDIR="${BASE}/log/test"
 
+# the caches of the Sparqloscope benchmark generator, reused by the next run; remove them when the QLever index changes
+SPARQLOSCOPEDIR="${BASE}/sparqloscope"
+
 # PostgreSQL, MariaDB, Virtuoso and QLever run in containers of this runtime (podman or docker) and publish their
-# ports on PUBLISH_ADDRESS; bin/build-images.sh builds the images of PostgreSQL with pgsparql and of Virtuoso
+# ports on PUBLISH_ADDRESS; bin/build-images.sh builds the images of PostgreSQL with pgsparql, of Virtuoso and of the
+# Sparqloscope benchmark generator
 CONTAINER="podman"
 PUBLISH_ADDRESS="127.0.0.1"
 POSTGRESQL_IMAGE="nextprot-postgresql"
@@ -19,6 +23,9 @@ MARIADB_IMAGE="docker.io/library/mariadb:13.0.2"
 VIRTUOSO_IMAGE="nextprot-virtuoso"
 VIRTUOSO_BASE_IMAGE="docker.io/openlink/virtuoso-opensource-7:7.2.17"
 QLEVER_IMAGE="docker.io/adfreiburg/qlever:commit-16a682506e"
+SPARQLOSCOPE_IMAGE="nextprot-sparqloscope"
+SPARQLOSCOPE_REPOSITORY="https://github.com/ad-freiburg/sparqloscope.git"
+SPARQLOSCOPE_COMMIT="61ad92f7ae3de202580ab6112aa4f08001990f56"
 
 GRAPHDB_BINDIR="${BASE}/graphdb-11.5.2/bin"
 GRAPHDB_LICENSE="${BASE}/graphdb.license"

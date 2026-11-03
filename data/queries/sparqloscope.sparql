@@ -1,0 +1,901 @@
+### SCQ_00001 ###
+# JOIN of a small and a large predicate
+# Sparqloscope query join-2-small-large
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s :intramembraneRegion ?o1 . ?s rdf:type ?o2 }
+
+
+### SCQ_00002 ###
+# JOIN of a large and a small predicate
+# Sparqloscope query join-2-large-small
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s rdf:type ?o1 . ?s :intramembraneRegion ?o2 }
+
+
+### SCQ_00003 ###
+# JOIN of two large predicates
+# Sparqloscope query join-2-large-large
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s rdf:type ?o1 . ?s :reference ?o2 }
+
+
+### SCQ_00004 ###
+# JOIN of two predicates with the largest possible result
+# Sparqloscope query join-2-largest-result
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :positionalAnnotation ?o1 .
+  ?s :variant ?o2 }
+
+
+### SCQ_00005 ###
+# JOIN of two large predicates with a reasonably large result
+# Sparqloscope query join-2-large-large-with-large-result
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :reference ?o1 .
+  ?s rdf:type ?o2 }
+
+
+### SCQ_00006 ###
+# JOIN of two large predicates with a small result
+# Sparqloscope query join-2-large-large-with-small-result
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :experimentalContext ?o1 .
+  ?s :fromXref ?o2 }
+
+
+### SCQ_00007 ###
+# JOIN star of three large predicates with the largest sum of join sizes
+# Sparqloscope query join-3-star-largest-sum-of-join-sizes
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :provenance ?o1 .
+  ?s :accession ?o2 .
+  ?s rdf:type ?o3 .
+}
+
+
+### SCQ_00008 ###
+# JOIN chain of three large predicates with the largest sum of join sizes
+# Sparqloscope query join-3-chain-largest-sum-of-join-sizes
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?a :evidence ?b .
+  ?b :reference ?c .
+  ?c rdf:type ?d .
+}
+
+
+### SCQ_00009 ###
+# JOIN star of many small predicates
+# Sparqloscope query join-xlarge-star-on-small-predicates
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :intramembraneRegion ?o0 .
+  ?s :mitochondrialTransitPeptide ?o1 .
+  ?s :kineticVmax ?o2 .
+  ?s :ecEnzymeName ?o3 .
+  ?s :phDependence ?o4 .
+  ?s rdfs:subClassOf ?o5 .
+  ?s :notIn ?o6 .
+  ?s rdfs:seeAlso ?o7 .
+  ?s :kineticNote ?o8 .
+  ?s :cdAntigenCdAntigen ?o9 .
+  ?s :electrophysiologicalParameter ?o10 .
+  ?s :category ?o11 .
+  ?s :nonTerminalResidue ?o12 .
+  ?s :negativeIsoformSpecificity ?o13 .
+  ?s :fullRegionName ?o14 .
+  ?s :temperatureDependence ?o15 .
+  ?s :pharmaceutical ?o16 .
+  ?s :shortRegionName ?o17 .
+  ?s :editor ?o18 .
+  ?s :selenocysteine ?o19 .
+  ?s :city ?o20 .
+  ?s :publisher ?o21 .
+  ?s :innInternationalNonproprietaryNames ?o22 .
+  ?s :allergen ?o23 .
+  ?s :redoxPotential ?o24 .
+}
+
+
+### SCQ_00010 ###
+# JOIN chain of many small predicates
+# Sparqloscope query join-xlarge-chain-on-small-predicates
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?v0 :intramembraneRegion ?v1 .
+  ?v1 :mitochondrialTransitPeptide ?v2 .
+  ?v2 :kineticVmax ?v3 .
+  ?v3 :ecEnzymeName ?v4 .
+  ?v4 :phDependence ?v5 .
+  ?v5 rdfs:subClassOf ?v6 .
+  ?v6 :notIn ?v7 .
+  ?v7 rdfs:seeAlso ?v8 .
+  ?v8 :kineticNote ?v9 .
+  ?v9 :cdAntigenCdAntigen ?v10 .
+  ?v10 :electrophysiologicalParameter ?v11 .
+  ?v11 :category ?v12 .
+  ?v12 :nonTerminalResidue ?v13 .
+  ?v13 :negativeIsoformSpecificity ?v14 .
+  ?v14 :fullRegionName ?v15 .
+  ?v15 :temperatureDependence ?v16 .
+  ?v16 :pharmaceutical ?v17 .
+  ?v17 :shortRegionName ?v18 .
+  ?v18 :editor ?v19 .
+  ?v19 :selenocysteine ?v20 .
+  ?v20 :city ?v21 .
+  ?v21 :publisher ?v22 .
+  ?v22 :innInternationalNonproprietaryNames ?v23 .
+  ?v23 :allergen ?v24 .
+  ?v24 :redoxPotential ?v25 .
+}
+
+
+### SCQ_00011 ###
+# OPTIONAL JOIN of a small and a large predicate
+# Sparqloscope query optional-join-small-large
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s :intramembraneRegion ?o1 OPTIONAL { ?s rdf:type ?o2 } }
+
+
+### SCQ_00012 ###
+# OPTIONAL JOIN of a large and a small predicate
+# Sparqloscope query optional-join-large-small
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s rdf:type ?o1 OPTIONAL { ?s :intramembraneRegion ?o2 } }
+
+
+### SCQ_00013 ###
+# OPTIONAL JOIN of two large predicates
+# Sparqloscope query optional-join-large-large
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s rdf:type ?o1 OPTIONAL { ?s :reference ?o2 } }
+
+
+### SCQ_00014 ###
+# OPTIONAL JOIN of two large predicates with a reasonably large join result
+# Sparqloscope query optional-join-2-large-large-with-large-result
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :reference ?o1 .
+  OPTIONAL { ?s rdf:type ?o2 } }
+
+
+### SCQ_00015 ###
+# OPTIONAL JOIN of two large predicates with a small join result
+# Sparqloscope query optional-join-2-large-large-with-small-join-result-1
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :experimentalContext ?o1 .
+  OPTIONAL { ?s :fromXref ?o2 } }
+
+
+### SCQ_00016 ###
+# OPTIONAL JOIN of two large predicates with a small join result
+# Sparqloscope query optional-join-2-large-large-with-small-join-result-2
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :fromXref ?o1 .
+  OPTIONAL { ?s :experimentalContext ?o2 } }
+
+
+### SCQ_00017 ###
+# OPTIONAL JOIN star of three large predicates with the largest sum of join sizes
+# Sparqloscope query optional-join-3-star-1
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :provenance ?o1 .
+  ?s :accession ?o2 .
+  OPTIONAL {
+  ?s rdf:type ?o3 . }
+}
+
+
+### SCQ_00018 ###
+# OPTIONAL JOIN star of three large predicates with the largest sum of join sizes
+# Sparqloscope query optional-join-3-star-2
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :provenance ?o1 .
+  OPTIONAL {
+  ?s :accession ?o2 .
+  ?s rdf:type ?o3 . }
+}
+
+
+### SCQ_00019 ###
+# OPTIONAL JOIN chain of three large predicates with the largest sum of join sizes
+# Sparqloscope query optional-join-3-chain-1
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?a :evidence ?b .
+  ?b :reference ?c .
+  OPTIONAL {
+  ?c rdf:type ?d . }
+}
+
+
+### SCQ_00020 ###
+# OPTIONAL JOIN chain of three large predicates with the largest sum of join sizes
+# Sparqloscope query optional-join-3-chain-2
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?a :evidence ?b .
+  OPTIONAL {
+  ?b :reference ?c .
+  ?c rdf:type ?d . }
+}
+
+
+### SCQ_00021 ###
+# MINUS JOIN of a small and a large predicate
+# Sparqloscope query minus-join-small-large
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s :intramembraneRegion ?o1 MINUS { ?s rdf:type ?o2 } }
+
+
+### SCQ_00022 ###
+# MINUS JOIN of a large and a small predicate
+# Sparqloscope query minus-join-large-small
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s rdf:type ?o1 MINUS { ?s :intramembraneRegion ?o2 } }
+
+
+### SCQ_00023 ###
+# MINUS JOIN of two large predicates
+# Sparqloscope query minus-join-large-large
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s rdf:type ?o1 MINUS { ?s :reference ?o2 } }
+
+
+### SCQ_00024 ###
+# MINUS JOIN of two large predicates with a reasonably large join result
+# Sparqloscope query minus-join-2-large-large-with-large-result
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :reference ?o1 .
+  MINUS { ?s rdf:type ?o2 } }
+
+
+### SCQ_00025 ###
+# MINUS JOIN of two large predicates with a small join result
+# Sparqloscope query minus-join-2-large-large-with-small-join-result-1
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :experimentalContext ?o1 .
+  MINUS { ?s :fromXref ?o2 } }
+
+
+### SCQ_00026 ###
+# MINUS JOIN of two large predicates with a small join result
+# Sparqloscope query minus-join-2-large-large-with-small-join-result-2
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :fromXref ?o1 .
+  MINUS { ?s :experimentalContext ?o2 } }
+
+
+### SCQ_00027 ###
+# MINUS JOIN star of three large predicates with the largest sum of join sizes
+# Sparqloscope query minus-join-3-star-1
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :provenance ?o1 .
+  ?s :accession ?o2 .
+  MINUS {
+  ?s rdf:type ?o3 . }
+}
+
+
+### SCQ_00028 ###
+# MINUS JOIN star of three large predicates with the largest sum of join sizes
+# Sparqloscope query minus-join-3-star-2
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :provenance ?o1 .
+  MINUS {
+  ?s :accession ?o2 .
+  ?s rdf:type ?o3 . }
+}
+
+
+### SCQ_00029 ###
+# MINUS JOIN chain of three large predicates with the largest sum of join sizes
+# Sparqloscope query minus-join-3-chain-1
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?a :evidence ?b .
+  ?b :reference ?c .
+  MINUS {
+  ?c rdf:type ?d . }
+}
+
+
+### SCQ_00030 ###
+# MINUS JOIN chain of three large predicates with the largest sum of join sizes
+# Sparqloscope query minus-join-3-chain-2
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?a :evidence ?b .
+  MINUS {
+  ?b :reference ?c .
+  ?c rdf:type ?d . }
+}
+
+
+### SCQ_00031 ###
+# EXISTS JOIN of a small and a large predicate
+# Sparqloscope query exists-join-small-large
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s :intramembraneRegion ?o1 FILTER EXISTS { ?s rdf:type ?o2 } }
+
+
+### SCQ_00032 ###
+# EXISTS JOIN of a large and a small predicate
+# Sparqloscope query exists-join-large-small
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s rdf:type ?o1 FILTER EXISTS { ?s :intramembraneRegion ?o2 } }
+
+
+### SCQ_00033 ###
+# EXISTS JOIN of two large predicates
+# Sparqloscope query exists-join-large-large
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s rdf:type ?o1 FILTER EXISTS { ?s :reference ?o2 } }
+
+
+### SCQ_00034 ###
+# EXISTS JOIN of two large predicates with a reasonably large join result
+# Sparqloscope query exists-join-2-large-large-with-large-result
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :reference ?o1 .
+  FILTER EXISTS { ?s rdf:type ?o2 } }
+
+
+### SCQ_00035 ###
+# EXISTS JOIN of two large predicates with a small join result
+# Sparqloscope query exists-join-2-large-large-with-small-join-result-1
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :experimentalContext ?o1 .
+  FILTER EXISTS { ?s :fromXref ?o2 } }
+
+
+### SCQ_00036 ###
+# EXISTS JOIN of two large predicates with a small join result
+# Sparqloscope query exists-join-2-large-large-with-small-join-result-2
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :fromXref ?o1 .
+  FILTER EXISTS { ?s :experimentalContext ?o2 } }
+
+
+### SCQ_00037 ###
+# EXISTS JOIN star of three large predicates with the largest sum of join sizes
+# Sparqloscope query exists-join-3-star-1
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :provenance ?o1 .
+  ?s :accession ?o2 .
+  FILTER EXISTS {
+  ?s rdf:type ?o3 . }
+}
+
+
+### SCQ_00038 ###
+# EXISTS JOIN star of three large predicates with the largest sum of join sizes
+# Sparqloscope query exists-join-3-star-2
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?s :provenance ?o1 .
+  FILTER EXISTS {
+  ?s :accession ?o2 .
+  ?s rdf:type ?o3 . }
+}
+
+
+### SCQ_00039 ###
+# EXISTS JOIN chain of three large predicates with the largest sum of join sizes
+# Sparqloscope query exists-join-3-chain-1
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?a :evidence ?b .
+  ?b :reference ?c .
+  FILTER EXISTS {
+  ?c rdf:type ?d . }
+}
+
+
+### SCQ_00040 ###
+# EXISTS JOIN chain of three large predicates with the largest sum of join sizes
+# Sparqloscope query exists-join-3-chain-2
+SELECT (COUNT(*) AS ?count)
+WHERE {
+  ?a :evidence ?b .
+  FILTER EXISTS {
+  ?b :reference ?c .
+  ?c rdf:type ?d . }
+}
+
+
+### SCQ_00041 ###
+# UNION of two large predicates, no constraint
+# Sparqloscope query union-no-constraint
+SELECT (COUNT(*) AS ?count)
+WHERE { { ?s rdf:type ?o } UNION { ?s :reference ?o } }
+
+
+### SCQ_00042 ###
+# UNION of two large predicates, constrained by a large predicate known to have join partners
+# Sparqloscope query union-constraint-from-star
+SELECT (COUNT(*) AS ?count) WHERE {
+  { ?s :provenance ?o1 }
+  UNION { ?s :accession ?o1 }
+  ?s rdf:type ?o2
+}
+
+
+### SCQ_00043 ###
+# UNION of two large predicates, constrained by a join with a small result
+# Sparqloscope query union-constraint-small-join
+SELECT (COUNT(*) AS ?count) WHERE {
+  { ?s :experimentalContext ?o1 }
+  UNION { ?s :assignedBy ?o1 }
+  ?s :fromXref ?o2
+}
+
+
+### SCQ_00044 ###
+# UNION of two large predicates, constrained by a join with a large result
+# Sparqloscope query union-constraint-large-join
+SELECT (COUNT(*) AS ?count) WHERE {
+  { ?s :evidence ?o1 }
+  UNION { ?s rdf:type ?o1 }
+  ?s :quality ?o2
+}
+
+
+### SCQ_00045 ###
+# UNION of two large predicates, constraint by restrictive FILTER
+# Sparqloscope query union-constraint-filter-restrictive
+SELECT (COUNT(*) AS ?count) WHERE {
+  { ?s rdf:type ?o } UNION { ?s :reference ?o }
+  FILTER (?s = ?o)
+}
+
+
+### SCQ_00046 ###
+# Multicolumn JOIN small
+# Sparqloscope query multicolumn-join-small
+SELECT (COUNT(*) AS ?count) WHERE {
+  ?s :compositionallyBiasedRegion ?o .
+  ?s :positionalAnnotation ?o }
+
+
+### SCQ_00047 ###
+# Multicolumn JOIN large
+# Sparqloscope query multicolumn-join-large
+SELECT (COUNT(*) AS ?count) WHERE {
+  ?s :negativeEvidence ?o .
+  ?s :evidence ?o }
+
+
+### SCQ_00048 ###
+# GROUP BY with COUNT, for object with high multiplicity
+# Sparqloscope query group-by-count-object-high-multiplicity
+SELECT ?object (COUNT(?subject) AS ?count) {
+?subject :assocType ?object .
+} GROUP BY ?object ORDER BY DESC(?count) LIMIT 10
+
+
+### SCQ_00049 ###
+# GROUP BY with COUNT, for object with low multiplicity
+# Sparqloscope query group-by-count-object-low-multiplicity
+SELECT ?object (COUNT(?subject) AS ?count) {
+?subject :reference ?object .
+} GROUP BY ?object ORDER BY DESC(?count) LIMIT 10
+
+
+### SCQ_00050 ###
+# GROUP BY with COUNT, for object but not sorted by object
+# Sparqloscope query group-by-count-object-wrong-sort-order
+SELECT ?o1 (COUNT(?s) AS ?count) {
+  ?s :assocType ?o1 .
+  ?s :reference ?o2 .
+} GROUP BY ?o1 ORDER BY DESC(?count) LIMIT 10
+
+
+### SCQ_00051 ###
+# GROUP BY with COUNT and MIN and MAX and SAMPLE
+# Sparqloscope query group-by-complex-aggregate
+SELECT ?o1 (COUNT(?s) AS ?count) (MIN(?s) AS ?min) (MAX(?s) AS ?max)
+  (SAMPLE(?s) AS ?sample) {
+  ?s :assocType ?o1 .
+  ?s :reference ?o2 .
+} GROUP BY ?o1 ORDER BY DESC(?count) LIMIT 10
+
+
+### SCQ_00052 ###
+# Implicit GROUP BY with COUNT on numeric predicate as baseline
+# Sparqloscope query group-by-implicit-numeric-baseline
+SELECT (COUNT(?o) AS ?count) { ?s :allele-count ?o. }
+
+
+### SCQ_00053 ###
+# Implicit GROUP BY with SUM on numeric predicate
+# Sparqloscope query group-by-implicit-numeric-sum
+SELECT (SUM(?o) AS ?sum) { ?s :allele-count ?o. }
+
+
+### SCQ_00054 ###
+# Implicit GROUP BY with MIN on numeric predicate
+# Sparqloscope query group-by-implicit-numeric-min
+SELECT (MIN(?o) AS ?min) { ?s :allele-count ?o. }
+
+
+### SCQ_00055 ###
+# Implicit GROUP BY with MAX on numeric predicate
+# Sparqloscope query group-by-implicit-numeric-max
+SELECT (MAX(?o) AS ?max) { ?s :allele-count ?o. }
+
+
+### SCQ_00056 ###
+# Implicit GROUP BY with AVG on numeric predicate
+# Sparqloscope query group-by-implicit-numeric-avg
+SELECT (AVG(?o) AS ?avg) { ?s :allele-count ?o. }
+
+
+### SCQ_00057 ###
+# Implicit GROUP BY with COUNT on string predicate as baseline
+# Sparqloscope query group-by-implicit-string-baseline
+SELECT (COUNT(?o) AS ?count) { ?s :accession ?o. }
+
+
+### SCQ_00058 ###
+# Implicit GROUP BY with MIN on string predicate
+# Sparqloscope query group-by-implicit-string-min
+SELECT (MIN(?o) AS ?min) { ?s :accession ?o. }
+
+
+### SCQ_00059 ###
+# Implicit GROUP BY with MAX on string predicate
+# Sparqloscope query group-by-implicit-string-max
+SELECT (MAX(?o) AS ?max) { ?s :accession ?o. }
+
+
+### SCQ_00060 ###
+# GROUP BY with GROUP_CONCAT on string predicate with high subject multiplicity
+# Sparqloscope query group-by-string-groupconcat
+SELECT (SUM(STRLEN(?cat)) AS ?sum) {
+{ SELECT (GROUP_CONCAT(?o; SEPARATOR=" ") AS ?cat) {
+  ?s :accession ?o. } GROUP BY ?s } }
+
+
+### SCQ_00061 ###
+# COUNT DISTINCT, for object with high multiplicity
+# Sparqloscope query distinct-count-object-high-multiplicity
+SELECT (COUNT(DISTINCT ?object) AS ?count) {
+  ?subject :assocType ?object .
+}
+
+
+### SCQ_00062 ###
+# COUNT DISTINCT, for object with low multiplicity
+# Sparqloscope query distinct-count-object-low-multiplicity
+SELECT (COUNT(DISTINCT ?object) AS ?count) {
+?subject :reference ?object .
+}
+
+
+### SCQ_00063 ###
+# COUNT DISTINCT, for object but not sorted by object
+# Sparqloscope query distinct-count-object-wrong-sort-order
+SELECT (COUNT(DISTINCT ?o1) AS ?count) {
+  ?s :assocType ?o1 .
+  ?s :reference ?o2 .
+}
+
+
+### SCQ_00064 ###
+# Transitive path with plus
+# Sparqloscope query transitive-path-plus
+SELECT (COUNT(*) AS ?count) { ?s :related+ ?o }
+
+
+### SCQ_00065 ###
+# Transitive path with plus and a fixed subject
+# Sparqloscope query transitive-path-plus-fixed-subject
+SELECT (COUNT(*) AS ?count) {
+  cv:CVCL_ZR80 :related+ ?o }
+
+
+### SCQ_00066 ###
+# Transitive path with a large join and plus
+# Sparqloscope query transitive-path-large-join-and-plus
+SELECT (COUNT(*) AS ?count) {
+  ?s :evidenceCode/:related+ ?o }
+
+
+### SCQ_00067 ###
+# Transitive path with a small join and plus
+# Sparqloscope query transitive-path-small-join-and-plus
+SELECT (COUNT(*) AS ?count) {
+  ?s :developmentalStage/:related+ ?o }
+
+
+### SCQ_00068 ###
+# CONTAINS filter with fixed string of length 3
+# Sparqloscope query regex-3-contains
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s rdfs:label ?o FILTER CONTAINS(?o, "com") }
+
+
+### SCQ_00069 ###
+# REGEX filter with fixed string of length 3
+# Sparqloscope query regex-3-fixed
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s rdfs:label ?o FILTER REGEX(?o, "com") }
+
+
+### SCQ_00070 ###
+# REGEX filter with expression of length 3
+# Sparqloscope query regex-3
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s rdfs:label ?o FILTER REGEX(?o, "c.m") }
+
+
+### SCQ_00071 ###
+# REGEX filter with prefix of length 1
+# Sparqloscope query regex-prefix-1
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s rdfs:label ?o FILTER REGEX(?o, "^C") }
+
+
+### SCQ_00072 ###
+# REGEX filter with prefix of length 2
+# Sparqloscope query regex-prefix-2
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s rdfs:label ?object FILTER REGEX(?object, "^Co") }
+
+
+### SCQ_00073 ###
+# REGEX filter with prefix of length 3
+# Sparqloscope query regex-prefix-3
+SELECT (COUNT(*) AS ?count)
+WHERE { ?s rdfs:label ?object FILTER REGEX(?object, "^Com") }
+
+
+### SCQ_00074 ###
+# String length for large string predicate
+# Sparqloscope query strlen
+SELECT (SUM(STRLEN(?o)) AS ?checksum)  {
+  ?s rdfs:label ?o . }
+
+
+### SCQ_00075 ###
+# STRBEFORE string function
+# Sparqloscope query strbefore
+SELECT (SUM(STRLEN(STRBEFORE(?o, "a"))) AS ?checksum) {
+  ?s rdfs:label ?o . }
+
+
+### SCQ_00076 ###
+# STRAFTER string function
+# Sparqloscope query strafter
+SELECT (SUM(STRLEN(STRAFTER(?o, "a"))) AS ?checksum) {
+  ?s rdfs:label ?o . }
+
+
+### SCQ_00077 ###
+# STRSTARTS string function
+# Sparqloscope query strstarts
+SELECT (SUM(xsd:integer(STRSTARTS(?o, "a"))) AS ?count) {
+  ?s rdfs:label ?o . }
+
+
+### SCQ_00078 ###
+# STRENDS string function
+# Sparqloscope query strends
+SELECT (SUM(xsd:integer(STRENDS(?o, "a"))) AS ?count) {
+  ?s rdfs:label ?o . }
+
+
+### SCQ_00079 ###
+# Export 10 tuples
+# Sparqloscope query result-size-tiny
+SELECT ?s ?o
+WHERE { ?s rdf:type ?o }
+LIMIT 10
+
+
+### SCQ_00080 ###
+# Export 1000 tuples
+# Sparqloscope query result-size-small
+SELECT ?s ?o
+WHERE { ?s rdf:type ?o }
+LIMIT 1000
+
+
+### SCQ_00081 ###
+# Export 100K tuples
+# Sparqloscope query result-size-medium
+SELECT ?s ?o
+WHERE { ?s rdf:type ?o }
+LIMIT 100000
+
+
+### SCQ_00082 ###
+# Export 1M tuples
+# Sparqloscope query result-size-large
+SELECT ?s ?o
+WHERE { ?s rdf:type ?o }
+LIMIT 1000000
+
+
+### SCQ_00083 ###
+# Export 10M tuples
+# Sparqloscope query result-size-xlarge
+SELECT ?s ?o
+WHERE { ?s rdf:type ?o }
+LIMIT 10000000
+
+
+### SCQ_00084 ###
+# Baseline for numeric queries
+# Sparqloscope query numeric-baseline
+SELECT (SUM(?o) AS ?sum)
+WHERE { ?s :allele-count ?o }
+
+
+### SCQ_00085 ###
+# ABS function
+# Sparqloscope query numeric-abs
+SELECT (SUM(ABS(?o)) AS ?sum)
+WHERE { ?s :allele-count ?o }
+
+
+### SCQ_00086 ###
+# CEIL function
+# Sparqloscope query numeric-ceil
+SELECT (SUM(CEIL(?o)) AS ?sum)
+WHERE { ?s :allele-count ?o }
+
+
+### SCQ_00087 ###
+# FLOOR function
+# Sparqloscope query numeric-floor
+SELECT (SUM(FLOOR(?o)) AS ?sum)
+WHERE { ?s :allele-count ?o }
+
+
+### SCQ_00088 ###
+# ROUND function
+# Sparqloscope query numeric-round
+SELECT (SUM(ROUND(?o)) AS ?sum)
+WHERE { ?s :allele-count ?o }
+
+
+### SCQ_00089 ###
+# Addition
+# Sparqloscope query numeric-add
+SELECT (SUM(?o + ?o) AS ?sum)
+WHERE { ?s :allele-count ?o }
+
+
+### SCQ_00090 ###
+# Greater than
+# Sparqloscope query numeric-greater
+SELECT (SUM(?o > 0) AS ?sum)
+WHERE { ?s :allele-count ?o }
+
+
+### SCQ_00091 ###
+# Numeric FILTER that filters out 50 percent of the values
+# Sparqloscope query numeric-filter-bin-search-fifty-fifty
+SELECT (COUNT(?s) AS ?count) {
+  ?s :allele-count ?o .
+  FILTER (?o >= 1) }
+
+
+### SCQ_00092 ###
+# Numeric FILTER that filters out 70 percent of the values
+# Sparqloscope query numeric-filter-bin-search-seventy-thirty
+SELECT (COUNT(?s) AS ?count) {
+  ?s :allele-count ?o .
+  FILTER (?o >= 3) }
+
+
+### SCQ_00093 ###
+# Numeric FILTER that filters out 95 percent of the values
+# Sparqloscope query numeric-filter-bin-search-ninetyfive-five
+SELECT (COUNT(?s) AS ?count) {
+  ?s :allele-count ?o .
+  FILTER (?o >= 33) }
+
+
+### SCQ_00094 ###
+# FILTER that filters out most rows and has few results
+# Sparqloscope query filter-few-results
+SELECT (COUNT(?s) AS ?count) {
+  ?s rdf:type ?o . FILTER (?s = ?o) }
+
+
+### SCQ_00095 ###
+# FILTER that filters out few rows and has many results
+# Sparqloscope query filter-many-results
+SELECT (COUNT(?s) AS ?count) {
+  ?s rdf:type ?o . FILTER (?s != ?o) }
+
+
+### SCQ_00096 ###
+# FILTER on string predicate for only English literals
+# Sparqloscope query filter-language-en
+SELECT (COUNT(?s) AS ?count) {
+  ?s :accession ?o . FILTER(LANG(?o) = "en") }
+
+
+### SCQ_00097 ###
+# YEAR function
+# Sparqloscope query date-year
+SELECT (SUM(YEAR(?o)) AS ?sum)
+WHERE { ?s :ttlGenerationDate ?o }
+
+
+### SCQ_00098 ###
+# MONTH function
+# Sparqloscope query date-month
+SELECT (SUM(MONTH(?o)) AS ?sum)
+WHERE { ?s :ttlGenerationDate ?o }
+
+
+### SCQ_00099 ###
+# DAY function
+# Sparqloscope query date-day
+SELECT (SUM(DAY(?o)) AS ?sum)
+WHERE { ?s :ttlGenerationDate ?o }
+
+
+### SCQ_00100 ###
+# Total number of triples
+# Sparqloscope query number-of-triples
+SELECT (COUNT(?s) AS ?count)
+WHERE { ?s ?p ?o }
+
+
+### SCQ_00101 ###
+# Total number of distinct subjects
+# Sparqloscope query number-of-subjects
+SELECT (COUNT(DISTINCT ?s) AS ?count)
+WHERE { ?s ?p ?o }
+
+
+### SCQ_00102 ###
+# Total number of distinct predicates
+# Sparqloscope query number-of-predicates
+SELECT (COUNT(DISTINCT ?p) AS ?count)
+WHERE { ?s ?p ?o }
+
+
+### SCQ_00103 ###
+# Total number of distinct objects
+# Sparqloscope query number-of-objects
+SELECT (COUNT(DISTINCT ?o) AS ?count)
+WHERE { ?s ?p ?o }
+
+
+### SCQ_00104 ###
+# Total number of literals
+# Sparqloscope query number-of-literals
+SELECT (COUNT(?o) AS ?count)
+WHERE { ?s ?p ?o FILTER ISLITERAL(?o) }
+
+
+### SCQ_00105 ###
+# Total number of blank nodes
+# Sparqloscope query number-of-blank-nodes
+SELECT (COUNT(?s) AS ?count)
+WHERE { ?s ?p ?o FILTER ISBLANK(?s) }
