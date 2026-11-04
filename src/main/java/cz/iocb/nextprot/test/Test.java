@@ -2,7 +2,6 @@ package cz.iocb.nextprot.test;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +10,9 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 
 
@@ -105,46 +107,40 @@ public class Test
             con.setRequestProperty("accept", "application/sparql-results+xml");
             con.setRequestMethod("GET");
 
+            Path result = Path.of(path, "run-" + i, id + ".tmp");
+
             try(InputStream in = con.getInputStream())
             {
-                byte[] output = in.readAllBytes();
+                Files.copy(in, result, StandardCopyOption.REPLACE_EXISTING);
 
                 time = System.nanoTime() - time;
 
                 if(time <= 1000 * 1000000000l)
                 {
                     out.printf(" %5d.%09d", time / 1000000000, time % 1000000000);
-
-                    try(FileOutputStream res = new FileOutputStream(path + "/run-" + i + "/" + id + ".xml"))
-                    {
-                        res.write(output);
-                    }
+                    Files.move(result, result.resolveSibling(id + ".xml"), StandardCopyOption.REPLACE_EXISTING);
                 }
                 else
                 {
                     out.print("              NA");
-
-                    try(FileOutputStream res = new FileOutputStream(path + "/run-" + i + "/" + id + ".txt"))
-                    {
-                        res.write(output);
-                    }
+                    Files.move(result, result.resolveSibling(id + ".txt"), StandardCopyOption.REPLACE_EXISTING);
                 }
             }
             catch(IOException e)
             {
                 e.printStackTrace();
 
+                out.print("              NA");
+
                 try(InputStream in = con.getErrorStream())
                 {
-                    byte[] output = in != null ? in.readAllBytes() : new byte[0];
-
-                    out.print("              NA");
-
-                    try(FileOutputStream res = new FileOutputStream(path + "/run-" + i + "/" + id + ".txt"))
-                    {
-                        res.write(output);
-                    }
+                    if(in != null)
+                        Files.copy(in, result, StandardCopyOption.REPLACE_EXISTING);
+                    else
+                        Files.write(result, new byte[0]);
                 }
+
+                Files.move(result, result.resolveSibling(id + ".txt"), StandardCopyOption.REPLACE_EXISTING);
             }
         }
 
