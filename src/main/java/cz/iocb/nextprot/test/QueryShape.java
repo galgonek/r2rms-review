@@ -371,11 +371,13 @@ record QueryShape(long limit, long offset, boolean ordered, List<String> order, 
 
                 switch(aggregator.getAggregator())
                 {
-                    case AggGroupConcat concat -> separators.put(variable.getVarName(), separator(concat.getSeparator()));
+                    case AggGroupConcat concat -> separators.put(variable.getVarName(),
+                            separator(concat.getSeparator()));
                     case AggGroupConcatDistinct concat -> separators.put(variable.getVarName(),
                             separator(concat.getSeparator()));
-                    default -> {
-                    }
+                    default ->
+                            {
+                            }
                 }
             }
         }

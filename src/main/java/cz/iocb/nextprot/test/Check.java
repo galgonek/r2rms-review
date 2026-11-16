@@ -40,9 +40,10 @@ import cz.iocb.nextprot.test.QueryCheck.Source;
  * queries of the query set if they are given.
  *
  * The results that differ in the same way are printed together, by the query, with some of the solutions they miss
- * (-) and of those the reference does not have (+); then a summary by the engines follows. The exit status is 0 if all
- * results agree with their references, 1 if some differ, and 2 if the check cannot be done, or not for all queries
- * (no result is compared, or a reference cannot be read).
+ * (-) and of those the reference does not have (+); then a summary by the engines follows, which counts the results
+ * that differ apart from those that differ by the datatypes of the same values. The exit status is 0 if all results
+ * agree with their references, 1 if some differ (by datatypes too), and 2 if the check cannot be done, or not for all
+ * queries (no result is compared, or a reference cannot be read).
  */
 public class Check
 {
@@ -143,7 +144,8 @@ public class Check
         else if(queries != null)
             System.err.println("warning: " + queries + " does not exist, the results are compared as they are");
 
-        // the results by the queries, and the numbers of the checked and of the different results by the engines
+        // the results by the queries, and the numbers of the checked results, of the results that differ, and of those
+        // that differ by datatypes, by the engines
         SortedMap<String, List<Source>> sources = new TreeMap<>();
         Map<String, int[]> counts = new LinkedHashMap<>();
         Set<String> matched = new HashSet<>();
@@ -162,12 +164,12 @@ public class Check
                 continue;
 
             matched.addAll(matching);
-            counts.put(engine.getFileName().toString(), new int[2]);
+            counts.put(engine.getFileName().toString(), new int[3]);
 
             for(Path run : runs)
                 for(Path file : files(run))
-                    sources.computeIfAbsent(id(file), _ -> new ArrayList<>()).add(new Source(
-                            engine.getFileName().toString(), run.getFileName().toString(), file));
+                    sources.computeIfAbsent(id(file), _ -> new ArrayList<>())
+                            .add(new Source(engine.getFileName().toString(), run.getFileName().toString(), file));
         }
 
         for(String pattern : patterns.keySet())
@@ -222,7 +224,13 @@ public class Check
                 counts.get(source.engine())[0]++;
 
             for(Finding finding : check.findings())
-                counts.get(finding.source().engine())[1]++;
+            {
+                if(finding.difference().differs)
+                    counts.get(finding.source().engine())[1]++;
+
+                if(finding.difference().datatypes > 0)
+                    counts.get(finding.source().engine())[2]++;
+            }
 
             if(!check.notes().isEmpty())
                 notes.put(id, check.notes());
@@ -230,8 +238,9 @@ public class Check
             if(!check.findings().isEmpty())
             {
                 if(!differs)
-                    System.out.println("the results that differ from the references (- a missing solution of the reference, + "
-                            + "an unexpected solution):\n");
+                    System.out.println(
+                            "the results that differ from the references (- a missing solution of the reference, + "
+                                    + "an unexpected solution):\n");
 
                 print(System.out, id, check);
                 differs = true;
@@ -259,8 +268,8 @@ public class Check
         for(Finding finding : check.findings())
             groups.computeIfAbsent(finding.difference(), _ -> new ArrayList<>()).add(finding.source());
 
-        out.println(id + " (the reference has " + (check.count() < 0 ? "a boolean"
-                : QueryCheck.solutions(check.count())) + ")");
+        out.println(id + " (the reference has "
+                + (check.count() < 0 ? "a boolean" : QueryCheck.solutions(check.count())) + ")");
 
         for(String note : check.notes())
             out.println("  note: " + note);
@@ -343,7 +352,8 @@ public class Check
 
 
     /*
-     * Prints the numbers of the checked and of the different results by the engines, how the comparison of the
+     * Prints the numbers of the checked results, of the results that differ and of those that differ by the datatypes
+     * of the same values, by the engines, how the comparison of the
      * results of the queries was limited, which queries have results but no reference, and which references cannot be
      * read.
      */
@@ -351,20 +361,21 @@ public class Check
             List<String> unchecked, List<String> unreadable)
     {
         int length = Math.max("engine".length(), counts.keySet().stream().mapToInt(String::length).max().orElse(0));
-        String format = "%-" + length + "s %9s %9s%n";
-        int[] total = new int[2];
+        String format = "%-" + length + "s %9s %9s %9s%n";
+        int[] total = new int[3];
 
         out.println("summary (the numbers of the results of all the runs, one result for a query in a run):");
-        out.printf(format, "engine", "compared", "different");
+        out.printf(format, "engine", "compared", "different", "datatypes");
 
         for(Entry<String, int[]> engine : counts.entrySet())
         {
-            out.printf(format, engine.getKey(), engine.getValue()[0], engine.getValue()[1]);
-            total[0] += engine.getValue()[0];
-            total[1] += engine.getValue()[1];
+            out.printf(format, engine.getKey(), engine.getValue()[0], engine.getValue()[1], engine.getValue()[2]);
+
+            for(int i = 0; i < total.length; i++)
+                total[i] += engine.getValue()[i];
         }
 
-        out.printf(format, "total", total[0], total[1]);
+        out.printf(format, "total", total[0], total[1], total[2]);
 
         if(!notes.isEmpty())
         {

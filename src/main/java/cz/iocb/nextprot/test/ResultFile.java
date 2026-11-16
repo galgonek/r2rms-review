@@ -66,8 +66,8 @@ final class ResultFile
     private static final int maxDepth = 100;
 
     // a message of the JDK parser about namespaces or attributes, which it leaves as a key with its arguments
-    private static final Pattern messageKey = Pattern.compile("http://www\\.w3\\.org/TR/1999/REC-xml-names-19990114#"
-            + "(\\w+)\\?(\\S*)");
+    private static final Pattern messageKey = Pattern
+            .compile("http://www\\.w3\\.org/TR/1999/REC-xml-names-19990114#" + "(\\w+)\\?(\\S*)");
 
     // the limits that the JDK puts on the documents it parses, which a result of millions of solutions need not keep
     private static final String[] limits = { "jdk.xml.entityExpansionLimit", "jdk.xml.totalEntitySizeLimit",
@@ -112,8 +112,9 @@ final class ResultFile
                         case "variable" -> variables.add(name(reader));
                         case "result" -> handler.solution(solution(reader));
                         case "boolean" -> value = bool(reader.getElementText());
-                        default -> {
-                        }
+                        default ->
+                                {
+                                }
                     }
                 }
 
@@ -130,9 +131,9 @@ final class ResultFile
             Matcher matcher = messageKey.matcher(message);
 
             if(matcher.find())
-                message = matcher.replaceFirst(Matcher.quoteReplacement(matcher.group(1)
-                        .replaceAll("([a-z])([A-Z])", "$1 $2").toLowerCase(Locale.ROOT) + " ("
-                        + matcher.group(2).replace("&", ", ") + ")"));
+                message = matcher.replaceFirst(Matcher.quoteReplacement(
+                        matcher.group(1).replaceAll("([a-z])([A-Z])", "$1 $2").toLowerCase(Locale.ROOT) + " ("
+                                + matcher.group(2).replace("&", ", ") + ")"));
 
             throw new InvalidResultException(message);
         }

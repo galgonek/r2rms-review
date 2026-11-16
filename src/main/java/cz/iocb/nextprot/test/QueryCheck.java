@@ -14,10 +14,12 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
@@ -31,7 +33,10 @@ import java.util.concurrent.Future;
  *
  * A result is compared with the reference as a multiset of solutions, whatever their order: each solution gets a key
  * made of the keys of its terms, which stand for their values (see Terms), and the multisets of the hashes of the keys
- * are compared, so that a result of any size takes little memory. The solutions that differ are then read again, to
+ * are compared, so that a result of any size takes little memory. The datatypes of the literals are compared apart,
+ * as another kind of difference: the multisets of the hashes of the keys extended by the datatypes are compared too,
+ * and the solutions they differ in beyond the solutions that differ by their values are those of the same values in
+ * other datatypes. The solutions that differ are then read again, to
  * pair the missing solutions with the unexpected ones that differ only by approximately equal numbers, and to show
  * them.
  *
@@ -82,14 +87,17 @@ final class QueryCheck
 
 
     /*
-     * How a result differs from the reference: the problems as texts, the numbers of the missing and of the unexpected
-     * solutions with a hash of their multisets, and some of the missing and of the unexpected solutions with the
-     * numbers of their occurrences. Two results with the same problems and the same solutions missing and unexpected
+     * How a result differs from the reference: the problems as texts, whether it differs otherwise than by datatypes,
+     * the number of the solutions that differ only by the datatypes of their literals, the numbers of the missing and
+     * of the unexpected solutions with a hash of their multisets, and some of the missing and of the unexpected
+     * solutions with the numbers of their occurrences. Two results with the same problems and the same solutions missing and unexpected
      * differ equally.
      */
     static final class Difference
     {
         final List<String> problems;
+        final boolean differs;
+        final long datatypes;
         final long missing;
         final long unexpected;
         final long signature;
@@ -97,10 +105,12 @@ final class QueryCheck
         final Map<Row, Integer> unexpectedRows;
 
 
-        Difference(List<String> problems, long missing, long unexpected, long signature,
-                Map<Row, Integer> missingRows, Map<Row, Integer> unexpectedRows)
+        Difference(List<String> problems, boolean differs, long datatypes, long missing, long unexpected,
+                long signature, Map<Row, Integer> missingRows, Map<Row, Integer> unexpectedRows)
         {
             this.problems = problems;
+            this.differs = differs;
+            this.datatypes = datatypes;
             this.missing = missing;
             this.unexpected = unexpected;
             this.signature = signature;
@@ -132,7 +142,7 @@ final class QueryCheck
 
     /*
      * What the first reading of a result found out: its head, the number of its solutions, the hashes of the keys of
-     * the solutions and of their order keys in the order of the file, the occurrences of its blank nodes by their
+     * the solutions, of their keys with datatypes and of their order keys in the order of the file, the occurrences of its blank nodes by their
      * labels, and its first and last solution; or the error that made the file unreadable.
      */
     private static final class Digest
@@ -141,6 +151,7 @@ final class QueryCheck
         Boolean value;
         long count;
         LongList rows = new LongList();
+        LongList types = new LongList();
         LongList orders = new LongList();
         final Map<String, int[]> blankNodes = new HashMap<>();
         SortedMap<String, Term> first;
@@ -152,8 +163,9 @@ final class QueryCheck
     /*
      * A result that differs from the reference before the approximate numbers are compared: the hashes of its missing
      * and unexpected solutions (sorted; only those to be shown if the result is large), the numbers of its solutions
-     * ordered equally with the solutions of the reference at the cuts, and whether its blank nodes are shared
-     * differently.
+     * ordered equally with the solutions of the reference at the cuts, whether its blank nodes are shared differently,
+     * the number of its solutions that differ from those of the reference only by datatypes, the hashes of the keys
+     * with datatypes of some of those solutions of the reference, and how their datatypes differ.
      */
     private static final class Pending
     {
@@ -172,6 +184,9 @@ final class QueryCheck
         long[] unexpected;
         Map<Long, Row> missingRows = Map.of();
         Map<Long, Row> unexpectedRows = Map.of();
+        long datatypes;
+        long[] retyped = none;
+        final Set<String> retypings = new LinkedHashSet<>();
 
 
         Pending(Source source, long count, boolean unreadable, List<String> problems, boolean blankNodes, long[] tied,
@@ -270,6 +285,7 @@ final class QueryCheck
     private Digest expected;
     private Mode mode;
     private long[] solutions;
+    private long[] typedSolutions;
     private long distinctSolutions;
     private long[] boundary = none;
     private final List<SortedMap<String, Term>> boundarySolutions = new ArrayList<>();
@@ -325,15 +341,17 @@ final class QueryCheck
             expectedTied = tied(expected);
         }
 
-        solutions = solutions(expected);
+        solutions = solutions(expected, expected.rows);
+        typedSolutions = solutions(expected, expected.types);
         expected.rows = null;
+        expected.types = null;
         expected.orders = null;
 
         List<Future<Pending>> comparisons = new ArrayList<>();
 
         for(Source source : sources)
-            comparisons.add(pool.submit(() -> compare(source, digest(source.file(), solutions != null,
-                    mode == Mode.BOUNDARY, mode == Mode.FULL))));
+            comparisons.add(pool.submit(() -> compare(source,
+                    digest(source.file(), solutions != null, mode == Mode.BOUNDARY, mode == Mode.FULL))));
 
         List<Pending> pendings = new ArrayList<>();
 
@@ -406,9 +424,10 @@ final class QueryCheck
         List<String> notes = new ArrayList<>();
 
         if(mode == Mode.COUNT)
-            notes.add("cut by " + cuts() + (shape.reduced() ? " and REDUCED" : shape.ordered()
-                    ? " and not ordered by variables" : " and not ordered") + ", only the numbers of the solutions "
-                    + "are compared");
+            notes.add("cut by " + cuts()
+                    + (shape.reduced() ? " and REDUCED" :
+                            shape.ordered() ? " and not ordered by variables" : " and not ordered")
+                    + ", only the numbers of the solutions " + "are compared");
 
         if(mode == Mode.BOUNDARY)
             notes.add("cut by " + cuts() + ", the solutions ordered equally with those at the cut are compared only "
@@ -458,7 +477,11 @@ final class QueryCheck
                 digest.last = solution;
 
                 if(rows)
-                    digest.rows.add(hash(md5, key(solution)));
+                {
+                    String key = key(solution);
+                    digest.rows.add(hash(md5, key));
+                    digest.types.add(hash(md5, typedKey(key, solution)));
+                }
 
                 if(orders)
                     digest.orders.add(hash(md5, orderKey(solution)));
@@ -518,41 +541,24 @@ final class QueryCheck
 
         long[] missing = none;
         long[] unexpected = none;
+        long datatypes = 0;
+        long[] retyped = none;
 
         if(solutions != null)
         {
-            long[] actual = solutions(result);
             LongList onlyExpected = new LongList();
             LongList onlyActual = new LongList();
-
-            int i = 0;
-            int j = 0;
-
-            while(i < solutions.length && j < actual.length)
-            {
-                if(solutions[i] < actual[j])
-                {
-                    onlyExpected.add(solutions[i++]);
-                }
-                else if(solutions[i] > actual[j])
-                {
-                    onlyActual.add(actual[j++]);
-                }
-                else
-                {
-                    i++;
-                    j++;
-                }
-            }
-
-            while(i < solutions.length)
-                onlyExpected.add(solutions[i++]);
-
-            while(j < actual.length)
-                onlyActual.add(actual[j++]);
-
+            difference(solutions, solutions(result, result.rows), onlyExpected, onlyActual);
             missing = onlyExpected.toArray();
             unexpected = onlyActual.toArray();
+
+            // the solutions of the reference whose datatypes no solution of the result has, beyond the missing ones
+            LongList typedExpected = new LongList();
+            difference(typedSolutions, solutions(result, result.types), typedExpected, new LongList());
+            datatypes = Math.max(0, typedExpected.size() - missing.length);
+
+            if(datatypes > 0)
+                retyped = typedExpected.toArray();
         }
 
         boolean blankNodes = mode == Mode.FULL && !shape.reduced()
@@ -560,21 +566,59 @@ final class QueryCheck
 
         long[] tied = mode == Mode.BOUNDARY ? tied(result) : none;
 
-        if(problems.isEmpty() && missing.length == 0 && unexpected.length == 0 && !blankNodes
+        if(problems.isEmpty() && missing.length == 0 && unexpected.length == 0 && !blankNodes && datatypes == 0
                 && Arrays.equals(tied, expectedTied) && countProblem(result.count) == null)
             return null;
 
-        return new Pending(source, result.count, false, problems, blankNodes, tied, expectedTied.clone(), missing,
-                unexpected, examples);
+        Pending pending = new Pending(source, result.count, false, problems, blankNodes, tied, expectedTied.clone(),
+                missing, unexpected, examples);
+
+        pending.datatypes = datatypes;
+        pending.retyped = retyped.length > 1000 ? Arrays.copyOf(retyped, 1000) : retyped;
+
+        return pending;
     }
 
 
     /*
-     * Returns the hashes of the solutions of a result that are compared as a multiset (as a set for a REDUCED query),
-     * that is, all but those ordered equally with the solutions of the reference at the cuts, sorted; or null if the
-     * solutions are not compared.
+     * Collects the values that only the first and only the second sorted multiset has.
      */
-    private long[] solutions(Digest digest)
+    private static void difference(long[] first, long[] second, LongList onlyFirst, LongList onlySecond)
+    {
+        int i = 0;
+        int j = 0;
+
+        while(i < first.length && j < second.length)
+        {
+            if(first[i] < second[j])
+            {
+                onlyFirst.add(first[i++]);
+            }
+            else if(first[i] > second[j])
+            {
+                onlySecond.add(second[j++]);
+            }
+            else
+            {
+                i++;
+                j++;
+            }
+        }
+
+        while(i < first.length)
+            onlyFirst.add(first[i++]);
+
+        while(j < second.length)
+            onlySecond.add(second[j++]);
+    }
+
+
+    /*
+     * Returns the given hashes (of the keys, or of the keys with datatypes) of the solutions of a result that are
+     * compared as a multiset (as a set for a REDUCED query), that is, all but those ordered equally with the solutions
+     * of the reference at the cuts, sorted; or null if the solutions are not compared.
+     */
+    private long[] solutions(Digest digest, LongList hashes)
     {
         if(mode == Mode.COUNT || mode == Mode.NONE)
             return null;
@@ -583,15 +627,15 @@ final class QueryCheck
 
         if(boundary.length == 0)
         {
-            solutions = digest.rows.toArray();
+            solutions = hashes.toArray();
         }
         else
         {
             LongList list = new LongList();
 
-            for(int i = 0; i < digest.rows.size(); i++)
+            for(int i = 0; i < hashes.size(); i++)
                 if(boundary(digest.orders.get(i)) < 0)
-                    list.add(digest.rows.get(i));
+                    list.add(hashes.get(i));
 
             solutions = list.toArray();
         }
@@ -648,8 +692,7 @@ final class QueryCheck
             return solutions(count) + ", more than the limit " + shape.limit();
 
         if(shape.offset() == 0 && count < distinctSolutions)
-            return solutions(count) + ", fewer than the " + distinctSolutions
-                    + " distinct solutions of the reference";
+            return solutions(count) + ", fewer than the " + distinctSolutions + " distinct solutions of the reference";
 
         return null;
     }
@@ -685,6 +728,113 @@ final class QueryCheck
 
             if(unexpected.get(i) != null)
                 pendings.get(i).unexpectedRows = unexpected.get(i).get();
+        }
+
+        retypings(pendings);
+    }
+
+
+    /*
+     * Finds how the datatypes differ: reads the solutions of the reference whose datatypes the results do not have,
+     * and the solutions of the results of the same values in other datatypes.
+     */
+    private void retypings(List<Pending> pendings) throws InterruptedException, ExecutionException
+    {
+        TreeSet<Long> wanted = new TreeSet<>();
+
+        for(Pending pending : pendings)
+            for(long hash : pending.retyped)
+                wanted.add(hash);
+
+        if(wanted.isEmpty())
+            return;
+
+        long[] hashes = wanted.stream().mapToLong(Long::longValue).toArray();
+
+        // the solutions of the reference by the hashes of their keys with datatypes
+        Map<Long, SortedMap<String, Term>> typed = new HashMap<>();
+        MessageDigest md5 = digests.get();
+
+        try
+        {
+            ResultFile.read(reference, solution -> {
+                long hash = hash(md5, typedKey(key(solution), solution));
+
+                if(Arrays.binarySearch(hashes, hash) >= 0)
+                    typed.putIfAbsent(hash, solution);
+            });
+        }
+        catch(IOException | ResultFile.InvalidResultException | RuntimeException e)
+        {
+            // the reference was read already, the datatypes are not described if it cannot be read again
+        }
+
+        List<Future<?>> tasks = new ArrayList<>();
+
+        for(Pending pending : pendings)
+        {
+            // the solutions of the reference by the hashes of their keys, apart from the solutions the result misses
+            Map<Long, SortedMap<String, Term>> solutions = new HashMap<>();
+
+            for(long hash : pending.retyped)
+            {
+                SortedMap<String, Term> solution = typed.get(hash);
+
+                if(solution == null || solutions.size() == 100)
+                    continue;
+
+                long value = hash(md5, key(solution));
+
+                if(Arrays.binarySearch(pending.missing, value) < 0)
+                    solutions.putIfAbsent(value, solution);
+            }
+
+            if(solutions.isEmpty())
+                continue;
+
+            tasks.add(pool.submit(() -> {
+                MessageDigest own = digests.get();
+
+                try
+                {
+                    ResultFile.read(pending.source.file(), solution -> {
+                        SortedMap<String, Term> expected = solutions.get(hash(own, key(solution)));
+
+                        if(expected != null && !datatypes(expected).equals(datatypes(solution)))
+                            describe(expected, solution, pending.retypings);
+                    });
+                }
+                catch(IOException | ResultFile.InvalidResultException | RuntimeException e)
+                {
+                    // the datatypes are not described if the result cannot be read again
+                }
+            }));
+        }
+
+        for(Future<?> task : tasks)
+            task.get();
+    }
+
+
+    /*
+     * Adds how the datatypes of the literals of a solution of a result differ from those of a solution of the
+     * reference of the same values.
+     */
+    private void describe(SortedMap<String, Term> expected, SortedMap<String, Term> actual, Set<String> retypings)
+    {
+        for(Entry<String, Term> binding : expected.entrySet())
+        {
+            Term term = actual.get(binding.getKey());
+
+            if(term == null || shape.samples().contains(binding.getKey()))
+                continue;
+
+            String datatype = Terms.datatype(binding.getValue());
+            String other = Terms.datatype(term);
+
+            if(!datatype.equals(other))
+                retypings.add("?" + binding.getKey() + " " + Terms.formatDatatype(other) + " instead of "
+                        + Terms.formatDatatype(datatype));
         }
     }
 
@@ -767,8 +917,7 @@ final class QueryCheck
                 double window = 2e-6 * Math.abs(value) + 1e-9;
                 List<Integer> list = new ArrayList<>();
 
-                for(int k = lowerBound(sorted, value - window); k < sorted.length && !(sorted[k] > value + window);
-                        k++)
+                for(int k = lowerBound(sorted, value - window); k < sorted.length && !(sorted[k] > value + window); k++)
                 {
                     int j = order[k];
                     comparisons++;
@@ -793,6 +942,16 @@ final class QueryCheck
                 {
                     unexpectedPaired[unexpected.get(j)] = true;
                     missingPaired[missing.get(pairs[j])] = true;
+
+                    // the paired solutions may differ by datatypes too
+                    Row expectedRow = pending.missingRows.get(pending.missing[missing.get(pairs[j])]);
+                    Row actualRow = pending.unexpectedRows.get(pending.unexpected[unexpected.get(j)]);
+
+                    if(!datatypes(expectedRow.solution()).equals(datatypes(actualRow.solution())))
+                    {
+                        pending.datatypes++;
+                        describe(expectedRow.solution(), actualRow.solution(), pending.retypings);
+                    }
                 }
             }
         }
@@ -1077,13 +1236,20 @@ final class QueryCheck
         if(count != null)
             problems.add(count);
 
+        boolean differs = !problems.isEmpty();
+
+        if(pending.datatypes > 0)
+            problems.add(solutions(pending.datatypes) + " with other datatypes"
+                    + (pending.retypings.isEmpty() ? "" : ": " + String.join(", ", pending.retypings)));
+
         if(problems.isEmpty())
             return null;
 
         long signature = pending.large ? pending.signature : signature(pending.missing, pending.unexpected);
 
-        return new Difference(problems, pending.missingCount, pending.unexpectedCount, signature,
-                examples(pending.missing, pending.missingRows), examples(pending.unexpected, pending.unexpectedRows));
+        return new Difference(problems, differs, pending.datatypes, pending.missingCount, pending.unexpectedCount,
+                signature, examples(pending.missing, pending.missingRows),
+                examples(pending.unexpected, pending.unexpectedRows));
     }
 
 
@@ -1147,6 +1313,39 @@ final class QueryCheck
         }
 
         return key.toString();
+    }
+
+
+    /*
+     * Returns the key of a solution extended by the datatypes of its literals.
+     */
+    private String typedKey(String key, SortedMap<String, Term> solution)
+    {
+        StringBuilder typed = new StringBuilder();
+        Terms.append(typed, key);
+        Terms.append(typed, datatypes(solution));
+        return typed.toString();
+    }
+
+
+    /*
+     * Returns the datatypes of the literals of a solution (without those of SAMPLE, whose values are not determined),
+     * with the names of their variables.
+     */
+    private String datatypes(SortedMap<String, Term> solution)
+    {
+        StringBuilder datatypes = new StringBuilder();
+
+        for(Entry<String, Term> binding : solution.entrySet())
+        {
+            if(!shape.samples().contains(binding.getKey()))
+            {
+                Terms.append(datatypes, binding.getKey());
+                Terms.append(datatypes, Terms.datatype(binding.getValue()));
+            }
+        }
+
+        return datatypes.toString();
     }
 
 

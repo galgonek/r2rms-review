@@ -25,19 +25,20 @@ import javax.xml.namespace.QName;
  * The key of a term stands for its value, so that two terms written in different lexical forms of one value get the
  * same key: an IRI stands for its text, a language-tagged string for its text, its tag in lower case and its base
  * direction, a simple literal is an xsd:string, and the literals of the XSD datatypes whose values have several lexical
- * forms stand for their values: all the integer types and xsd:decimal share one value space (xsd:int 1 is xsd:integer 1
- * and xsd:decimal 1.0), so do xsd:float and xsd:double, then xsd:boolean, xsd:dateTime (an instant when it has a time
- * zone), xsd:date, xsd:time and the durations. Any other literal, and one whose lexical form is not valid, stands for
+ * forms stand for their values: all the numeric types share one value space, as engines differ in the numeric types
+ * they give the same values (xsd:int 1 is xsd:integer 1, xsd:decimal 1.0 and xsd:double 1.0e0, the value of a floating
+ * point number being its exact binary value), then xsd:boolean, xsd:dateTime (an instant when it has a time zone),
+ * xsd:date, xsd:time and the durations. Any other literal, and one whose lexical form is not valid, stands for
  * its datatype and lexical form. Line breaks are compared as LF, because the XML of a result normalizes the line breaks
  * it does not escape. A blank node stands for the order of its first occurrence in the solution, which the caller
  * numbers, as the labels of blank nodes are local to a result.
  *
  * The numbers of xsd:decimal, xsd:float and xsd:double need not be exact, as an engine may compute a division or a sum
  * of floating point numbers to another precision than the reference, so they are also compared approximately: two of
- * them of the same value space are equal when they differ at most by the precision of the less precise of them,
+ * them are equal when they differ at most by the precision of the less precise of them,
  * provided it is written with at least 10 significant digits (6 for xsd:float) or with at least 10 fractional digits
- * while the other one has more, and two floating point numbers also when they differ relatively at most by 1e-12
- * (1e-6 for xsd:float). A number written with fewer digits is taken as exact, and so are the integers.
+ * while the other one has more, and when one of them is a floating point number also when they differ relatively at
+ * most by 1e-12 (1e-6 for xsd:float). A number written with fewer digits is taken as exact, and so are the integers.
  *
  * The lexical forms of xsd:decimal may have an exponent, as QLever writes them so, and those of the integer types may
  * be out of the range of their types, as QLever writes counts as xsd:int.
@@ -52,7 +53,9 @@ final class Terms
 
     private static final String xsd = "http://www.w3.org/2001/XMLSchema#";
     private static final String xsdString = xsd + "string";
-    private static final Pattern floatingPattern = Pattern.compile("[+-]?([0-9]+(\\.[0-9]*)?|\\.[0-9]+)([eE][+-]?[0-9]+)?");
+    private static final String rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+    private static final Pattern floatingPattern = Pattern
+            .compile("[+-]?([0-9]+(\\.[0-9]*)?|\\.[0-9]+)([eE][+-]?[0-9]+)?");
     private static final Pattern integerPattern = Pattern.compile("[+-]?[0-9]+");
     private static final Pattern booleanPattern = Pattern.compile("true|false");
     private static final Pattern decimalPattern = Pattern.compile("[+-]?[0-9]*\\.[0-9]+");
@@ -79,8 +82,8 @@ final class Terms
         return switch(term)
         {
             case Term.Iri iri -> "I" + iri.value();
-            case Term.BlankNode node -> "_" + (labels == null ? 0 : labels.computeIfAbsent(node.label(),
-                    _ -> labels.size()));
+            case Term.BlankNode node -> "_"
+                    + (labels == null ? 0 : labels.computeIfAbsent(node.label(), _ -> labels.size()));
             case Term.Literal literal -> key(literal);
             case Term.Triple triple ->
             {
@@ -209,7 +212,7 @@ final class Terms
                 else if(value.isInfinite())
                     return value > 0 ? "FINF" : "F-INF";
                 else
-                    return "F" + value;
+                    return "D" + canonical(new BigDecimal(value));
             }
 
             case BOOLEAN:
@@ -244,10 +247,9 @@ final class Terms
         {
             case xsdString -> Kind.STRING;
             case xsd + "decimal" -> Kind.DECIMAL;
-            case xsd + "integer", xsd + "nonPositiveInteger", xsd + "negativeInteger", xsd + "long", xsd + "int",
-                    xsd + "short", xsd + "byte", xsd + "nonNegativeInteger", xsd + "unsignedLong",
-                    xsd + "unsignedInt", xsd + "unsignedShort", xsd + "unsignedByte", xsd + "positiveInteger" ->
-                Kind.INTEGER;
+            case xsd + "integer", xsd + "nonPositiveInteger", xsd + "negativeInteger", xsd + "long", xsd + "int", xsd
+                    + "short", xsd + "byte", xsd + "nonNegativeInteger", xsd + "unsignedLong", xsd + "unsignedInt", xsd
+                            + "unsignedShort", xsd + "unsignedByte", xsd + "positiveInteger" -> Kind.INTEGER;
             case xsd + "float" -> Kind.FLOAT;
             case xsd + "double" -> Kind.DOUBLE;
             case xsd + "boolean" -> Kind.BOOLEAN;
@@ -360,8 +362,8 @@ final class Terms
             return null;
 
         BigDecimal day = BigDecimal.valueOf(86400);
-        BigDecimal seconds = seconds(calendar).add(BigDecimal.valueOf(calendar.getHour() * 3600L
-                + calendar.getMinute() * 60L));
+        BigDecimal seconds = seconds(calendar)
+                .add(BigDecimal.valueOf(calendar.getHour() * 3600L + calendar.getMinute() * 60L));
         boolean zoned = calendar.getTimezone() != DatatypeConstants.FIELD_UNDEFINED;
 
         if(zoned)
@@ -428,8 +430,8 @@ final class Terms
 
 
     /*
-     * Returns the value space of the term if it is a number compared approximately: D for decimals, F for floating
-     * point numbers; null for any other term.
+     * Returns the value space of the term if it is a number compared approximately (N for xsd:decimal, xsd:float and
+     * xsd:double), or null for any other term.
      */
     static String approximateFamily(Term term)
     {
@@ -440,13 +442,13 @@ final class Terms
             switch(kind(literal.datatype()))
             {
                 case DECIMAL:
-                    return decimal(text, false) != null ? "D" : null;
+                    return decimal(text, false) != null ? "N" : null;
 
                 case FLOAT:
                 case DOUBLE:
                 {
                     Double value = floating(text, kind(literal.datatype()) == Kind.FLOAT);
-                    return value != null && Double.isFinite(value) ? "F" : null;
+                    return value != null && Double.isFinite(value) ? "N" : null;
                 }
 
                 default:
@@ -471,7 +473,7 @@ final class Terms
 
 
     /*
-     * Returns whether two numbers of the same value space, as approximateFamily() gives it, are equal approximately.
+     * Returns whether two numbers compared approximately, as approximateFamily() gives them, are equal approximately.
      */
     static boolean approximatelyEqual(Term.Literal first, Term.Literal second)
     {
@@ -480,13 +482,14 @@ final class Terms
 
         Kind firstKind = kind(first.datatype());
         Kind secondKind = kind(second.datatype());
-        boolean floating = firstKind == Kind.FLOAT || firstKind == Kind.DOUBLE;
+        boolean floating = firstKind == Kind.FLOAT || firstKind == Kind.DOUBLE || secondKind == Kind.FLOAT
+                || secondKind == Kind.DOUBLE;
         boolean single = firstKind == Kind.FLOAT || secondKind == Kind.FLOAT;
 
         if(floating)
         {
-            double a = floating(first.lexical().trim(), firstKind == Kind.FLOAT);
-            double b = floating(second.lexical().trim(), secondKind == Kind.FLOAT);
+            double a = approximateValue(first);
+            double b = approximateValue(second);
 
             if(Math.abs(a - b) <= (single ? 1e-6 : 1e-12) * Math.max(Math.abs(a), Math.abs(b)))
                 return true;
@@ -503,6 +506,34 @@ final class Terms
                 .add(BigDecimal.ONE.scaleByPowerOfTen(-fine.scale()));
 
         return x.subtract(y).abs().compareTo(tolerance) <= 0;
+    }
+
+
+    /*
+     * Returns the datatype of a literal (xsd:string of a simple literal, rdf:langString or rdf:dirLangString of a
+     * language-tagged string, xsd:integer of the types derived from it, which engines give integers of the same values
+     * in, as xsd:int counts), those of the parts of a triple term, or an empty text for any other term.
+     */
+    static String datatype(Term term)
+    {
+        return switch(term)
+        {
+            case Term.Literal literal -> literal.language() != null ?
+                    rdf + (literal.direction() != null ? "dirLangString" : "langString") : literal.datatype() == null ?
+                            xsdString : kind(literal.datatype()) == Kind.INTEGER ? xsd + "integer" : literal.datatype();
+            case Term.Triple triple -> "(" + datatype(triple.subject()) + " " + datatype(triple.predicate()) + " "
+                    + datatype(triple.object()) + ")";
+            default -> "";
+        };
+    }
+
+
+    /*
+     * Returns the text of a datatype, as datatype() gives it, in the report.
+     */
+    static String formatDatatype(String datatype)
+    {
+        return datatype.isEmpty() ? "no literal" : datatype.startsWith("(") ? datatype : iri(datatype);
     }
 
 
@@ -552,8 +583,8 @@ final class Terms
                 case '\n' -> text.append("\\n");
                 case '\r' -> text.append("\\r");
                 case '\t' -> text.append("\\t");
-                default -> text.append(c < 0x20 || c == 0x7F ? String.format(Locale.ROOT, "\\u%04X", c)
-                        : Character.toString(c));
+                default -> text.append(
+                        c < 0x20 || c == 0x7F ? String.format(Locale.ROOT, "\\u%04X", c) : Character.toString(c));
             }
         });
 
