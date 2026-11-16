@@ -35,7 +35,8 @@ import cz.iocb.nextprot.test.QueryCheck.Source;
  * The results of the query set lie in a directory with a subdirectory for each engine (named by bin/test.sh after the
  * server, the mapping, the method and the number of CPUs), which has a subdirectory run-<i> for each run, holding
  * <query>.xml for a query that the engine answered in time; a query that failed or timed out has <query>.txt instead,
- * and is ignored, as is an older <query>.xml left there by an earlier test. The reference results lie in another
+ * and is ignored, as is an older <query>.xml left there by an earlier test. Only the results of the last run of each
+ * engine are checked. The reference results lie in another
  * directory as <query>.xml. Each result is compared with the reference of its query as QueryCheck describes, using the
  * queries of the query set if they are given.
  *
@@ -166,10 +167,12 @@ public class Check
             matched.addAll(matching);
             counts.put(engine.getFileName().toString(), new int[3]);
 
-            for(Path run : runs)
-                for(Path file : files(run))
-                    sources.computeIfAbsent(id(file), _ -> new ArrayList<>())
-                            .add(new Source(engine.getFileName().toString(), run.getFileName().toString(), file));
+            // only the last run, as ordered by the numbers of the runs
+            Path run = runs.getLast();
+
+            for(Path file : files(run))
+                sources.computeIfAbsent(id(file), _ -> new ArrayList<>())
+                        .add(new Source(engine.getFileName().toString(), run.getFileName().toString(), file));
         }
 
         for(String pattern : patterns.keySet())
@@ -279,13 +282,9 @@ public class Check
             Difference difference = group.getKey();
 
             List<String> engines = new ArrayList<>();
-            Map<String, List<String>> runs = new LinkedHashMap<>();
 
             for(Source source : group.getValue())
-                runs.computeIfAbsent(source.engine(), _ -> new ArrayList<>()).add(source.run());
-
-            for(Entry<String, List<String>> engine : runs.entrySet())
-                engines.add(engine.getKey() + " (" + String.join(", ", engine.getValue()) + ")");
+                engines.add(source.engine());
 
             String line = "  ";
 
@@ -364,7 +363,7 @@ public class Check
         String format = "%-" + length + "s %9s %9s %9s%n";
         int[] total = new int[3];
 
-        out.println("summary (the numbers of the results of all the runs, one result for a query in a run):");
+        out.println("summary (the numbers of the results of the last runs, one result for a query):");
         out.printf(format, "engine", "compared", "different", "datatypes");
 
         for(Entry<String, int[]> engine : counts.entrySet())
