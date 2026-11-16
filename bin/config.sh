@@ -7,6 +7,10 @@ DBBASEDIR="${BASE}/db"
 LOGBASEDIR="${BASE}/log/create"
 OUTBASEDIR="${BASE}/log/test"
 
+# the reference results of the query sets, which bin/check.sh compares the results in OUTBASEDIR with: a directory for
+# each query set, holding <query>.xml for each query
+REFBASEDIR="${BASE}/references"
+
 # the caches of the Sparqloscope benchmark generator, reused by the next run; remove them when the QLever index changes
 SPARQLOSCOPEDIR="${BASE}/sparqloscope"
 
