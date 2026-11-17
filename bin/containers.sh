@@ -43,7 +43,7 @@ start_postgresql()
 #   initializes an empty data directory with the user root@localhost without a password
 start_mariadb()
 {
-  "${CONTAINER}" run --detach --name nextprot-mariadb "${CONTAINER_USER[@]}" --publish "${PUBLISH_ADDRESS}:3306:3306" --volume "$1:/var/lib/mysql" --volume "${PWD}/etc/mariadb/mariadb.cnf:/etc/mysql/conf.d/nextprot.cnf:ro" --env MARIADB_ALLOW_EMPTY_ROOT_PASSWORD=1 --env MARIADB_ROOT_HOST=localhost "${MARIADB_IMAGE}" "${@:2}"
+  "${CONTAINER}" run --detach --name nextprot-mariadb "${CONTAINER_USER[@]}" --ipc=host --publish "${PUBLISH_ADDRESS}:3306:3306" --volume "$1:/var/lib/mysql" --volume "${PWD}/etc/mariadb/mariadb.cnf:/etc/mysql/conf.d/nextprot.cnf:ro" --env MARIADB_ALLOW_EMPTY_ROOT_PASSWORD=1 --env MARIADB_ROOT_HOST=localhost "${MARIADB_IMAGE}" "${@:2}"
 
   # the temporary server initializing the data directory does not listen on TCP; ping succeeds without a user
   wait_for_server mariadb mariadb-admin --protocol=tcp ping
@@ -56,7 +56,7 @@ start_virtuoso()
 {
   local PORT="$(sed -n -r 's/^ServerPort *= *([0-9]+).*/\1/p' "$2")"
 
-  "${CONTAINER}" run --detach --name nextprot-virtuoso "${CONTAINER_USER[@]}" --publish "${PUBLISH_ADDRESS}:1111:1111" --publish "${PUBLISH_ADDRESS}:${PORT}:${PORT}" --volume "$1:/database" --volume "$2:/etc/virtuoso.ini:ro" "${@:3}" "${VIRTUOSO_IMAGE}" +configfile /etc/virtuoso.ini
+  "${CONTAINER}" run --detach --name nextprot-virtuoso "${CONTAINER_USER[@]}" --ipc=host --publish "${PUBLISH_ADDRESS}:1111:1111" --publish "${PUBLISH_ADDRESS}:${PORT}:${PORT}" --volume "$1:/database" --volume "$2:/etc/virtuoso.ini:ro" "${@:3}" "${VIRTUOSO_IMAGE}" +configfile /etc/virtuoso.ini
 
   wait_for_server virtuoso isql 1111 dba dba "EXEC=status();"
 }
@@ -66,7 +66,7 @@ start_virtuoso()
 #   serves the index nextprot on the port 8888; the server ends on the stop signal only under an init process
 start_qlever()
 {
-  "${CONTAINER}" run --detach --name nextprot-qlever "${CONTAINER_USER[@]}" --init --publish "${PUBLISH_ADDRESS}:8888:8888" --volume "$1:/index" --workdir /index --entrypoint qlever-server "${QLEVER_IMAGE}" -i nextprot -p 8888 "${@:2}"
+  "${CONTAINER}" run --detach --name nextprot-qlever "${CONTAINER_USER[@]}" --ipc=host --init --publish "${PUBLISH_ADDRESS}:8888:8888" --volume "$1:/index" --workdir /index --entrypoint qlever-server "${QLEVER_IMAGE}" -i nextprot -p 8888 "${@:2}"
 
   wait_for_server qlever curl --silent --fail http://localhost:8888/ping
 }
