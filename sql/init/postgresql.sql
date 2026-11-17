@@ -30,7 +30,13 @@ alter system set join_collapse_limit = '128';
 create user nextprot with login password 'password';
 create user sparql with login password 'password';
 
-create database nextprot owner nextprot;
+create database nextprot owner nextprot
+  template template0
+  encoding 'UTF8'
+  locale_provider builtin
+  builtin_locale 'PG_UNICODE_FAST'
+  locale 'C.UTF-8';
+
 \connect nextprot
 
 create schema nextprot;
