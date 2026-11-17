@@ -12,7 +12,6 @@ CPUS="${3-12}"
 
 
 ./bin/test.sh qlever native rdf "${QUERYSET}" "${COUNT}"
-./bin/test.sh qlever native rdf "${QUERYSET}" "${COUNT}" "${CPUS}"
 
 ./bin/test.sh virtuoso ldv integer "${QUERYSET}" "${COUNT}"
 ./bin/test.sh virtuoso ldv string "${QUERYSET}" "${COUNT}"
@@ -34,6 +33,8 @@ CPUS="${3-12}"
 ./bin/test.sh graphdb native rdf "${QUERYSET}" "${COUNT}"
 ./bin/test.sh blazegraph native rdf "${QUERYSET}" "${COUNT}"
 
+
+./bin/test.sh qlever native rdf "${QUERYSET}" "${COUNT}" "${CPUS}"
 
 ./bin/test.sh virtuoso ldv integer "${QUERYSET}" "${COUNT}" "${CPUS}"
 ./bin/test.sh virtuoso ldv string "${QUERYSET}" "${COUNT}" "${CPUS}"
