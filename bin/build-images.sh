@@ -15,7 +15,7 @@ PGSPARQL_COMMIT="$(git ls-remote --exit-code "${PGSPARQL_REPOSITORY}" "refs/head
 
 "${CONTAINER}" build --tag "${POSTGRESQL_IMAGE}" --build-arg BASE_IMAGE="${POSTGRESQL_BASE_IMAGE}" --build-arg PGSPARQL_REPOSITORY="${PGSPARQL_REPOSITORY}" --build-arg PGSPARQL_COMMIT="${PGSPARQL_COMMIT}" etc/postgresql
 
-"${CONTAINER}" build --tag "${VIRTUOSO_IMAGE}" --build-arg BASE_IMAGE="${VIRTUOSO_BASE_IMAGE}" etc/virtuoso
+"${CONTAINER}" build --tag "${VIRTUOSO_IMAGE}" --build-arg GIT_TAG="${VIRTUOSO_COMMIT}" --build-arg TARGETPLATFORM=$(arch) etc/virtuoso
 
 "${CONTAINER}" build --tag "${SPARQLOSCOPE_IMAGE}" --build-arg BASE_IMAGE="${QLEVER_IMAGE}" --build-arg SPARQLOSCOPE_REPOSITORY="${SPARQLOSCOPE_REPOSITORY}" --build-arg SPARQLOSCOPE_COMMIT="${SPARQLOSCOPE_COMMIT}" etc/sparqloscope
 
