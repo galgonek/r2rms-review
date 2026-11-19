@@ -42,10 +42,12 @@ start_postgresql()
 
 
 # start_mariadb <data directory> [<server option>...]
-#   initializes an empty data directory with the user root@localhost without a password
+#   initializes an empty data directory with the user root@localhost without a password; the server does its I/O with
+#   io_uring, which the default seccomp profile of the runtime does not allow, so it runs without a seccomp profile
+#   instead of falling back to the asynchronous I/O of Linux
 start_mariadb()
 {
-  "${CONTAINER}" run --detach --name nextprot-mariadb "${CONTAINER_USER[@]}" --ipc=host --publish "${PUBLISH_ADDRESS}:3306:3306" --volume "$1:/var/lib/mysql" --volume "${PWD}/etc/mariadb/mariadb.cnf:/etc/mysql/conf.d/nextprot.cnf:ro" --env MARIADB_ALLOW_EMPTY_ROOT_PASSWORD=1 --env MARIADB_ROOT_HOST=localhost "${MARIADB_IMAGE}" "${@:2}"
+  "${CONTAINER}" run --detach --name nextprot-mariadb "${CONTAINER_USER[@]}" --ipc=host --security-opt seccomp=unconfined --publish "${PUBLISH_ADDRESS}:3306:3306" --volume "$1:/var/lib/mysql" --volume "${PWD}/etc/mariadb/mariadb.cnf:/etc/mysql/conf.d/nextprot.cnf:ro" --env MARIADB_ALLOW_EMPTY_ROOT_PASSWORD=1 --env MARIADB_ROOT_HOST=localhost "${MARIADB_IMAGE}" "${@:2}"
 
   # the temporary server initializing the data directory does not listen on TCP; ping succeeds without a user
   wait_for_server mariadb mariadb-admin --protocol=tcp ping

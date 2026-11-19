@@ -1,7 +1,22 @@
 [mariadb]
-character-set-server    = utf8mb4
-collation-server        = utf8mb4_general_ci
-max_connections         = 10
-innodb_buffer_pool_size = 51G
-innodb_log_file_size    = 4G
-max_allowed_packet      = 1G
+character-set-server                = utf8mb4
+collation-server                    = utf8mb4_general_ci
+max_connections                     = 10
+innodb_log_file_size                = 4G
+max_allowed_packet                  = 1G
+
+# InnoDB reads its files past the page cache of the system (O_DIRECT), so the buffer pool is all the cache the data
+# get; 80 GB of the 128 GB of the machine leave room for the endpoint of Ontop, temporary tables and the system
+innodb_buffer_pool_size             = 80G
+
+# the temporary tables of a query stay in memory up to 4 GB, larger ones go to Aria tables, which have a page cache of
+# 4 GB; a sort gets 64 MB
+tmp_table_size                      = 4G
+max_heap_table_size                 = 4G
+aria_pagecache_buffer_size          = 4G
+sort_buffer_size                    = 64M
+
+# the server starts cold after the caches of the system are dropped, like the other servers, not with the pages its
+# buffer pool held when it stopped last time
+innodb_buffer_pool_dump_at_shutdown = OFF
+innodb_buffer_pool_load_at_startup  = OFF
