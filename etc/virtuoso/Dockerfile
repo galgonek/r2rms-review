@@ -48,7 +48,8 @@ ENV GEOS_VERSION=3.5.1
 
 
 #
-#  Build environment
+#  Build environment; -march=native compiles for the processor of the machine
+#  building the image, so build it on the machine that runs the tests
 #
 ENV VIRTUOSO_HOME=/opt/virtuoso-opensource
 ENV LC_ALL=C.UTF-8
