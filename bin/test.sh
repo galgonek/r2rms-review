@@ -131,8 +131,11 @@ case "${SERVER}" in
     ;;
 
   "qlever")
-    # no cache, the timeout of the other stores; -j is the number of simultaneous queries
-    start_qlever "${DATADIR}" -j "${CPU}" -m 128G -c 0B -e 0B -k 0 -s 1000s -a _F7YYBYaoSzs9
+    # one query at a time, no cache, the timeout of the other stores; a query runs on as many threads as the others
+    # get processor cores (max-num-threads-per-query bounds all its parallel tasks, sort-num-tasks-in-flight its
+    # sorts); 100 GB for the queries leave the rest of the memory to the index and the system, and a sort stays in
+    # memory up to 32 GB
+    start_qlever "${DATADIR}" -j 1 -m 100G -s 1000s --set-runtime-parameter disable-caching=true --set-runtime-parameter max-num-threads-per-query="${CPU}" --set-runtime-parameter sort-num-tasks-in-flight="${CPU}" --set-runtime-parameter sort-in-memory-threshold=32G
 
     ENDPOINT="http://localhost:8888"
     ;;
