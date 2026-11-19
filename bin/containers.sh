@@ -29,10 +29,12 @@ wait_for_server()
 # start_postgresql <data directory> [<server option>...]
 #   initializes an empty data directory as initdb --encoding=UTF8 --locale=C --username=postgres would; the server
 #   listens on all addresses and takes pg_hba.conf from the image, so a data directory of a server running outside a
-#   container works as well; the parallel queries share the memory of the host, the 64 MB of a container are too little
+#   container works as well; the parallel queries share the memory of the host, the 64 MB of a container are too little;
+#   the default seccomp profile of the runtime does not allow io_uring, which the server does its I/O with (io_method),
+#   so the server runs without a seccomp profile, as it would not start otherwise
 start_postgresql()
 {
-  "${CONTAINER}" run --detach --name nextprot-postgresql "${CONTAINER_USER[@]}" --ipc=host --publish "${PUBLISH_ADDRESS}:5432:5432" --volume "$1:/var/lib/postgresql/data" --env PGDATA=/var/lib/postgresql/data --env POSTGRES_PASSWORD=password --env POSTGRES_INITDB_ARGS="--encoding=UTF8 --locale=C" "${POSTGRESQL_IMAGE}" -c listen_addresses='*' -c hba_file=/etc/postgresql/pg_hba.conf "${@:2}"
+  "${CONTAINER}" run --detach --name nextprot-postgresql "${CONTAINER_USER[@]}" --ipc=host --security-opt seccomp=unconfined --publish "${PUBLISH_ADDRESS}:5432:5432" --volume "$1:/var/lib/postgresql/data" --env PGDATA=/var/lib/postgresql/data --env POSTGRES_PASSWORD=password --env POSTGRES_INITDB_ARGS="--encoding=UTF8 --locale=C" "${POSTGRESQL_IMAGE}" -c listen_addresses='*' -c hba_file=/etc/postgresql/pg_hba.conf "${@:2}"
 
   # the temporary server initializing the data directory does not listen on TCP
   wait_for_server postgresql pg_isready --host=127.0.0.1
