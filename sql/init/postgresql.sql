@@ -7,15 +7,19 @@ alter system set checkpoint_completion_target = '0.9';
 alter system set default_statistics_target = '1000';
 alter system set random_page_cost = '1.1';
 alter system set effective_io_concurrency = '200';
+ALTER SYSTEM SET maintenance_io_concurrency = '200';
+ALTER SYSTEM SET io_method = 'io_uring'; 
 
-alter system set shared_buffers = '16GB';
-alter system set effective_cache_size = '48GB';
-alter system set maintenance_work_mem = '2GB';
-alter system set work_mem = '1GB';
+alter system set shared_buffers = '32GB';
+alter system set effective_cache_size = '96GB';
+alter system set maintenance_work_mem = '8GB';
+alter system set work_mem = '2GB';
+ALTER SYSTEM SET autovacuum_work_mem = '2GB';
 
 alter system set wal_buffers = '16MB';
 alter system set min_wal_size = '4GB';
 alter system set max_wal_size = '16GB';
+ALTER SYSTEM SET wal_compression = 'lz4';
 
 alter system set max_worker_processes = '12';
 alter system set max_parallel_workers = '12';
@@ -26,6 +30,7 @@ alter system set geqo = 'off';
 alter system set constraint_exclusion = 'on';
 alter system set from_collapse_limit = '128'; 
 alter system set join_collapse_limit = '128';
+alter system set jit = 'off';
 
 create user nextprot with login password 'password';
 create user sparql with login password 'password';

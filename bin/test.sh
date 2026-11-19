@@ -82,7 +82,16 @@ case "${SERVER}" in
     ;;
 
   "postgresql")
-    start_postgresql "${DATADIR}" -c max_parallel_workers_per_gather=$(("${CPU}" - 1))
+    # work_mem is the memory of one process for a sort or a hash table, so in a parallel run the processes of a query
+    # get 12 GB for one together (work_mem times hash_mem_multiplier 2 times the processes); a serial run keeps the
+    # work_mem of the configuration
+    OPTIONS=()
+
+    if [ "${CPU}" != "1" ]; then
+      OPTIONS=(-c work_mem="$((6144 / CPU))MB")
+    fi
+
+    start_postgresql "${DATADIR}" -c max_parallel_workers_per_gather=$(("${CPU}" - 1)) "${OPTIONS[@]}"
 
     ENDPOINT="http://localhost:8080/sparql/"
     ;;
