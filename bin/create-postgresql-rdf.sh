@@ -34,7 +34,10 @@ cat "sql/init/postgresql-${MAPPING}.sql" | in_container "${SERVER}" psql -v ON_E
 
 stop_container "${SERVER}" "${LOGDIR}/${SERVER}.log"
 
-start_postgresql "${DATADIR}" -c shared_buffers=1GB -c effective_cache_size=3GB -c maintenance_work_mem=512MB -c work_mem=256MB
+# the load runs with the memory of the configuration and more for the index builds, which get parallel workers, and
+# logs as little as it can: a table or an index filled in the transaction creating it is not logged (wal_level
+# minimal), and no page is logged whole (full_page_writes), as a load that fails is started anew anyway
+start_postgresql "${DATADIR}" -c maintenance_work_mem=16GB -c max_parallel_maintenance_workers=11 -c wal_level=minimal -c max_wal_senders=0 -c full_page_writes=off
 
 
 cat sql/rdf/schema.sql | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/schema.log"
@@ -47,7 +50,9 @@ cat sql/rdf/settings.sql | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --ec
 
 cat sql/rdf/statistics.sql | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/statistics.log"
 
-echo "analyze verbose" | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/analyze.log"
+# autovacuum is off, so vacuum sets the hint bits and the visibility map now; the queries would write every page they
+# read first otherwise, and an index-only scan would read the table for every row
+echo "vacuum (freeze, analyze, verbose)" | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/vacuum.log"
 
 
 stop_container "${SERVER}" "${LOGDIR}/${SERVER}.log"
