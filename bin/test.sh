@@ -147,7 +147,8 @@ case "${MAPPING}" in
     ;;
   "ontop")
     cd "${TMPDIR}"
-    "${ONTOPDIR}/ontop" endpoint --properties="${BASE}/etc/ontop/${SERVER}.properties" --mapping="${BASE}/etc/ontop/mapping-${METHOD}.obda" &
+    # the launcher of Ontop limits the heap to 512 MB unless ONTOP_JAVA_ARGS sets it
+    ONTOP_JAVA_ARGS="-Xmx16g" "${ONTOPDIR}/ontop" endpoint --properties="${BASE}/etc/ontop/${SERVER}.properties" --mapping="${BASE}/etc/ontop/mapping-${METHOD}.obda" &
     PID=$!
     cd -
     ;;
