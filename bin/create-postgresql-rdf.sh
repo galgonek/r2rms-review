@@ -11,8 +11,9 @@ fi
 
 
 # how the triples are stored: rdf keeps the terms in boxes in the table of the triples, rdfid numbers the terms in a
-# table of their own and keeps the triples as their numbers; both are made of the triples the rdf mode of the export
-# loads
+# table of their own and keeps the triples as their numbers, rdfmixed numbers only the IRIs and the blank nodes and
+# keeps the triples in two tables, by whether the object is numbered or a literal kept in a box; all are made of the
+# triples the rdf mode of the export loads
 MODE="${1-rdf}"
 MAPPING="idsm"
 SERVER="postgresql"

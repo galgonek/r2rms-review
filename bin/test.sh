@@ -27,6 +27,8 @@ elif [ "${METHOD}" = "string" ]; then
   MODE="direct"
 elif [ "${METHOD}" = "rdfid" ]; then
   MODE="rdfid"
+elif [ "${METHOD}" = "rdfmixed" ]; then
+  MODE="rdfmixed"
 else
   MODE="rdf"
 fi
