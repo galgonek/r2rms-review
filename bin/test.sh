@@ -113,7 +113,9 @@ case "${SERVER}" in
 
   "jena-tdb2")
     cd "${DATADIR}";
-    JVM_ARGS=-Xmx42G "${FUSEKI_BINDIR}/fuseki-server" --config="${BASE}/etc/jena/config.ttl" &
+    # TDB2 maps its files into memory, so they are cached by the system and the heap holds the intermediate results;
+    # 31 GB keep the object pointers compressed and leave the rest of the memory to the page cache
+    JVM_ARGS=-Xmx31G "${FUSEKI_BINDIR}/fuseki-server" --config="${BASE}/etc/jena/config.ttl" &
     PID=$!
     cd -
 
@@ -123,7 +125,9 @@ case "${SERVER}" in
   "blazegraph")
     CONFIG="${BASE}/etc/blazegraph/RWStore.properties"
     cd "${DATADIR}";
-    java -Djava.awt.headless=true -server -Xmx4g -XX:MaxDirectMemorySize=3000m -XX:+UseG1GC -Djetty.port=9999 -Djetty.resourceBase="${BLAZEGRAPH_HOME}/war/" -Djetty.home="${BLAZEGRAPH_HOME}/war/" -Djetty.overrideWebXml="${BLAZEGRAPH_HOME}/war/WEB-INF/override-web.xml" -DJETTY_XML="${BLAZEGRAPH_HOME}/conf/jetty.xml" -cp "${BLAZEGRAPH_HOME}/lib/*" com.bigdata.rdf.sail.webapp.NanoSparqlServer -jettyXml "${BLAZEGRAPH_HOME}/conf/jetty.xml" 9999 nextprot "${BASE}/etc/blazegraph/RWStore.properties" &
+    # the heap holds the intermediate results (some queries ran out of 4 GB) and the system caches the journal; 31 GB
+    # keep the object pointers compressed
+    java -Djava.awt.headless=true -server -Xmx31g -XX:MaxDirectMemorySize=3000m -XX:+UseG1GC -Djetty.port=9999 -Djetty.resourceBase="${BLAZEGRAPH_HOME}/war/" -Djetty.home="${BLAZEGRAPH_HOME}/war/" -Djetty.overrideWebXml="${BLAZEGRAPH_HOME}/war/WEB-INF/override-web.xml" -DJETTY_XML="${BLAZEGRAPH_HOME}/conf/jetty.xml" -cp "${BLAZEGRAPH_HOME}/lib/*" com.bigdata.rdf.sail.webapp.NanoSparqlServer -jettyXml "${BLAZEGRAPH_HOME}/conf/jetty.xml" 9999 nextprot "${BASE}/etc/blazegraph/RWStore.properties" &
     PID=$!
     cd -
 
