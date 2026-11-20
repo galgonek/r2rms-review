@@ -1,7 +1,7 @@
 # The Sparqloscope benchmark generator on the QLever image, built by bin/build-images.sh: the entry point is a Python
 # with the packages the generator needs, the generator lies in /sparqloscope
 
-ARG BASE_IMAGE=docker.io/adfreiburg/qlever:commit-16a682506e
+ARG BASE_IMAGE=docker.io/adfreiburg/qlever:commit-0ab2234a0d
 
 
 FROM ${BASE_IMAGE} AS fetch
