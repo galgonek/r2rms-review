@@ -58,6 +58,8 @@ public class Server
         servlet.setName("default");
         servlet.addInitParameter("resource", "config");
         servlet.addInitParameter("fetch-size", "0");
+        // the timeout of the other stores (in seconds), stated so that a change of the default does not change it
+        servlet.addInitParameter("timeout", "1000");
         servlet.setServletClass("cz.iocb.sparql.endpoint.EndpointServlet");
         servlet.setLoadOnStartup(1);
         servlet.setOverridable(true);

@@ -131,7 +131,9 @@ case "${SERVER}" in
     PID=$!
     cd -
 
-    ENDPOINT="http://localhost:9999/blazegraph/namespace/nextprot/sparql"
+    # Blazegraph limits the time of a query only when its web application or the request asks for it, so the request
+    # asks for the timeout of the other stores (in seconds)
+    ENDPOINT="http://localhost:9999/blazegraph/namespace/nextprot/sparql?timeout=1000"
     ;;
 
   "qlever")
