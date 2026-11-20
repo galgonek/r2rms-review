@@ -171,7 +171,7 @@ sleep "${SLEEP}"
 # test
 #
 
-java -cp "${BASE}/target/classes" cz.iocb.nextprot.test.Test "${ENDPOINT}" "${SETTINGS-}" "${QUERIES}" "${OUTDIR}" "${COUNT}"
+java -cp "${BASE}/target/classes" cz.iocb.nextprot.test.Test "${ENDPOINT}" "${SETTINGS-}" "${QUERIES}" "${OUTDIR}" "${COUNT}" "${SKIP_AFTER_TIMEOUT}"
 
 
 

@@ -33,7 +33,15 @@ public class Test
         """;
     // @formatter:on
 
+    // the time limit of a query in nanoseconds, the timeout of the engines; a result coming later is NA
+    private static final long TIME_LIMIT = 1000 * 1000000000l;
 
+
+    /*
+     * Arguments: the endpoint, the settings preceding each query, the file of the queries, the output directory, the
+     * number of runs, and whether a query that exceeded the time limit in a run is not run again in the following runs
+     * (true or false).
+     */
     public static void main(String[] args) throws Exception
     {
         String endpoint = args[0];
@@ -42,18 +50,25 @@ public class Test
         String path = args[3];
         int count = Integer.parseInt(args[4]);
 
+        boolean skipAfterTimeout = switch(args[5])
+        {
+            case "true" -> true;
+            case "false" -> false;
+            default -> throw new IllegalArgumentException("skip after timeout is neither true nor false: " + args[5]);
+        };
+
         for(int i = 1; i <= count; i++)
             (new File(path + "/run-" + i)).mkdirs();
 
         try(PrintStream out = new PrintStream(path + "/times.txt"))
         {
-            exec(endpoint, settings, queries, path, out, count);
+            exec(endpoint, settings, queries, path, out, count, skipAfterTimeout);
         }
     }
 
 
-    public static void exec(String endpoint, String settings, String queries, String path, PrintStream out, int limit)
-            throws Exception
+    public static void exec(String endpoint, String settings, String queries, String path, PrintStream out, int limit,
+            boolean skipAfterTimeout) throws Exception
     {
         try(BufferedReader reader = new BufferedReader(new FileReader(queries)))
         {
@@ -67,7 +82,7 @@ public class Test
                 if(line.startsWith("### "))
                 {
                     if(id != null)
-                        evaluate(endpoint, id, settings, query.toString(), path, out, limit);
+                        evaluate(endpoint, id, settings, query.toString(), path, out, limit, skipAfterTimeout);
 
                     id = line.substring(4, line.length() - 4);
                     query = new StringBuffer();
@@ -80,27 +95,45 @@ public class Test
             }
 
             if(id != null)
-                evaluate(endpoint, id, settings, query.toString(), path, out, limit);
+                evaluate(endpoint, id, settings, query.toString(), path, out, limit, skipAfterTimeout);
         }
     }
 
 
+    /*
+     * Runs the query count times, printing the time of each run, or NA when the query failed or exceeded the time
+     * limit, and storing the result of the run in run-<i> as <query>.xml, or <query>.txt for NA. With skipAfterTimeout,
+     * a run that exceeded the time limit, whether with a result or with an error, makes the following runs NA at once,
+     * each with <query>.txt telling so.
+     */
     private static void evaluate(String endpoint, String id, String settings, String query, String path,
-            PrintStream out, int count) throws Exception
+            PrintStream out, int count, boolean skipAfterTimeout) throws Exception
     {
         System.err.println("> " + id);
 
         out.print(id);
 
+        // the run in which the query exceeded the time limit, 0 if none did or the query is run again anyway
+        int timedOut = 0;
+
         for(int i = 1; i <= count; i++)
         {
+            if(timedOut != 0)
+            {
+                out.print("              NA");
+                Files.writeString(Path.of(path, "run-" + i, id + ".txt"),
+                        "not run: the query exceeded the time limit in run " + timedOut + "\n");
+                continue;
+            }
+
             Thread.sleep(2500);
 
             String rndQuery = query + "\n#RND" + Math.random() + " " + Math.random();
             String url = endpoint + (endpoint.contains("?") ? "&" : "?") + "query="
                     + URLEncoder.encode(settings + "\n" + prefixes + rndQuery, "UTF-8");
 
-            long time = System.nanoTime();
+            long start = System.nanoTime();
+            long time;
 
             URL request = (new URI(url)).toURL();
             HttpURLConnection con = (HttpURLConnection) request.openConnection();
@@ -113,9 +146,9 @@ public class Test
             {
                 Files.copy(in, result, StandardCopyOption.REPLACE_EXISTING);
 
-                time = System.nanoTime() - time;
+                time = System.nanoTime() - start;
 
-                if(time <= 1000 * 1000000000l)
+                if(time <= TIME_LIMIT)
                 {
                     out.printf(" %5d.%09d", time / 1000000000, time % 1000000000);
                     Files.move(result, result.resolveSibling(id + ".xml"), StandardCopyOption.REPLACE_EXISTING);
@@ -128,6 +161,9 @@ public class Test
             }
             catch(IOException e)
             {
+                // an error after the time limit is the timeout of the engine
+                time = System.nanoTime() - start;
+
                 e.printStackTrace();
 
                 out.print("              NA");
@@ -142,6 +178,9 @@ public class Test
 
                 Files.move(result, result.resolveSibling(id + ".txt"), StandardCopyOption.REPLACE_EXISTING);
             }
+
+            if(skipAfterTimeout && time > TIME_LIMIT)
+                timedOut = i;
         }
 
         out.println();

@@ -34,8 +34,9 @@ import cz.iocb.nextprot.test.QueryCheck.Source;
  *
  * The results of the query set lie in a directory with a subdirectory for each engine (named by bin/test.sh after the
  * server, the mapping, the method and the number of CPUs), which has a subdirectory run-<i> for each run, holding
- * <query>.xml for a query that the engine answered in time; a query that failed or timed out has <query>.txt instead,
- * and is ignored, as is an older <query>.xml left there by an earlier test. Only the results of the last run of each
+ * <query>.xml for a query that the engine answered in time; a query that failed or timed out, or that was not run after
+ * it had timed out in an earlier run, has <query>.txt instead, and is ignored, as is an older <query>.xml left there by
+ * an earlier test. Only the results of the last run of each
  * engine are checked. The reference results lie in another
  * directory as <query>.xml. Each result is compared with the reference of its query as QueryCheck describes, using the
  * queries of the query set if they are given.

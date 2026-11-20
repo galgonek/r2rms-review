@@ -11,6 +11,10 @@ OUTBASEDIR="${BASE}/log/test"
 # each query set, holding <query>.xml for each query
 REFBASEDIR="${BASE}/references"
 
+# whether bin/test.sh skips the following runs of a query that exceeded the time limit of 1000 s in a run, giving them
+# NA at once ("true"), or runs the query again in every run ("false")
+SKIP_AFTER_TIMEOUT="false"
+
 # the caches of the Sparqloscope benchmark generator, reused by the next run; remove them when the QLever index changes
 SPARQLOSCOPEDIR="${BASE}/sparqloscope"
 
