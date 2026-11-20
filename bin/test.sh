@@ -25,6 +25,8 @@ if [ "${METHOD}" = "integer" -o "${METHOD}" = "combined" ]; then
   MODE="indirect"
 elif [ "${METHOD}" = "string" ]; then
   MODE="direct"
+elif [ "${METHOD}" = "rdfid" ]; then
+  MODE="rdfid"
 else
   MODE="rdf"
 fi

@@ -10,11 +10,14 @@ fi
 . ./bin/containers.sh
 
 
-MODE="rdf"
+# how the triples are stored: rdf keeps the terms in boxes in the table of the triples, rdfid numbers the terms in a
+# table of their own and keeps the triples as their numbers; both are made of the triples the rdf mode of the export
+# loads
+MODE="${1-rdf}"
 MAPPING="idsm"
 SERVER="postgresql"
 
-SQLFILE="${SQLBASEDIR}/${SERVER}-${MODE}.sql.gz"
+SQLFILE="${SQLBASEDIR}/${SERVER}-rdf.sql.gz"
 DATADIR="${DBBASEDIR}/${SERVER}-${MAPPING}-${MODE}"
 LOGDIR="${LOGBASEDIR}/${SERVER}-${MAPPING}-${MODE}"
 
@@ -44,11 +47,11 @@ cat sql/rdf/schema.sql | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo
 
 zcat "${SQLFILE}" | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/load.log"
 
-cat sql/rdf/distinct.sql | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/distinct.log"
+cat "sql/${MODE}/distinct.sql" | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/distinct.log"
 
-cat sql/rdf/settings.sql | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/settings.log"
+cat "sql/${MODE}/settings.sql" | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/settings.log"
 
-cat sql/rdf/statistics.sql | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/statistics.log"
+cat "sql/${MODE}/statistics.sql" | in_container "${SERVER}" psql -v ON_ERROR_STOP=1 --echo-all -U nextprot -d nextprot 2>&1 | tee "${LOGDIR}/statistics.log"
 
 # autovacuum is off, so vacuum sets the hint bits and the visibility map now; the queries would write every page they
 # read first otherwise, and an index-only scan would read the table for every row
