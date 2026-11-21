@@ -48,7 +48,8 @@ public class Server
         ContextResource config = new ContextResource();
         config.setName("config");
         config.setAuth("Container");
-        config.setType("cz.iocb.sparql.nextprot." + args[0] + ".NeXtProtConfiguration");
+        // the package of a variant is its name without the hyphens (string-opt in stringopt)
+        config.setType("cz.iocb.sparql.nextprot." + args[0].replace("-", "") + ".NeXtProtConfiguration");
         config.setSingleton(true);
         config.setProperty("factory", "cz.iocb.sparql.endpoint.SparqlDatabaseConfigurationFactory");
         config.setProperty("datasource", "jdbc");

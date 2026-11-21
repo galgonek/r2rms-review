@@ -21,9 +21,11 @@ BASE="${PWD}"
 TMPDIR="$(mktemp -d)"
 SLEEP="300"
 
-if [ "${METHOD}" = "integer" -o "${METHOD}" = "combined" ]; then
+# a variant whose name ends with -opt is the variant of the name without the suffix with the join optimizer of the
+# engine on, so it runs over the same database
+if [ "${METHOD%-opt}" = "integer" -o "${METHOD%-opt}" = "combined" ]; then
   MODE="indirect"
-elif [ "${METHOD}" = "string" ]; then
+elif [ "${METHOD%-opt}" = "string" ]; then
   MODE="direct"
 elif [ "${METHOD}" = "rdfid" ]; then
   MODE="rdfid"
