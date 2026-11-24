@@ -21,15 +21,20 @@ BASE="${PWD}"
 TMPDIR="$(mktemp -d)"
 SLEEP="300"
 
+# a variant whose name ends with -adv is the variant of the name without the suffix whose joins the engine makes the
+# planner keep by plan advice (the module pg_plan_advice of PostgreSQL 19) instead of the settings of the planner, so it
+# runs over the same database
+VARIANT="${METHOD%-adv}"
+
 # a variant whose name ends with -opt is the variant of the name without the suffix with the join optimizer of the
 # engine on, so it runs over the same database
-if [ "${METHOD%-opt}" = "integer" -o "${METHOD%-opt}" = "combined" ]; then
+if [ "${VARIANT%-opt}" = "integer" -o "${VARIANT%-opt}" = "combined" ]; then
   MODE="indirect"
-elif [ "${METHOD%-opt}" = "string" ]; then
+elif [ "${VARIANT%-opt}" = "string" ]; then
   MODE="direct"
-elif [ "${METHOD}" = "rdfid" ]; then
+elif [ "${VARIANT}" = "rdfid" ]; then
   MODE="rdfid"
-elif [ "${METHOD}" = "rdfmixed" ]; then
+elif [ "${VARIANT}" = "rdfmixed" ]; then
   MODE="rdfmixed"
 else
   MODE="rdf"
@@ -95,6 +100,11 @@ case "${SERVER}" in
 
     if [ "${CPU}" != "1" ]; then
       OPTIONS=(-c work_mem="$((6144 / CPU))MB")
+    fi
+
+    # only a superuser may load the module of plan advice in a session, so every session loads it
+    if [ "${METHOD}" != "${VARIANT}" ]; then
+      OPTIONS+=(-c session_preload_libraries=pg_plan_advice)
     fi
 
     start_postgresql "${DATADIR}" -c max_parallel_workers_per_gather=$(("${CPU}" - 1)) "${OPTIONS[@]}"
