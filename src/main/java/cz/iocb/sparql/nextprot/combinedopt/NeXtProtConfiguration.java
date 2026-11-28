@@ -3,6 +3,7 @@ package cz.iocb.sparql.nextprot.combinedopt;
 import java.sql.SQLException;
 import java.util.List;
 import javax.sql.DataSource;
+import cz.iocb.sparql.engine.config.EngineSettings.JoinOptimizerMode;
 import cz.iocb.sparql.engine.database.DatabaseSchema;
 import cz.iocb.sparql.engine.database.DatabaseTable;
 
@@ -11,7 +12,7 @@ import cz.iocb.sparql.engine.database.DatabaseTable;
 /**
  * NeXtProt configuration of the combined variant (see {@link cz.iocb.sparql.nextprot.combined.NeXtProtConfiguration})
  * whose joins the engine chooses itself, from the statistics of the tables, instead of leaving them to the planner of
- * the database (see {@link cz.iocb.sparql.engine.config.SparqlDatabaseConfiguration#setJoinOptimizer}). The tables
+ * the database (see {@link cz.iocb.sparql.engine.config.EngineSettings#joinOptimizer()}). The tables
  * giving the IRIs of the entities for their numbers are dictionary tables (see
  * {@link cz.iocb.sparql.engine.config.SparqlDatabaseConfiguration#addDictionaryTable}): the engine reads the numbers of
  * the constant IRIs of a query when it translates the query, so that the tables referring to the entities are
@@ -38,6 +39,6 @@ public class NeXtProtConfiguration extends cz.iocb.sparql.nextprot.combined.NeXt
         for(String table : dictionaryTables)
             addDictionaryTable(new DatabaseTable("nextprot", table));
 
-        setJoinOptimizer(true);
+        setEngineSettings(getEngineSettings().withJoinOptimizer(JoinOptimizerMode.SETTINGS));
     }
 }

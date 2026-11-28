@@ -6,6 +6,7 @@ import static java.util.Arrays.asList;
 import java.sql.SQLException;
 import java.util.List;
 import javax.sql.DataSource;
+import cz.iocb.sparql.engine.config.EngineSettings.JoinOptimizerMode;
 import cz.iocb.sparql.engine.config.SparqlDatabaseConfiguration;
 import cz.iocb.sparql.engine.database.DatabaseSchema;
 import cz.iocb.sparql.engine.database.DatabaseTable;
@@ -106,6 +107,6 @@ public class NeXtProtConfiguration extends SparqlDatabaseConfiguration
         addTableStatistics(triples, new GroupedStatistics(triples, (TableColumn) getColumn(triples, "predicate"),
                 new DatabaseTable(schema, "triples_statistics"), new DatabaseTable(schema, "triples_values")));
 
-        setJoinOptimizer(true);
+        setEngineSettings(getEngineSettings().withJoinOptimizer(JoinOptimizerMode.SETTINGS));
     }
 }

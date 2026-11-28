@@ -3,6 +3,7 @@ package cz.iocb.sparql.nextprot.rdfbox;
 import static cz.iocb.sparql.engine.mapping.classes.BuiltinClasses.box;
 import java.sql.SQLException;
 import javax.sql.DataSource;
+import cz.iocb.sparql.engine.config.EngineSettings.JoinOptimizerMode;
 import cz.iocb.sparql.engine.config.SparqlDatabaseConfiguration;
 import cz.iocb.sparql.engine.database.DatabaseSchema;
 import cz.iocb.sparql.engine.database.DatabaseTable;
@@ -86,6 +87,6 @@ public class NeXtProtConfiguration extends SparqlDatabaseConfiguration
         addTableStatistics(table, new GroupedStatistics(table, (TableColumn) getColumn(table, "predicate"),
                 new DatabaseTable(schema, "triples_statistics"), new DatabaseTable(schema, "triples_values")));
 
-        setJoinOptimizer(true);
+        setEngineSettings(getEngineSettings().withJoinOptimizer(JoinOptimizerMode.SETTINGS));
     }
 }

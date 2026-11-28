@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 import javax.sql.DataSource;
+import cz.iocb.sparql.engine.config.EngineSettings.JoinOptimizerMode;
 import cz.iocb.sparql.engine.config.SparqlDatabaseConfiguration;
 import cz.iocb.sparql.engine.database.DatabaseSchema;
 import cz.iocb.sparql.engine.database.DatabaseTable;
@@ -140,6 +141,6 @@ public class NeXtProtConfiguration extends SparqlDatabaseConfiguration
                             new DatabaseTable(schema, triples.getName() + "_statistics"),
                             new DatabaseTable(schema, triples.getName() + "_values")));
 
-        setJoinOptimizer(true);
+        setEngineSettings(getEngineSettings().withJoinOptimizer(JoinOptimizerMode.SETTINGS));
     }
 }
